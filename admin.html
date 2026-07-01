@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>楽GO! — ระบบจัดการ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #FFF8F3; color: #2C2C2A; font-size: 15px; }
+
+  /* NAV */
+  .nav { background: #FF6B35; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 52px; }
+  .nav-brand { color: white; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .nav-brand span { background: white; color: #FF6B35; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab { color: rgba(255,255,255,0.7); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 14px; border: none; background: none; }
+  .nav-tab.active { background: rgba(255,255,255,0.2); color: white; font-weight: 600; }
+  .nav-tab:hover { background: rgba(255,255,255,0.15); color: white; }
+
+  /* MAIN */
+  .main { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+  /* PAGE */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* TOOLBAR */
+  .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .toolbar h2 { font-size: 18px; font-weight: 600; flex: 1; }
+  .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; transition: opacity 0.15s; }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: #FF6B35; color: white; }
+  .btn-secondary { background: white; color: #FF6B35; border: 1.5px solid #FF6B35; }
+  .btn-danger { background: #E53E3E; color: white; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* SEARCH */
+  .search-box { padding: 8px 12px; border: 1.5px solid #FFD4B8; border-radius: 8px; font-size: 14px; width: 220px; background: white; }
+  .search-box:focus { outline: none; border-color: #FF6B35; }
+
+  /* PRODUCT TABLE */
+  .table-wrap { background: white; border-radius: 12px; border: 1px solid #FFD4B8; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #FFF0E8; padding: 10px 14px; text-align: left; font-size: 13px; color: #7A3A1A; font-weight: 600; }
+  td { padding: 10px 14px; border-top: 1px solid #FFE8D6; font-size: 14px; vertical-align: middle; }
+  tr:hover td { background: #FFF8F3; }
+  .product-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #FFE8D6; }
+  .product-img-placeholder { width: 48px; height: 48px; border-radius: 8px; background: #FFE8D6; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-active { background: #C6F6D5; color: #276749; }
+  .badge-inactive { background: #FED7D7; color: #9B2C2C; }
+  .cooking-icon { font-size: 16px; margin-right: 4px; }
+  .action-btns { display: flex; gap: 6px; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 16px; width: 100%; max-width: 640px; margin: auto; }
+  .modal-header { background: #FF6B35; padding: 16px 20px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { color: white; font-size: 16px; font-weight: 600; }
+  .modal-close { color: white; background: none; border: none; font-size: 22px; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .modal-footer { padding: 16px 20px; border-top: 1px solid #FFE8D6; display: flex; justify-content: flex-end; gap: 10px; }
+
+  /* FORM */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 13px; color: #7A3A1A; font-weight: 600; }
+  .form-group input, .form-group select, .form-group textarea {
+    padding: 8px 12px; border: 1.5px solid #FFD4B8; border-radius: 8px;
+    font-size: 14px; font-family: inherit; background: white;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: #FF6B35;
+  }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+
+  /* COOKING */
+  .cooking-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* CONDIMENTS */
+  .condiments-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .condiment-item { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1.5px solid #FFD4B8; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .condiment-item input { cursor: pointer; }
+  .condiment-item.checked { background: #FFF0E8; border-color: #FF6B35; }
+
+  /* IMAGE UPLOAD */
+  .img-upload-area { border: 2px dashed #FFD4B8; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+  .img-upload-area:hover { border-color: #FF6B35; }
+  .img-upload-area input { display: none; }
+  .img-preview { width: 100%; max-height: 160px; object-fit: contain; border-radius: 8px; margin-top: 10px; }
+  .upload-status { font-size: 12px; color: #FF6B35; margin-top: 6px; }
+
+  /* ORDERS */
+  .order-status { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .status-pending { background: #FEFCBF; color: #744210; }
+  .status-confirmed { background: #BEE3F8; color: #2A4365; }
+  .status-delivering { background: #C6F6D5; color: #276749; }
+  .status-delivered { background: #E2E8F0; color: #4A5568; }
+  .status-cancelled { background: #FED7D7; color: #9B2C2C; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 60px 20px; color: #AAA; }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #2C2C2A; color: white; padding: 10px 18px; border-radius: 10px; font-size: 14px; z-index: 999; display: none; }
+  .toast.show { display: block; }
+  .toast.success { background: #276749; }
+  .toast.error { background: #9B2C2C; }
+
+  /* LOADING */
+  .loading { text-align: center; padding: 40px; color: #AAA; font-size: 14px; }
+
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    .cooking-row { grid-template-columns: 1fr 1fr; }
+    .condiments-grid { grid-template-columns: repeat(2, 1fr); }
+    .nav-tabs { display: none; }
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <span>楽</span> Rakugo! Admin
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('products')">🍱 สินค้า</button>
+    <button class="nav-tab" onclick="showPage('orders')">📦 คำสั่งซื้อ</button>
+    <button class="nav-tab" onclick="showPage('categories')">🗂️ หมวดหมู่</button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- PRODUCTS PAGE -->
+  <div id="page-products" class="page active">
+    <div class="toolbar">
+      <h2>รายการสินค้า</h2>
+      <input class="search-box" type="text" placeholder="ค้นหาสินค้า..." oninput="filterProducts(this.value)">
+      <button class="btn btn-primary" onclick="openProductModal()">+ เพิ่มสินค้า</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>รูป</th>
+            <th>ชื่อสินค้า</th>
+            <th>ราคา</th>
+            <th>สต็อก</th>
+            <th>วิธีปรุง</th>
+            <th>หมวด</th>
+            <th>สถานะ</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="products-tbody">
+          <tr><td colspan="8"><div class="loading">กำลังโหลด...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ORDERS PAGE -->
+  <div id="page-orders" class="page">
+    <div class="toolbar">
+      <h2>คำสั่งซื้อ</h2>
+      <select class="search-box" style="width:160px;" onchange="filterOrders(this.value)">
+        <option value="">ทั้งหมด</option>
+        <option value="pending">รอยืนยัน</option>
+        <option value="confirmed">ยืนยันแล้ว</option>
+        <option value="delivering">กำลังส่ง</option>
+        <option value="delivered">ส่งแล้ว</option>
+        <option value="cancelled">ยกเลิก</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>เลขที่</th>
+            <th>ลูกค้า</th>
+            <th>โทร</th>
+            <th>ยอดรวม</th>
+            <th>สถานะ</th>
+            <th>วันที่</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody">
+          <tr><td colspan="7"><div class="loading">กำลังโหลด...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CATEGORIES PAGE -->
+  <div id="page-categories" class="page">
+    <div class="toolbar">
+      <h2>หมวดหมู่</h2>
+      <button class="btn btn-primary" onclick="openCategoryModal()">+ เพิ่มหมวดหมู่</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ชื่อ (ไทย)</th>
+            <th>ชื่อ (อังกฤษ)</th>
+            <th>ลำดับ</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="categories-tbody">
+          <tr><td colspan="4"><div class="loading">กำลังโหลด...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">เพิ่มสินค้าใหม่</h3>
+      <button class="modal-close" onclick="closeProductModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- IMAGE -->
+      <div class="form-group">
+        <label>รูปสินค้า</label>
+        <div class="img-upload-area" onclick="document.getElementById('img-input').click()">
+          <input type="file" id="img-input" accept="image/*" onchange="handleImageSelect(this)">
+          <div id="img-placeholder">📷 คลิกเพื่ออัปโหลดรูป</div>
+          <img id="img-preview" class="img-preview" style="display:none;">
+          <div class="upload-status" id="upload-status"></div>
+        </div>
+      </div>
+
+      <!-- NAME -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>ชื่อสินค้า (ไทย) *</label>
+          <input type="text" id="f-name-th" placeholder="เช่น ไก่เทอริยากิ">
+        </div>
+        <div class="form-group">
+          <label>ชื่อสินค้า (อังกฤษ) *</label>
+          <input type="text" id="f-name-en" placeholder="e.g. Chicken Teriyaki">
+        </div>
+      </div>
+
+      <!-- DESC -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>คำอธิบาย (ไทย)</label>
+          <textarea id="f-desc-th" placeholder="รายละเอียดสินค้า..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>คำอธิบาย (อังกฤษ)</label>
+          <textarea id="f-desc-en" placeholder="Product description..."></textarea>
+        </div>
+      </div>
+
+      <!-- PRICE / STOCK / CATEGORY -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>ราคา (฿) *</label>
+          <input type="number" id="f-price" placeholder="89" min="0">
+        </div>
+        <div class="form-group">
+          <label>สต็อก *</label>
+          <input type="number" id="f-stock" placeholder="20" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>หมวดหมู่</label>
+          <select id="f-category">
+            <option value="">-- เลือกหมวดหมู่ --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>สถานะ</label>
+          <select id="f-active">
+            <option value="true">เปิดขาย</option>
+            <option value="false">ปิดขาย</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- COOKING METHOD -->
+      <div class="form-group">
+        <label>วิธีปรุง *</label>
+        <div class="cooking-row">
+          <select id="f-cooking-method" onchange="updateCookingFields()">
+            <option value="microwave">🔥 ไมโครเวฟ</option>
+            <option value="fry">🍳 ทอด</option>
+            <option value="boil">💧 ต้ม</option>
+            <option value="pan">🥘 กระทะ</option>
+            <option value="ready">✅ พร้อมทาน</option>
+          </select>
+          <div class="form-group" id="cooking-minutes-group">
+            <input type="number" id="f-cooking-minutes" placeholder="นาที" min="0" step="0.5">
+          </div>
+          <div class="form-group" id="cooking-temp-group" style="display:none;">
+            <input type="number" id="f-cooking-temp" placeholder="°C" min="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- CONDIMENTS -->
+      <div class="form-group">
+        <label>เครื่องปรุงแนะนำ</label>
+        <div class="condiments-grid" id="condiments-grid"></div>
+      </div>
+
+      <!-- YOUTUBE -->
+      <div class="form-group">
+        <label>ลิงก์วิดีโอ YouTube</label>
+        <input type="text" id="f-youtube" placeholder="https://www.youtube.com/watch?v=...">
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeProductModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveProduct()" id="save-btn">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="modal-overlay" id="category-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>หมวดหมู่</h3>
+      <button class="modal-close" onclick="closeCategoryModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>ชื่อ (ไทย) *</label>
+        <input type="text" id="cat-name-th" placeholder="เช่น เบนโตะ">
+      </div>
+      <div class="form-group">
+        <label>ชื่อ (อังกฤษ) *</label>
+        <input type="text" id="cat-name-en" placeholder="e.g. Bento">
+      </div>
+      <div class="form-group">
+        <label>ลำดับ</label>
+        <input type="number" id="cat-sort" value="0" min="0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeCategoryModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveCategory()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="order-modal-title">รายละเอียดคำสั่งซื้อ</h3>
+      <button class="modal-close" onclick="closeOrderModal()">✕</button>
+    </div>
+    <div class="modal-body" id="order-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeOrderModal()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxQ3oFskWtZpCTLmkbYxHtrjWirHQKY8JmYHD6z-5zMqh5YTC3aqxksjB5DxdpiJUx2/exec';
+
+const COOKING_LABELS = {
+  microwave: '🔥 ไมโครเวฟ',
+  fry: '🍳 ทอด',
+  boil: '💧 ต้ม',
+  pan: '🥘 กระทะ',
+  ready: '✅ พร้อมทาน'
+};
+
+const STATUS_LABELS = {
+  pending: 'รอยืนยัน',
+  confirmed: 'ยืนยันแล้ว',
+  delivering: 'กำลังส่ง',
+  delivered: 'ส่งแล้ว',
+  cancelled: 'ยกเลิก'
+};
+
+let allProducts = [];
+let allOrders = [];
+let allCategories = [];
+let allCondiments = [];
+let editingProductId = null;
+let editingCategoryId = null;
+let uploadedImageId = null;
+let uploadedImageUrl = null;
+
+// ── SUPABASE ──────────────────────────
+async function supabase(method, path, body) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : 'return=representation'
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+// ── NAV ──────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'products') loadProducts();
+  if (name === 'orders') loadOrders();
+  if (name === 'categories') loadCategories();
+}
+
+// ── PRODUCTS ─────────────────────────
+async function loadProducts() {
+  try {
+    allProducts = await supabase('GET', 'products?select=*,categories(name_th)&order=sort_order,id');
+    renderProducts(allProducts);
+  } catch(e) { showToast('โหลดสินค้าไม่สำเร็จ', 'error'); }
+}
+
+function renderProducts(products) {
+  const tbody = document.getElementById('products-tbody');
+  if (!products.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🍱</div>ยังไม่มีสินค้า</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = products.map(p => `
+    <tr>
+      <td>${p.image_drive_id
+        ? `<img class="product-img" src="https://lh3.googleusercontent.com/d/${p.image_drive_id}" onerror="this.style.display='none'">`
+        : `<div class="product-img-placeholder">🍱</div>`}</td>
+      <td>
+        <div style="font-weight:600;">${p.name_th}</div>
+        <div style="font-size:12px;color:#888;">${p.name_en}</div>
+      </td>
+      <td>฿${p.price}</td>
+      <td>${p.stock}</td>
+      <td>${COOKING_LABELS[p.cooking_method] || p.cooking_method}
+        ${p.cooking_minutes ? `<span style="font-size:12px;color:#888;"> ${p.cooking_minutes}น.</span>` : ''}
+        ${p.cooking_temp ? `<span style="font-size:12px;color:#888;"> ${p.cooking_temp}°C</span>` : ''}
+      </td>
+      <td>${p.categories?.name_th || '—'}</td>
+      <td><span class="badge ${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'เปิดขาย' : 'ปิดขาย'}</span></td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-secondary btn-sm" onclick="editProduct(${p.id})">แก้ไข</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">ลบ</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterProducts(q) {
+  const filtered = allProducts.filter(p =>
+    p.name_th.includes(q) || p.name_en.toLowerCase().includes(q.toLowerCase())
+  );
+  renderProducts(filtered);
+}
+
+async function openProductModal(id) {
+  editingProductId = null;
+  uploadedImageId = null;
+  uploadedImageUrl = null;
+  document.getElementById('modal-title').textContent = 'เพิ่มสินค้าใหม่';
+  document.getElementById('img-placeholder').style.display = 'block';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('upload-status').textContent = '';
+  ['f-name-th','f-name-en','f-desc-th','f-desc-en','f-youtube'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-price').value = '';
+  document.getElementById('f-stock').value = '';
+  document.getElementById('f-cooking-minutes').value = '';
+  document.getElementById('f-cooking-temp').value = '';
+  document.getElementById('f-cooking-method').value = 'microwave';
+  document.getElementById('f-active').value = 'true';
+  updateCookingFields();
+  await loadCategorySelect();
+  await loadCondimentsGrid([]);
+  document.getElementById('product-modal').classList.add('open');
+}
+
+async function editProduct(id) {
+  const p = allProducts.find(x => x.id === id);
+  if (!p) return;
+  editingProductId = id;
+  uploadedImageId = p.image_drive_id || null;
+  uploadedImageUrl = p.image_drive_id ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}` : null;
+  document.getElementById('modal-title').textContent = 'แก้ไขสินค้า';
+  document.getElementById('f-name-th').value = p.name_th || '';
+  document.getElementById('f-name-en').value = p.name_en || '';
+  document.getElementById('f-desc-th').value = p.description_th || '';
+  document.getElementById('f-desc-en').value = p.description_en || '';
+  document.getElementById('f-price').value = p.price || '';
+  document.getElementById('f-stock').value = p.stock || '';
+  document.getElementById('f-cooking-method').value = p.cooking_method || 'microwave';
+  document.getElementById('f-cooking-minutes').value = p.cooking_minutes || '';
+  document.getElementById('f-cooking-temp').value = p.cooking_temp || '';
+  document.getElementById('f-youtube').value = p.youtube_url || '';
+  document.getElementById('f-active').value = String(p.is_active);
+  if (uploadedImageUrl) {
+    document.getElementById('img-preview').src = uploadedImageUrl;
+    document.getElementById('img-preview').style.display = 'block';
+    document.getElementById('img-placeholder').style.display = 'none';
+  }
+  updateCookingFields();
+  await loadCategorySelect(p.category_id);
+
+  // load condiments
+  const pc = await supabase('GET', `product_condiments?product_id=eq.${id}`);
+  const selectedIds = pc.map(x => x.condiment_id);
+  await loadCondimentsGrid(selectedIds);
+  document.getElementById('product-modal').classList.add('open');
+}
+
+function closeProductModal() {
+  document.getElementById('product-modal').classList.remove('open');
+}
+
+async function loadCategorySelect(selectedId) {
+  if (!allCategories.length) allCategories = await supabase('GET', 'categories?order=sort_order');
+  const sel = document.getElementById('f-category');
+  sel.innerHTML = '<option value="">-- เลือกหมวดหมู่ --</option>' +
+    allCategories.map(c => `<option value="${c.id}" ${c.id == selectedId ? 'selected' : ''}>${c.name_th}</option>`).join('');
+}
+
+async function loadCondimentsGrid(selectedIds) {
+  if (!allCondiments.length) allCondiments = await supabase('GET', 'condiments?order=sort_order');
+  document.getElementById('condiments-grid').innerHTML = allCondiments.map(c => `
+    <label class="condiment-item ${selectedIds.includes(c.id) ? 'checked' : ''}" onclick="toggleCondiment(this)">
+      <input type="checkbox" value="${c.id}" ${selectedIds.includes(c.id) ? 'checked' : ''}> ${c.icon_emoji} ${c.name_th}
+    </label>
+  `).join('');
+}
+
+function toggleCondiment(label) {
+  label.classList.toggle('checked');
+}
+
+function updateCookingFields() {
+  const method = document.getElementById('f-cooking-method').value;
+  document.getElementById('cooking-temp-group').style.display = method === 'fry' ? 'block' : 'none';
+  document.getElementById('cooking-minutes-group').style.display = method === 'ready' ? 'none' : 'block';
+}
+
+// IMAGE UPLOAD
+async function handleImageSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('upload-status').textContent = 'กำลังอัปโหลด...';
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name, mimeType: file.type })
+      });
+      const data = await res.json();
+      if (data.success) {
+        uploadedImageId = data.fileId;
+        uploadedImageUrl = data.url;
+        document.getElementById('img-preview').src = uploadedImageUrl;
+        document.getElementById('img-preview').style.display = 'block';
+        document.getElementById('img-placeholder').style.display = 'none';
+        document.getElementById('upload-status').textContent = 'อัปโหลดสำเร็จ ✓';
+      } else {
+        document.getElementById('upload-status').textContent = 'อัปโหลดไม่สำเร็จ';
+      }
+    } catch(err) {
+      document.getElementById('upload-status').textContent = 'เกิดข้อผิดพลาด';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProduct() {
+  const nameTh = document.getElementById('f-name-th').value.trim();
+  const nameEn = document.getElementById('f-name-en').value.trim();
+  const price = parseFloat(document.getElementById('f-price').value);
+  const stock = parseInt(document.getElementById('f-stock').value);
+  if (!nameTh || !nameEn || isNaN(price) || isNaN(stock)) {
+    showToast('กรุณากรอกข้อมูลให้ครบ', 'error'); return;
+  }
+  const method = document.getElementById('f-cooking-method').value;
+  const minutes = parseFloat(document.getElementById('f-cooking-minutes').value) || 0;
+  const temp = parseInt(document.getElementById('f-cooking-temp').value) || null;
+  const catId = document.getElementById('f-category').value || null;
+  const isActive = document.getElementById('f-active').value === 'true';
+  const youtube = document.getElementById('f-youtube').value.trim() || null;
+
+  const productData = {
+    name_th: nameTh, name_en: nameEn,
+    description_th: document.getElementById('f-desc-th').value.trim() || null,
+    description_en: document.getElementById('f-desc-en').value.trim() || null,
+    price, stock,
+    category_id: catId,
+    image_drive_id: uploadedImageId || null,
+    cooking_method: method,
+    cooking_minutes: minutes,
+    cooking_temp: temp,
+    youtube_url: youtube,
+    is_active: isActive
+  };
+
+  const selectedCondiments = [...document.querySelectorAll('#condiments-grid input:checked')].map(x => parseInt(x.value));
+
+  document.getElementById('save-btn').textContent = 'กำลังบันทึก...';
+  document.getElementById('save-btn').disabled = true;
+
+  try {
+    let productId = editingProductId;
+    if (editingProductId) {
+      await supabase('PATCH', `products?id=eq.${editingProductId}`, productData);
+    } else {
+      const result = await supabase('POST', 'products', productData);
+      productId = result[0].id;
+    }
+
+    // sync condiments
+    await supabase('DELETE', `product_condiments?product_id=eq.${productId}`);
+    if (selectedCondiments.length) {
+      await supabase('POST', 'product_condiments',
+        selectedCondiments.map(cid => ({ product_id: productId, condiment_id: cid }))
+      );
+    }
+
+    showToast('บันทึกสำเร็จ ✓', 'success');
+    closeProductModal();
+    loadProducts();
+  } catch(e) {
+    showToast('บันทึกไม่สำเร็จ', 'error');
+  } finally {
+    document.getElementById('save-btn').textContent = 'บันทึก';
+    document.getElementById('save-btn').disabled = false;
+  }
+}
+
+async function deleteProduct(id) {
+  if (!confirm('ต้องการลบสินค้านี้?')) return;
+  try {
+    await supabase('DELETE', `products?id=eq.${id}`);
+    showToast('ลบสำเร็จ', 'success');
+    loadProducts();
+  } catch(e) { showToast('ลบไม่สำเร็จ', 'error'); }
+}
+
+// ── ORDERS ───────────────────────────
+async function loadOrders() {
+  try {
+    allOrders = await supabase('GET', 'orders?select=*&order=created_at.desc');
+    renderOrders(allOrders);
+  } catch(e) { showToast('โหลดคำสั่งซื้อไม่สำเร็จ', 'error'); }
+}
+
+function renderOrders(orders) {
+  const tbody = document.getElementById('orders-tbody');
+  if (!orders.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">📦</div>ยังไม่มีคำสั่งซื้อ</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = orders.map(o => `
+    <tr>
+      <td style="font-weight:600;">#${o.order_number}</td>
+      <td>${o.customer_name}</td>
+      <td>${o.customer_phone}</td>
+      <td>฿${o.total_amount}</td>
+      <td>
+        <select class="order-status status-${o.status}" onchange="updateOrderStatus(${o.id}, this.value)" style="border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;">
+          ${Object.entries(STATUS_LABELS).map(([v,l]) => `<option value="${v}" ${o.status===v?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </td>
+      <td style="font-size:12px;color:#888;">${new Date(o.created_at).toLocaleDateString('th-TH')}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="viewOrder(${o.id})">ดูรายละเอียด</button></td>
+    </tr>
+  `).join('');
+}
+
+function filterOrders(status) {
+  const filtered = status ? allOrders.filter(o => o.status === status) : allOrders;
+  renderOrders(filtered);
+}
+
+async function updateOrderStatus(id, status) {
+  try {
+    await supabase('PATCH', `orders?id=eq.${id}`, { status });
+    showToast('อัปเดตสถานะสำเร็จ', 'success');
+  } catch(e) { showToast('อัปเดตไม่สำเร็จ', 'error'); }
+}
+
+async function viewOrder(id) {
+  const order = allOrders.find(o => o.id === id);
+  if (!order) return;
+  const items = await supabase('GET', `order_items?order_id=eq.${id}`);
+  document.getElementById('order-modal-title').textContent = `คำสั่งซื้อ #${order.order_number}`;
+  document.getElementById('order-modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
+      <div><b>ลูกค้า:</b> ${order.customer_name}</div>
+      <div><b>โทร:</b> ${order.customer_phone}</div>
+      <div style="grid-column:1/-1;"><b>ที่อยู่:</b> ${order.customer_address}</div>
+      ${order.customer_line_id ? `<div><b>LINE:</b> ${order.customer_line_id}</div>` : ''}
+      ${order.note ? `<div style="grid-column:1/-1;"><b>หมายเหตุ:</b> ${order.note}</div>` : ''}
+    </div>
+    <div style="margin-top:16px;">
+      <b>รายการสินค้า:</b>
+      <table style="width:100%;margin-top:8px;font-size:13px;">
+        <tr style="background:#FFF0E8;"><th style="padding:6px;text-align:left;">สินค้า</th><th style="padding:6px;">จำนวน</th><th style="padding:6px;text-align:right;">ราคา</th></tr>
+        ${items.map(i => `<tr><td style="padding:6px;">${i.product_name_th}</td><td style="padding:6px;text-align:center;">${i.quantity}</td><td style="padding:6px;text-align:right;">฿${i.subtotal}</td></tr>`).join('')}
+        <tr style="border-top:2px solid #FFD4B8;"><td colspan="2" style="padding:8px;font-weight:600;">รวมทั้งสิ้น</td><td style="padding:8px;text-align:right;font-weight:600;color:#FF6B35;">฿${order.total_amount}</td></tr>
+      </table>
+    </div>
+  `;
+  document.getElementById('order-modal').classList.add('open');
+}
+
+function closeOrderModal() {
+  document.getElementById('order-modal').classList.remove('open');
+}
+
+// ── CATEGORIES ───────────────────────
+async function loadCategories() {
+  try {
+    allCategories = await supabase('GET', 'categories?order=sort_order');
+    const tbody = document.getElementById('categories-tbody');
+    if (!allCategories.length) {
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="icon">🗂️</div>ยังไม่มีหมวดหมู่</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = allCategories.map(c => `
+      <tr>
+        <td>${c.name_th}</td>
+        <td>${c.name_en}</td>
+        <td>${c.sort_order}</td>
+        <td>
+          <div class="action-btns">
+            <button class="btn btn-secondary btn-sm" onclick="editCategory(${c.id})">แก้ไข</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteCategory(${c.id})">ลบ</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) { showToast('โหลดหมวดหมู่ไม่สำเร็จ', 'error'); }
+}
+
+function openCategoryModal() {
+  editingCategoryId = null;
+  ['cat-name-th','cat-name-en'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cat-sort').value = 0;
+  document.getElementById('category-modal').classList.add('open');
+}
+
+function editCategory(id) {
+  const c = allCategories.find(x => x.id === id);
+  if (!c) return;
+  editingCategoryId = id;
+  document.getElementById('cat-name-th').value = c.name_th;
+  document.getElementById('cat-name-en').value = c.name_en;
+  document.getElementById('cat-sort').value = c.sort_order;
+  document.getElementById('category-modal').classList.add('open');
+}
+
+function closeCategoryModal() {
+  document.getElementById('category-modal').classList.remove('open');
+}
+
+async function saveCategory() {
+  const nameTh = document.getElementById('cat-name-th').value.trim();
+  const nameEn = document.getElementById('cat-name-en').value.trim();
+  const sort = parseInt(document.getElementById('cat-sort').value) || 0;
+  if (!nameTh || !nameEn) { showToast('กรุณากรอกชื่อหมวดหมู่', 'error'); return; }
+  try {
+    if (editingCategoryId) {
+      await supabase('PATCH', `categories?id=eq.${editingCategoryId}`, { name_th: nameTh, name_en: nameEn, sort_order: sort });
+    } else {
+      await supabase('POST', 'categories', { name_th: nameTh, name_en: nameEn, sort_order: sort });
+    }
+    showToast('บันทึกสำเร็จ ✓', 'success');
+    closeCategoryModal();
+    allCategories = [];
+    loadCategories();
+  } catch(e) { showToast('บันทึกไม่สำเร็จ', 'error'); }
+}
+
+async function deleteCategory(id) {
+  if (!confirm('ต้องการลบหมวดหมู่นี้?')) return;
+  try {
+    await supabase('DELETE', `categories?id=eq.${id}`);
+    showToast('ลบสำเร็จ', 'success');
+    allCategories = [];
+    loadCategories();
+  } catch(e) { showToast('ลบไม่สำเร็จ', 'error'); }
+}
+
+// ── TOAST ────────────────────────────
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type || ''}`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── INIT ─────────────────────────────
+loadProducts();
+</script>
+</body>
+</html>
