@@ -607,10 +607,18 @@ async function handleImageSelect(input) {
 async function saveProduct() {
   const nameTh = document.getElementById('f-name-th').value.trim();
   const nameEn = document.getElementById('f-name-en').value.trim();
-  const price = parseFloat(document.getElementById('f-price').value);
-  const stock = parseInt(document.getElementById('f-stock').value);
-  if (!nameTh || !nameEn || isNaN(price) || isNaN(stock)) {
-    showToast('กรุณากรอกข้อมูลให้ครบ', 'error'); return;
+  const priceRaw = document.getElementById('f-price').value;
+  const stockRaw = document.getElementById('f-stock').value;
+  const price = priceRaw !== '' ? parseFloat(priceRaw) : NaN;
+  const stock = stockRaw !== '' ? parseInt(stockRaw) : NaN;
+  if (!nameTh || !nameEn) {
+    showToast('กรุณากรอกชื่อสินค้า', 'error'); return;
+  }
+  if (isNaN(price) || price < 0) {
+    showToast('กรุณากรอกราคา', 'error'); return;
+  }
+  if (isNaN(stock) || stock < 0) {
+    showToast('กรุณากรอกสต็อก', 'error'); return;
   }
   const method = document.getElementById('f-cooking-method').value;
   const minutes = parseFloat(document.getElementById('f-cooking-minutes').value) || 0;
