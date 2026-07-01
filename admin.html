@@ -577,15 +577,23 @@ async function handleImageSelect(input) {
   const file = input.files[0];
   if (!file) return;
   document.getElementById('upload-status').textContent = 'กำลังอัปโหลด...';
+  document.getElementById('img-placeholder').textContent = '⏳ กำลังอัปโหลด...';
+  const tempKey = 'img_' + Date.now();
   const reader = new FileReader();
   reader.onload = async (e) => {
     const base64 = e.target.result.split(',')[1];
     try {
-      const res = await fetch(GAS_URL, {
+      // Step1: no-cors で送信(CORSを回避)
+      fetch(GAS_URL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name, mimeType: file.type })
-      });
+        body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name, mimeType: file.type, tempKey })
+      }).catch(() => {});
+
+      // Step2: 3秒待ってからGETで最新ファイルを取得
+      await new Promise(r => setTimeout(r, 3000));
+      const res = await fetch(`${GAS_URL}?action=getLatestImage`);
       const data = await res.json();
       if (data.success) {
         uploadedImageId = data.fileId;
@@ -596,9 +604,11 @@ async function handleImageSelect(input) {
         document.getElementById('upload-status').textContent = 'อัปโหลดสำเร็จ ✓';
       } else {
         document.getElementById('upload-status').textContent = 'อัปโหลดไม่สำเร็จ';
+        document.getElementById('img-placeholder').textContent = '📷 คลิกเพื่ออัปโหลดรูป';
       }
     } catch(err) {
-      document.getElementById('upload-status').textContent = 'เกิดข้อผิดพลาด';
+      document.getElementById('upload-status').textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+      document.getElementById('img-placeholder').textContent = '📷 คลิกเพื่ออัปโหลดรูป';
     }
   };
   reader.readAsDataURL(file);
