@@ -170,7 +170,7 @@
     <h2><span class="step-num">2</span>地図でお届け先のピンを合わせる</h2>
     <div id="map"></div>
     <div class="map-hint">
-      ピン(赤いマーク)をドラッグして、実際のお届け先の建物・玄関の位置に合わせてください。配達料金はエリア選択で決まるため、ピンの位置は料金に影響しません。
+      エリアを選ぶと、その付近にピンが自動で移動します。そこからドラッグして、実際のお届け先の建物・玄関の位置に合わせてください。配達料金はエリア選択で決まるため、ピンの位置は料金に影響しません。
     </div>
     <div class="coords-box">
       <code id="coordsText">13.721462, 100.576517</code>
@@ -197,6 +197,18 @@
     zone1: { label: 'ゾーン1(近距離)', fee: 20, districts: ['スクンビット', 'ラマ4', 'サトーン'] },
     zone2: { label: 'ゾーン2(中距離)', fee: 40, districts: ['ラマ3', 'シーナカリン', 'バンナー'] },
     zone3: { label: 'ゾーン3(遠距離)', fee: 60, districts: ['バンスー', 'ラプラオ'] },
+  };
+
+  // 各ケートのおおよその中心座標(ケート選択時にピンを飛ばす初期位置。お客さんが後で微調整する)
+  const DISTRICT_COORDS = {
+    'スクンビット': { lat: 13.721462, lng: 100.5765166 },
+    'ラマ4':       { lat: 13.723435, lng: 100.5514102 },
+    'サトーン':     { lat: 13.7150398, lng: 100.5335358 },
+    'ラマ3':       { lat: 13.6879642, lng: 100.5165148 },
+    'シーナカリン': { lat: 13.7107227, lng: 100.6441507 },
+    'バンナー':     { lat: 13.663853, lng: 100.6132453 },
+    'バンスー':     { lat: 13.8063886, lng: 100.5307932 },
+    'ラプラオ':     { lat: 13.8241468, lng: 100.6087981 },
   };
 
   // ═══════════════════════════════════════════════
@@ -230,17 +242,28 @@
     feeZoneName.textContent = `${district}(${zone.label})`;
     feeAmount.innerHTML = `${zone.fee}<span>THB</span>`;
     feeResult.classList.add('show');
+
+    // 選んだケートの中心付近にピンを飛ばす(お客さんはこの後ドラッグして微調整)
+    const target = DISTRICT_COORDS[district];
+    if (target && marker && map) {
+      marker.setPosition(target);
+      map.panTo(target);
+      map.setZoom(15);
+      coordsText.textContent = `${target.lat.toFixed(6)}, ${target.lng.toFixed(6)}`;
+      pinStatus.textContent = 'おおよその位置(要調整)';
+      pinStatus.classList.add('pending');
+    }
   });
 
   // ═══════════════════════════════════════════════
   // 地図(ピンドラッグで位置情報取得。料金には影響しない)
   // ═══════════════════════════════════════════════
-  let marker;
+  let map, marker;
   const coordsText = document.getElementById('coordsText');
   const pinStatus = document.getElementById('pinStatus');
 
   function initMap() {
-    const map = new google.maps.Map(document.getElementById('map'), {
+    map = new google.maps.Map(document.getElementById('map'), {
       center: BASE_LOCATION,
       zoom: 13,
       mapId: 'DEMO_MAP_ID',
