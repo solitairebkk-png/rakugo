@@ -648,8 +648,11 @@ async function submitOrder() {
 
     const orderItems = items.map(i => ({
       order_id: orderId,
+      product_id: i.product.id,
       product_name_th: i.product.name_th,
+      product_name_en: i.product.name_en,
       quantity: i.qty,
+      unit_price: i.product.price,
       subtotal: i.qty * i.product.price,
     }));
     await supabase('POST', 'order_items', orderItems);
