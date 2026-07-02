@@ -174,6 +174,10 @@
           <input type="text" id="c-line" placeholder="ไม่บังคับ">
         </div>
         <div class="form-group">
+          <label>อีเมล (ถ้ามี / optional) — เพื่อรับอีเมลยืนยันคำสั่งซื้อ</label>
+          <input type="email" id="c-email" placeholder="example@email.com">
+        </div>
+        <div class="form-group">
           <label>ที่อยู่จัดส่ง (บ้านเลขที่ / คอนโด / ซอย) *</label>
           <textarea id="c-address" placeholder="เช่น คอนโด ABC ห้อง 12/3 ซอยสุขุมวิท 36"></textarea>
         </div>
@@ -306,6 +310,12 @@ async function supabase(method, path, body) {
 // INIT
 // ═══════════════════════════════════════════════
 async function init() {
+  const urlParams = new URLSearchParams(location.search);
+  const receiptOrderNumber = urlParams.get('receipt');
+  if (receiptOrderNumber) {
+    return showReceiptView(receiptOrderNumber);
+  }
+
   try {
     [allCategories, allProducts, allDistricts] = await Promise.all([
       supabase('GET', 'categories?order=sort_order'),
@@ -317,6 +327,48 @@ async function init() {
     renderDistrictSelect();
   } catch (e) {
     document.getElementById('product-sections').innerHTML = `<div class="loading">โหลดข้อมูลไม่สำเร็จ / Failed to load</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// 注文控えページ(?receipt=注文番号 でアクセス)
+// ═══════════════════════════════════════════════
+async function showReceiptView(orderNumber) {
+  document.querySelector('.header-tagline').textContent = 'ใบเสร็จคำสั่งซื้อ / Order receipt';
+  document.getElementById('cat-tabs').style.display = 'none';
+  const wrap = document.getElementById('product-sections');
+  wrap.innerHTML = `<div class="loading">กำลังโหลด...</div>`;
+
+  try {
+    const orders = await supabase('GET', `orders?order_number=eq.${orderNumber}&select=*`);
+    if (!orders.length) {
+      wrap.innerHTML = `<div class="loading">ไม่พบคำสั่งซื้อนี้ / Order not found</div>`;
+      return;
+    }
+    const order = orders[0];
+    const items = await supabase('GET', `order_items?order_id=eq.${order.id}&select=*`);
+    const statusLabels = { pending: 'รอยืนยัน / Pending', confirmed: 'ยืนยันแล้ว / Confirmed', delivering: 'กำลังส่ง / Delivering', delivered: 'ส่งแล้ว / Delivered', cancelled: 'ยกเลิก / Cancelled' };
+    const paymentLabel = order.payment_method === 'cod' ? 'เก็บเงินปลายทาง / Cash on delivery'
+                        : order.payment_method === 'qr' ? 'QR พร้อมเพย์ / PromptPay QR'
+                        : 'โอนเงิน / Bank transfer';
+
+    wrap.innerHTML = `
+      <div class="step-card" style="margin:16px;">
+        <h4>🧾 #${order.order_number}</h4>
+        <div class="order-summary-row"><span>สถานะ / Status</span><span>${statusLabels[order.status] || order.status}</span></div>
+        <div class="order-summary-row"><span>ผู้สั่ง / Name</span><span>${order.customer_name}</span></div>
+        <div class="order-summary-row"><span>โทร / Phone</span><span>${order.customer_phone}</span></div>
+        <div class="order-summary-row"><span>ที่อยู่ / Address</span><span style="text-align:right;max-width:65%;">${order.customer_address}</span></div>
+        <div class="order-summary-row"><span>พื้นที่จัดส่ง / Area</span><span>${order.delivery_district || '-'}</span></div>
+        <div class="order-summary-row"><span>ชำระเงิน / Payment</span><span>${paymentLabel}</span></div>
+        <div style="border-top:1.5px solid var(--line-soft); margin:12px 0;"></div>
+        ${items.map(i => `<div class="order-summary-row"><span>${i.product_name_th} × ${i.quantity}</span><span>฿${i.subtotal}</span></div>`).join('')}
+        <div class="order-summary-row"><span>ค่าส่ง / Delivery fee</span><span>฿${order.delivery_fee || 0}</span></div>
+        <div class="order-summary-row total"><span>รวมทั้งสิ้น / Total</span><span>฿${order.total_amount}</span></div>
+      </div>
+    `;
+  } catch (e) {
+    wrap.innerHTML = `<div class="loading">เกิดข้อผิดพลาด / Error loading receipt</div>`;
   }
 }
 
@@ -607,6 +659,7 @@ async function submitOrder() {
   const name = document.getElementById('c-name').value.trim();
   const phone = document.getElementById('c-phone').value.trim();
   const lineId = document.getElementById('c-line').value.trim();
+  const email = document.getElementById('c-email').value.trim();
   const address = document.getElementById('c-address').value.trim();
   const note = document.getElementById('c-note').value.trim();
   const items = Object.values(cart);
@@ -632,6 +685,7 @@ async function submitOrder() {
       customer_name: name,
       customer_phone: phone,
       customer_line_id: lineId || null,
+      customer_email: email || null,
       customer_address: address,
       note: note || null,
       delivery_district: `${selectedDistrict.name_th} / ${selectedDistrict.name_en}`,
@@ -657,13 +711,15 @@ async function submitOrder() {
     }));
     await supabase('POST', 'order_items', orderItems);
 
+    const orderWithReceipt = { ...orderPayload, receipt_url: `${location.origin}${location.pathname}?receipt=${orderPayload.order_number}` };
+
     // メール通知(GAS経由でinfo@rakugo.storeへ送信 → orders@saitofoods.comに転送される)
     fetch(GAS_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'notifyOrder',
-        order: orderPayload,
+        order: orderWithReceipt,
         items: orderItems,
       })
     }).catch(() => {});
@@ -679,6 +735,7 @@ async function submitOrder() {
 }
 
 function showSuccessScreen(orderNumber) {
+  const receiptUrl = `${location.origin}${location.pathname}?receipt=${orderNumber}`;
   document.getElementById('checkout-body').innerHTML = `
     <div class="success-screen">
       <div class="icon">🎉</div>
@@ -686,7 +743,15 @@ function showSuccessScreen(orderNumber) {
       <p>เลขที่คำสั่งซื้อของท่าน / Your order number</p>
       <div class="order-num">#${orderNumber}</div>
       <p>เราจะติดต่อกลับเพื่อยืนยันคำสั่งซื้อเร็วๆ นี้</p>
-      <button class="submit-btn" style="margin-top:24px;" onclick="location.reload()">กลับหน้าหลัก / Back to menu</button>
+      <div style="margin-top:20px; padding:16px; background:#FFF0E8; border-radius:10px; text-align:left;">
+        <div style="font-size:13px; font-weight:700; color:var(--brand-dark); margin-bottom:8px;">
+          📋 บันทึกลิงก์นี้ไว้เพื่อดูรายละเอียดคำสั่งซื้อภายหลัง
+        </div>
+        <div style="font-size:12px; color:#7A3A1A; margin-bottom:10px;">Save this link to view your order anytime</div>
+        <a href="${receiptUrl}" style="word-break:break-all; font-size:12px; color:var(--brand-dark); text-decoration:underline;">${receiptUrl}</a>
+        <button onclick="navigator.clipboard.writeText('${receiptUrl}'); showToast('คัดลอกลิงก์แล้ว ✓', 'success')" style="display:block; margin-top:10px; width:100%; padding:9px; border-radius:8px; border:1.5px solid var(--brand); background:#fff; color:var(--brand-dark); font-weight:700; font-size:13px; cursor:pointer;">📎 คัดลอกลิงก์ / Copy link</button>
+      </div>
+      <button class="submit-btn" style="margin-top:16px;" onclick="location.reload()">กลับหน้าหลัก / Back to menu</button>
     </div>
   `;
 }
