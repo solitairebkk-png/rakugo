@@ -100,7 +100,32 @@
   }
   .hero-badge .dot{width:8px; height:8px; border-radius:50%; background:#3CB878;}
 
-  /* SECTION HEADER */
+  /* NOTICE TICKER (tuk-tuk) */
+  .notice-strip{
+    background:linear-gradient(180deg, #FFF1DC, #FFEAC9);
+    border-top:2px solid var(--line); border-bottom:2px solid var(--line);
+    overflow:hidden; padding:14px 0;
+  }
+  .notice-track{
+    display:flex; width:max-content;
+    animation:noticeScroll 22s linear infinite;
+  }
+  .notice-item{
+    position:relative; flex:0 0 auto; margin-right:56px;
+    transform:scaleX(-1);
+  }
+  .notice-item img{height:96px; width:auto; display:block;}
+  .notice-text{
+    position:absolute; top:16%; left:41%; width:50%; height:64%;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:'Kanit'; font-weight:600; font-size:13px; color:#7A3B2E;
+    line-height:1.25; padding:0 4%;
+    transform:scaleX(-1);
+  }
+  @keyframes noticeScroll{
+    from{transform:translateX(-50%);}
+    to{transform:translateX(0);}
+  }
   .sec{padding:52px 0;}
   .sec-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:26px;}
   .sec-head h2{font-size:26px; font-weight:700;}
@@ -247,6 +272,36 @@
     </div>
   </div>
 </section>
+
+<div class="notice-strip">
+  <div class="notice-track">
+    <div class="notice-item">
+      <img src="images/icon_tuktuk_banner.webp" alt="">
+      <div class="notice-text">ส่งฟรี! เมื่อสั่งครบ 500 บาทขึ้นไป</div>
+    </div>
+    <div class="notice-item">
+      <img src="images/icon_tuktuk_banner.webp" alt="">
+      <div class="notice-text">สินค้าใหม่เข้าทุกสัปดาห์ อัปเดตก่อนใคร</div>
+    </div>
+    <div class="notice-item">
+      <img src="images/icon_tuktuk_banner.webp" alt="">
+      <div class="notice-text">แอดไลน์ Rakugo! รับสิทธิพิเศษก่อนใคร</div>
+    </div>
+    <!-- duplicate set for seamless loop -->
+    <div class="notice-item">
+      <img src="images/icon_tuktuk_banner.webp" alt="">
+      <div class="notice-text">ส่งฟรี! เมื่อสั่งครบ 500 บาทขึ้นไป</div>
+    </div>
+    <div class="notice-item">
+      <img src="images/icon_tuktuk_banner.webp" alt="">
+      <div class="notice-text">สินค้าใหม่เข้าทุกสัปดาห์ อัปเดตก่อนใคร</div>
+    </div>
+    <div class="notice-item">
+      <img src="images/icon_tuktuk_banner.webp" alt="">
+      <div class="notice-text">แอดไลน์ Rakugo! รับสิทธิพิเศษก่อนใคร</div>
+    </div>
+  </div>
+</div>
 
 <section class="sec">
   <div class="wrap">
