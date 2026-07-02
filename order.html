@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>楽GO! Rakugo! — สั่งอาหารญี่ปุ่น</title>
+<style>
+  :root {
+    --brand: #FF6B35;
+    --brand-dark: #E4572E;
+    --yellow: #F7B32B;
+    --cream: #FFF8F3;
+    --ink: #2C2C2A;
+    --line: #FFD4B8;
+    --line-soft: #FFE8D6;
+    --green: #276749;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', "Hiragino Sans", sans-serif; background: var(--cream); color: var(--ink); font-size: 15px; padding-bottom: 90px; }
+  a { color: inherit; }
+
+  /* HEADER */
+  .header { background: var(--brand); padding: 18px 20px 22px; color: #fff; }
+  .header-brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; }
+  .header-brand span.logo { background: #fff; color: var(--brand); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .header-tagline { font-size: 12.5px; opacity: 0.9; margin-top: 4px; }
+
+  /* CATEGORY TABS */
+  .cat-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 14px 16px; background: #fff; border-bottom: 1px solid var(--line-soft); position: sticky; top: 0; z-index: 20; }
+  .cat-tab { flex-shrink: 0; padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--line); background: #fff; color: var(--brand-dark); font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .cat-tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+  /* PRODUCT GRID */
+  .section-title { padding: 18px 16px 8px; font-size: 15px; font-weight: 700; color: var(--brand-dark); }
+  .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
+  .product-card { background: #fff; border: 1px solid var(--line-soft); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .product-img-wrap { width: 100%; aspect-ratio: 1/1; background: var(--line-soft); display: flex; align-items: center; justify-content: center; font-size: 36px; overflow: hidden; }
+  .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .product-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .product-name-th { font-size: 13.5px; font-weight: 700; line-height: 1.3; }
+  .product-name-en { font-size: 11.5px; color: #999; }
+  .product-cooking { font-size: 11px; color: var(--brand-dark); }
+  .product-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+  .product-price { font-size: 15px; font-weight: 800; color: var(--brand-dark); }
+  .product-price span { font-size: 11px; font-weight: 600; }
+  .qty-stepper { display: flex; align-items: center; gap: 8px; }
+  .qty-btn { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--brand); background: #fff; color: var(--brand); font-size: 15px; font-weight: 700; cursor: pointer; line-height: 1; }
+  .qty-btn.add { background: var(--brand); color: #fff; }
+  .qty-num { font-size: 14px; font-weight: 700; min-width: 16px; text-align: center; }
+  .out-of-stock { font-size: 11px; color: #C53030; font-weight: 700; }
+
+  /* CART BAR */
+  .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--brand-dark); color: #fff; padding: 14px 18px; display: none; align-items: center; justify-content: space-between; z-index: 50; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); }
+  .cart-bar.show { display: flex; }
+  .cart-bar-info { font-size: 13px; }
+  .cart-bar-info b { font-size: 16px; }
+  .cart-bar-btn { background: #fff; color: var(--brand-dark); border: none; padding: 10px 20px; border-radius: 24px; font-weight: 700; font-size: 14px; cursor: pointer; }
+
+  /* MODAL (checkout) */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 0; overflow-y: auto; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; width: 100%; max-width: 560px; margin: 0 auto; min-height: 100vh; }
+  .modal-header { background: var(--brand); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 5; }
+  .modal-header h3 { color: #fff; font-size: 16px; font-weight: 700; }
+  .modal-close { color: #fff; background: none; border: none; font-size: 22px; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 18px 20px 40px; }
+
+  .step-card { background: #fff; border: 1px solid var(--line-soft); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+  .step-card h4 { font-size: 14px; font-weight: 700; color: var(--brand-dark); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .step-num { width: 22px; height: 22px; background: var(--brand); color: #fff; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-group label { font-size: 12.5px; color: #7A3A1A; font-weight: 600; }
+  .form-group input, .form-group select, .form-group textarea {
+    padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px;
+    font-size: 14px; font-family: inherit; background: #fff; width: 100%;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--brand); }
+  .form-group textarea { resize: vertical; min-height: 60px; }
+
+  .fee-result { margin-top: 10px; padding: 12px 14px; border-radius: 10px; background: #FFF0E8; border: 1px dashed var(--yellow); display: none; align-items: center; justify-content: space-between; }
+  .fee-result.show { display: flex; }
+  .fee-zone-name { font-size: 12.5px; color: #7A3A1A; }
+  .fee-amount { font-size: 19px; font-weight: 800; color: var(--brand-dark); }
+  .fee-amount span { font-size: 12px; font-weight: 600; }
+
+  #order-map { width: 100%; height: 260px; border-radius: 10px; border: 1px solid var(--line); margin-top: 10px; }
+  .map-hint { font-size: 11.5px; color: #999; margin-top: 8px; line-height: 1.6; }
+  .coords-box { margin-top: 8px; font-size: 12.5px; background: #FFF0E8; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .pin-status { font-size: 11.5px; font-weight: 700; color: var(--green); }
+  .pin-status.pending { color: #B08A3A; }
+
+  .pay-options { display: flex; gap: 10px; }
+  .pay-option { flex: 1; border: 1.5px solid var(--line); border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 600; color: #7A3A1A; }
+  .pay-option.selected { border-color: var(--brand); background: #FFF0E8; color: var(--brand-dark); }
+  .pay-option .icon { font-size: 22px; display: block; margin-bottom: 4px; }
+
+  .bank-box { margin-top: 12px; background: #FFF8F3; border: 1px dashed var(--line); border-radius: 10px; padding: 14px; font-size: 13px; line-height: 1.9; display: none; }
+  .bank-box.show { display: block; }
+  .bank-box b { color: var(--brand-dark); }
+
+  .slip-upload-area { border: 2px dashed var(--line); border-radius: 10px; padding: 18px; text-align: center; cursor: pointer; margin-top: 12px; display: none; }
+  .slip-upload-area.show { display: block; }
+  .slip-upload-area input { display: none; }
+  .slip-preview { width: 100%; max-height: 160px; object-fit: contain; border-radius: 8px; margin-top: 10px; }
+  .upload-status { font-size: 12px; color: var(--brand-dark); margin-top: 6px; }
+
+  .order-summary-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 5px 0; }
+  .order-summary-row.total { border-top: 1.5px solid var(--line-soft); margin-top: 8px; padding-top: 10px; font-size: 16px; font-weight: 800; color: var(--brand-dark); }
+
+  .submit-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--brand); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* SUCCESS SCREEN */
+  .success-screen { text-align: center; padding: 60px 24px; }
+  .success-screen .icon { font-size: 56px; margin-bottom: 16px; }
+  .success-screen h3 { font-size: 20px; margin-bottom: 8px; color: var(--brand-dark); }
+  .success-screen p { font-size: 14px; color: #777; margin-bottom: 4px; }
+  .success-screen .order-num { font-size: 22px; font-weight: 800; margin: 16px 0; color: var(--ink); }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13.5px; z-index: 999; display: none; }
+  .toast.show { display: block; }
+  .toast.error { background: #9B2C2C; }
+
+  .loading { text-align: center; padding: 40px; color: #AAA; font-size: 14px; grid-column: 1/-1; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand"><span class="logo">楽</span> Rakugo! GO!</div>
+  <div class="header-tagline">อาหารญี่ปุ่นสั่งง่าย ส่งไว / Japanese food, easy order, fast delivery</div>
+</div>
+
+<!-- CATEGORY TABS -->
+<div class="cat-tabs" id="cat-tabs"></div>
+
+<!-- PRODUCTS -->
+<div id="product-sections"></div>
+
+<!-- CART BAR -->
+<div class="cart-bar" id="cart-bar">
+  <div class="cart-bar-info"><b id="cart-count">0</b> รายการ &nbsp;·&nbsp; ฿<b id="cart-total">0</b></div>
+  <button class="cart-bar-btn" onclick="openCheckout()">ดำเนินการสั่งซื้อ →</button>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkout-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>ยืนยันคำสั่งซื้อ / Checkout</h3>
+      <button class="modal-close" onclick="closeCheckout()">✕</button>
+    </div>
+    <div class="modal-body" id="checkout-body">
+
+      <!-- STEP 1: customer info -->
+      <div class="step-card">
+        <h4><span class="step-num">1</span>ข้อมูลผู้สั่ง / Your info</h4>
+        <div class="form-group">
+          <label>ชื่อ-นามสกุล / Full name *</label>
+          <input type="text" id="c-name" placeholder="สมชาย ใจดี">
+        </div>
+        <div class="form-group">
+          <label>เบอร์โทร / Phone *</label>
+          <input type="tel" id="c-phone" placeholder="08X-XXX-XXXX">
+        </div>
+        <div class="form-group">
+          <label>LINE ID (ถ้ามี / optional)</label>
+          <input type="text" id="c-line" placeholder="ไม่บังคับ">
+        </div>
+        <div class="form-group">
+          <label>ที่อยู่จัดส่ง (บ้านเลขที่ / คอนโด / ซอย) *</label>
+          <textarea id="c-address" placeholder="เช่น คอนโด ABC ห้อง 12/3 ซอยสุขุมวิท 36"></textarea>
+        </div>
+      </div>
+
+      <!-- STEP 2: delivery area -->
+      <div class="step-card">
+        <h4><span class="step-num">2</span>พื้นที่จัดส่ง / Delivery area</h4>
+        <div class="form-group">
+          <label>เขต / District *</label>
+          <select id="c-district">
+            <option value="">-- เลือกเขต --</option>
+          </select>
+        </div>
+        <div class="fee-result" id="fee-result">
+          <div class="fee-zone-name" id="fee-zone-name">โซน</div>
+          <div class="fee-amount" id="fee-amount">-<span>THB</span></div>
+        </div>
+        <div id="order-map"></div>
+        <div class="map-hint">เมื่อเลือกเขต หมุดจะขยับไปตำแหน่งโดยประมาณ กรุณาลากหมุดไปยังตำแหน่งจริงของท่าน เพื่อให้พนักงานจัดส่งไม่หลงทาง (ค่าส่งไม่เปลี่ยนตามตำแหน่งหมุด)</div>
+        <div class="coords-box">
+          <code id="coords-text">-</code>
+          <span class="pin-status pending" id="pin-status">ยังไม่ระบุ</span>
+        </div>
+      </div>
+
+      <!-- STEP 3: payment -->
+      <div class="step-card">
+        <h4><span class="step-num">3</span>วิธีชำระเงิน / Payment</h4>
+        <div class="pay-options">
+          <div class="pay-option" id="pay-transfer" onclick="selectPayment('transfer')">
+            <span class="icon">🏦</span>โอนเงิน<br>Bank transfer
+          </div>
+          <div class="pay-option" id="pay-cod" onclick="selectPayment('cod')">
+            <span class="icon">💵</span>เก็บเงินปลายทาง<br>Cash on delivery
+          </div>
+        </div>
+        <div class="bank-box" id="bank-box">
+          <b>🏦 SCB (Siam Commercial Bank)</b><br>
+          เลขที่บัญชี / Account No.: <b>071-296992-2</b><br>
+          ชื่อบัญชี / Account name: <b>SAITO FOODS CO.,LTD.</b><br>
+          โอนแล้วกรุณาแนบสลิปด้านล่าง 👇
+        </div>
+        <div class="slip-upload-area" id="slip-upload-area" onclick="document.getElementById('slip-input').click()">
+          <input type="file" id="slip-input" accept="image/*" onchange="handleSlipSelect(this)">
+          <div id="slip-placeholder">📎 แตะเพื่อแนบสลิปการโอนเงิน</div>
+          <img id="slip-preview" class="slip-preview" style="display:none;">
+          <div class="upload-status" id="slip-upload-status"></div>
+        </div>
+      </div>
+
+      <!-- STEP 4: note + summary -->
+      <div class="step-card">
+        <h4><span class="step-num">4</span>สรุปคำสั่งซื้อ / Order summary</h4>
+        <div class="form-group">
+          <label>หมายเหตุ (ถ้ามี)</label>
+          <textarea id="c-note" placeholder="เช่น ไม่ใส่ผัก, โทรก่อนส่ง"></textarea>
+        </div>
+        <div id="summary-lines"></div>
+        <div class="order-summary-row"><span>ค่าส่ง / Delivery fee</span><span id="summary-fee">฿0</span></div>
+        <div class="order-summary-row total"><span>รวมทั้งสิ้น / Total</span><span id="summary-total">฿0</span></div>
+      </div>
+
+      <button class="submit-btn" id="submit-btn" onclick="submitOrder()">ยืนยันสั่งซื้อ / Place order</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// 設定
+// ═══════════════════════════════════════════════
+const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxQ3oFskWtZpCTLmkbYxHtrjWirHQKY8JmYHD6z-5zMqh5YTC3aqxksjB5DxdpiJUx2/exec';
+const MAPS_API_KEY = 'AIzaSyDV7AZEe0yDZVnsjviK3GTmCc5OyS3jLaQ';
+const BASE_LOCATION = { lat: 13.721462, lng: 100.5765166 }; // สคุมวิท 36 (拠点)
+
+const COOKING_LABELS = {
+  microwave: '🔥 ไมโครเวฟ',
+  fry: '🍳 ทอด',
+  boil: '💧 ต้ม',
+  pan: '🥘 กระทะ',
+  ready: '✅ พร้อมทาน'
+};
+
+let allCategories = [];
+let allProducts = [];
+let allDistricts = [];
+let cart = {}; // { product_id: { product, qty } }
+let selectedDistrict = null;
+let selectedPayment = null;
+let slipImageUrl = null;
+let map, marker;
+
+// ═══════════════════════════════════════════════
+// SUPABASE ヘルパー
+// ═══════════════════════════════════════════════
+async function supabase(method, path, body) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) { throw new Error(await res.text()); }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+async function init() {
+  try {
+    [allCategories, allProducts, allDistricts] = await Promise.all([
+      supabase('GET', 'categories?order=sort_order'),
+      supabase('GET', 'products?is_active=eq.true&order=id'),
+      supabase('GET', 'delivery_districts?order=sort_order'),
+    ]);
+    renderCatTabs();
+    renderProducts();
+    renderDistrictSelect();
+  } catch (e) {
+    document.getElementById('product-sections').innerHTML = `<div class="loading">โหลดข้อมูลไม่สำเร็จ / Failed to load</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// カテゴリタブ・商品一覧
+// ═══════════════════════════════════════════════
+function renderCatTabs() {
+  const wrap = document.getElementById('cat-tabs');
+  wrap.innerHTML = `<button class="cat-tab active" onclick="scrollToCat('all', this)">ทั้งหมด</button>` +
+    allCategories.map(c => `<button class="cat-tab" onclick="scrollToCat(${c.id}, this)">${c.name_th}</button>`).join('');
+}
+
+function scrollToCat(catId, btn) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const el = document.getElementById(`cat-section-${catId}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderProducts() {
+  const wrap = document.getElementById('product-sections');
+  if (!allProducts.length) {
+    wrap.innerHTML = `<div class="loading">ยังไม่มีสินค้า / No products yet</div>`;
+    return;
+  }
+  const groups = [{ id: 'all', name_th: 'สินค้าทั้งหมด' }, ...allCategories];
+  wrap.innerHTML = groups.map(g => {
+    const items = g.id === 'all' ? allProducts : allProducts.filter(p => p.category_id == g.id);
+    if (!items.length) return '';
+    return `
+      <div id="cat-section-${g.id}" ${g.id !== 'all' ? '' : 'style="display:none"'}>
+        <div class="section-title">${g.name_th}</div>
+        <div class="product-grid">${items.map(productCardHtml).join('')}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function productCardHtml(p) {
+  const img = p.image_drive_id
+    ? `<img src="https://lh3.googleusercontent.com/d/${p.image_drive_id}" onerror="this.parentElement.innerHTML='🍱'">`
+    : '🍱';
+  const cooking = COOKING_LABELS[p.cooking_method] || '';
+  const inCart = cart[p.id]?.qty || 0;
+  const stepper = p.stock > 0
+    ? (inCart > 0
+        ? `<div class="qty-stepper">
+             <button class="qty-btn" onclick="changeQty(${p.id}, -1)">−</button>
+             <span class="qty-num">${inCart}</span>
+             <button class="qty-btn add" onclick="changeQty(${p.id}, 1)">+</button>
+           </div>`
+        : `<button class="qty-btn add" onclick="changeQty(${p.id}, 1)" style="width:auto;border-radius:16px;padding:0 12px;height:28px;">+ เพิ่ม</button>`)
+    : `<span class="out-of-stock">สินค้าหมด</span>`;
+
+  return `
+    <div class="product-card">
+      <div class="product-img-wrap">${img}</div>
+      <div class="product-body">
+        <div class="product-name-th">${p.name_th}</div>
+        <div class="product-name-en">${p.name_en}</div>
+        ${cooking ? `<div class="product-cooking">${cooking}</div>` : ''}
+        <div class="product-bottom">
+          <div class="product-price">฿${p.price}<span></span></div>
+          ${stepper}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function changeQty(productId, delta) {
+  const product = allProducts.find(p => p.id === productId);
+  if (!product) return;
+  const current = cart[productId]?.qty || 0;
+  const next = Math.max(0, Math.min(product.stock, current + delta));
+  if (next === 0) { delete cart[productId]; }
+  else { cart[productId] = { product, qty: next }; }
+  renderProducts();
+  updateCartBar();
+}
+
+function updateCartBar() {
+  const items = Object.values(cart);
+  const count = items.reduce((s, i) => s + i.qty, 0);
+  const total = items.reduce((s, i) => s + i.qty * i.product.price, 0);
+  document.getElementById('cart-count').textContent = count;
+  document.getElementById('cart-total').textContent = total;
+  document.getElementById('cart-bar').classList.toggle('show', count > 0);
+}
+
+// ═══════════════════════════════════════════════
+// 配送エリア(プルダウン + 地図ピン)
+// ═══════════════════════════════════════════════
+function renderDistrictSelect() {
+  const sel = document.getElementById('c-district');
+  // ゾーンごとにグループ化
+  const zoneGroups = {};
+  allDistricts.forEach(d => {
+    if (!zoneGroups[d.zone_label]) zoneGroups[d.zone_label] = [];
+    zoneGroups[d.zone_label].push(d);
+  });
+  sel.innerHTML = '<option value="">-- เลือกเขต --</option>' +
+    Object.entries(zoneGroups).map(([zoneLabel, districts]) => `
+      <optgroup label="${zoneLabel} (฿${districts[0].fee})">
+        ${districts.map(d => `<option value="${d.id}">${d.name_th} / ${d.name_en}</option>`).join('')}
+      </optgroup>
+    `).join('');
+}
+
+document.getElementById('c-district').addEventListener('change', (e) => {
+  const id = parseInt(e.target.value);
+  const district = allDistricts.find(d => d.id === id);
+  const feeResult = document.getElementById('fee-result');
+  if (!district) { feeResult.classList.remove('show'); selectedDistrict = null; updateSummary(); return; }
+  selectedDistrict = district;
+  document.getElementById('fee-zone-name').textContent = `${district.name_th} (${district.zone_label})`;
+  document.getElementById('fee-amount').innerHTML = `${district.fee}<span>THB</span>`;
+  feeResult.classList.add('show');
+
+  if (marker && map) {
+    const pos = { lat: parseFloat(district.lat), lng: parseFloat(district.lng) };
+    marker.setPosition(pos);
+    map.panTo(pos);
+    map.setZoom(15);
+    document.getElementById('coords-text').textContent = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+    document.getElementById('pin-status').textContent = 'ตำแหน่งโดยประมาณ (กรุณาปรับ)';
+    document.getElementById('pin-status').classList.add('pending');
+  }
+  updateSummary();
+});
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById('order-map'), {
+    center: BASE_LOCATION,
+    zoom: 12,
+    disableDefaultUI: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+  });
+  marker = new google.maps.Marker({
+    position: BASE_LOCATION,
+    map: map,
+    draggable: true,
+  });
+  marker.addListener('dragend', () => {
+    const pos = marker.getPosition();
+    document.getElementById('coords-text').textContent = `${pos.lat().toFixed(6)}, ${pos.lng().toFixed(6)}`;
+    document.getElementById('pin-status').textContent = 'ยืนยันแล้ว';
+    document.getElementById('pin-status').classList.remove('pending');
+  });
+}
+window.initMap = initMap;
+
+// ═══════════════════════════════════════════════
+// 決済方法
+// ═══════════════════════════════════════════════
+function selectPayment(method) {
+  selectedPayment = method;
+  document.getElementById('pay-transfer').classList.toggle('selected', method === 'transfer');
+  document.getElementById('pay-cod').classList.toggle('selected', method === 'cod');
+  document.getElementById('bank-box').classList.toggle('show', method === 'transfer');
+  document.getElementById('slip-upload-area').classList.toggle('show', method === 'transfer');
+}
+
+async function handleSlipSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('slip-upload-status').textContent = 'กำลังอัปโหลด...';
+  document.getElementById('slip-placeholder').textContent = '⏳ กำลังอัปโหลด...';
+  const tempKey = 'slip_' + Date.now();
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    try {
+      fetch(GAS_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name, mimeType: file.type, tempKey })
+      }).catch(() => {});
+      await new Promise(r => setTimeout(r, 3000));
+      const res = await fetch(`${GAS_URL}?action=getLatestImage`);
+      const data = await res.json();
+      if (data.success) {
+        slipImageUrl = data.url;
+        document.getElementById('slip-preview').src = slipImageUrl;
+        document.getElementById('slip-preview').style.display = 'block';
+        document.getElementById('slip-placeholder').style.display = 'none';
+        document.getElementById('slip-upload-status').textContent = 'แนบสลิปสำเร็จ ✓';
+      } else {
+        document.getElementById('slip-upload-status').textContent = 'อัปโหลดไม่สำเร็จ กรุณาลองใหม่';
+        document.getElementById('slip-placeholder').textContent = '📎 แตะเพื่อแนบสลิปการโอนเงิน';
+      }
+    } catch (err) {
+      document.getElementById('slip-upload-status').textContent = 'เกิดข้อผิดพลาด';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ═══════════════════════════════════════════════
+// チェックアウト画面の開閉・サマリー
+// ═══════════════════════════════════════════════
+function openCheckout() {
+  document.getElementById('checkout-modal').classList.add('open');
+  updateSummary();
+  if (!map) {
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}&callback=initMap`;
+    script.async = true;
+    document.body.appendChild(script);
+  }
+}
+
+function closeCheckout() {
+  document.getElementById('checkout-modal').classList.remove('open');
+}
+
+function updateSummary() {
+  const items = Object.values(cart);
+  const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
+  const fee = selectedDistrict ? selectedDistrict.fee : 0;
+  document.getElementById('summary-lines').innerHTML = items.map(i => `
+    <div class="order-summary-row"><span>${i.product.name_th} × ${i.qty}</span><span>฿${i.qty * i.product.price}</span></div>
+  `).join('');
+  document.getElementById('summary-fee').textContent = `฿${fee}`;
+  document.getElementById('summary-total').textContent = `฿${subtotal + fee}`;
+}
+
+// ═══════════════════════════════════════════════
+// 注文確定
+// ═══════════════════════════════════════════════
+function genOrderNumber() {
+  const d = new Date();
+  const ymd = `${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `RG${ymd}${rand}`;
+}
+
+async function submitOrder() {
+  const name = document.getElementById('c-name').value.trim();
+  const phone = document.getElementById('c-phone').value.trim();
+  const lineId = document.getElementById('c-line').value.trim();
+  const address = document.getElementById('c-address').value.trim();
+  const note = document.getElementById('c-note').value.trim();
+  const items = Object.values(cart);
+
+  if (!items.length) { showToast('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ', 'error'); return; }
+  if (!name || !phone) { showToast('กรุณากรอกชื่อและเบอร์โทร', 'error'); return; }
+  if (!address) { showToast('กรุณากรอกที่อยู่จัดส่ง', 'error'); return; }
+  if (!selectedDistrict) { showToast('กรุณาเลือกเขตจัดส่ง', 'error'); return; }
+  if (!selectedPayment) { showToast('กรุณาเลือกวิธีชำระเงิน', 'error'); return; }
+  if (selectedPayment === 'transfer' && !slipImageUrl) { showToast('กรุณาแนบสลิปการโอนเงิน', 'error'); return; }
+
+  const markerPos = marker ? marker.getPosition() : null;
+  const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
+  const total = subtotal + selectedDistrict.fee;
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'กำลังส่งคำสั่งซื้อ...';
+
+  try {
+    const orderPayload = {
+      order_number: genOrderNumber(),
+      customer_name: name,
+      customer_phone: phone,
+      customer_line_id: lineId || null,
+      customer_address: address,
+      note: note || null,
+      delivery_district: `${selectedDistrict.name_th} / ${selectedDistrict.name_en}`,
+      delivery_fee: selectedDistrict.fee,
+      delivery_lat: markerPos ? markerPos.lat() : selectedDistrict.lat,
+      delivery_lng: markerPos ? markerPos.lng() : selectedDistrict.lng,
+      payment_method: selectedPayment,
+      slip_image_url: slipImageUrl,
+      total_amount: total,
+      status: 'pending',
+    };
+    const orderResult = await supabase('POST', 'orders', orderPayload);
+    const orderId = orderResult[0].id;
+
+    const orderItems = items.map(i => ({
+      order_id: orderId,
+      product_name_th: i.product.name_th,
+      quantity: i.qty,
+      subtotal: i.qty * i.product.price,
+    }));
+    await supabase('POST', 'order_items', orderItems);
+
+    showSuccessScreen(orderPayload.order_number);
+    cart = {};
+    updateCartBar();
+  } catch (e) {
+    showToast('ส่งคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่', 'error');
+    btn.disabled = false;
+    btn.textContent = 'ยืนยันสั่งซื้อ / Place order';
+  }
+}
+
+function showSuccessScreen(orderNumber) {
+  document.getElementById('checkout-body').innerHTML = `
+    <div class="success-screen">
+      <div class="icon">🎉</div>
+      <h3>สั่งซื้อสำเร็จ! / Order placed!</h3>
+      <p>เลขที่คำสั่งซื้อของท่าน / Your order number</p>
+      <div class="order-num">#${orderNumber}</div>
+      <p>เราจะติดต่อกลับเพื่อยืนยันคำสั่งซื้อเร็วๆ นี้</p>
+      <button class="submit-btn" style="margin-top:24px;" onclick="location.reload()">กลับหน้าหลัก / Back to menu</button>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type || ''}`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>
