@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>楽GO! 配送エリア設定 プロトタイプ</title>
+<style>
+  :root {
+    --rakugo-red: #E4572E;
+    --rakugo-yellow: #F7B32B;
+    --rakugo-cream: #FFF8EC;
+    --rakugo-ink: #2B2118;
+    --rakugo-green: #4C9A6A;
+    --rakugo-line: #E8DCC8;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Sans", "Noto Sans JP", -apple-system, sans-serif;
+    background: var(--rakugo-cream);
+    color: var(--rakugo-ink);
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  .badge {
+    display: inline-block;
+    background: var(--rakugo-yellow);
+    color: var(--rakugo-ink);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+    letter-spacing: 0.02em;
+  }
+  .sub {
+    font-size: 13px;
+    color: #8a7a63;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--rakugo-line);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 0 rgba(43,33,24,0.03);
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-num {
+    width: 22px; height: 22px;
+    background: var(--rakugo-red);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #5a4c3a;
+  }
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 15px;
+    border: 1px solid var(--rakugo-line);
+    border-radius: 10px;
+    background: #fffdf8;
+    color: var(--rakugo-ink);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a7a63' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+  }
+  select:focus { outline: 2px solid var(--rakugo-red); outline-offset: 1px; }
+
+  .fee-result {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #fff6ea;
+    border: 1px dashed var(--rakugo-yellow);
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .fee-result.show { display: flex; }
+  .fee-zone-name { font-size: 13px; color: #8a7a63; }
+  .fee-amount { font-size: 22px; font-weight: 800; color: var(--rakugo-red); }
+  .fee-amount span { font-size: 13px; font-weight: 600; margin-left: 2px; }
+
+  #map {
+    width: 100%;
+    height: 320px;
+    border-radius: 10px;
+    border: 1px solid var(--rakugo-line);
+  }
+  .map-hint {
+    font-size: 12px;
+    color: #8a7a63;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .coords-box {
+    margin-top: 10px;
+    font-size: 13px;
+    background: #f6f1e6;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .coords-box code { font-size: 12px; color: #5a4c3a; }
+  .pin-status {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--rakugo-green);
+  }
+  .pin-status.pending { color: #b08a3a; }
+
+  .note {
+    font-size: 12px;
+    color: #a0906f;
+    margin-top: 20px;
+    line-height: 1.7;
+    border-top: 1px dashed var(--rakugo-line);
+    padding-top: 14px;
+  }
+  .note b { color: #5a4c3a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge">楽GO! 配送エリア設定 / プロトタイプ</span>
+  <h1>お届け先情報</h1>
+  <div class="sub">エリアを選ぶと配送料が自動で決まります。地図のピンは配達員が迷わないための位置情報です。</div>
+
+  <div class="card">
+    <h2><span class="step-num">1</span>お届け先のエリアを選択</h2>
+    <label for="districtSelect">エリア(ケート)</label>
+    <select id="districtSelect">
+      <option value="">選択してください</option>
+    </select>
+
+    <div class="fee-result" id="feeResult">
+      <div>
+        <div class="fee-zone-name" id="feeZoneName">ゾーン</div>
+      </div>
+      <div class="fee-amount" id="feeAmount">-<span>THB</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-num">2</span>地図でお届け先のピンを合わせる</h2>
+    <div id="map"></div>
+    <div class="map-hint">
+      ピン(赤いマーク)をドラッグして、実際のお届け先の建物・玄関の位置に合わせてください。配達料金はエリア選択で決まるため、ピンの位置は料金に影響しません。
+    </div>
+    <div class="coords-box">
+      <code id="coordsText">13.721462, 100.576517</code>
+      <span class="pin-status pending" id="pinStatus">未確定</span>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>配送エリア一覧(仮の料金・後日調整可)</b><br>
+    ゾーン1(20B):スクンビット / ラマ4 / サトーン<br>
+    ゾーン2(40B):ラマ3 / シーナカリン / バンナー<br>
+    ゾーン3(60B):バンスー / ラプラオ<br><br>
+    <b>実装メモ:</b> ZONES オブジェクト(このファイル下部のJS)を編集するだけで、エリア追加・料金変更ができます。拠点座標(スクンビット36)も同じ場所にあります。
+  </div>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════
+  // 設定:ここを編集すればエリア・料金を調整できます
+  // ═══════════════════════════════════════════════
+  const BASE_LOCATION = { lat: 13.721462, lng: 100.5765166 }; // スクンビット36オフィス
+
+  const ZONES = {
+    zone1: { label: 'ゾーン1(近距離)', fee: 20, districts: ['スクンビット', 'ラマ4', 'サトーン'] },
+    zone2: { label: 'ゾーン2(中距離)', fee: 40, districts: ['ラマ3', 'シーナカリン', 'バンナー'] },
+    zone3: { label: 'ゾーン3(遠距離)', fee: 60, districts: ['バンスー', 'ラプラオ'] },
+  };
+
+  // ═══════════════════════════════════════════════
+  // プルダウン生成
+  // ═══════════════════════════════════════════════
+  const districtSelect = document.getElementById('districtSelect');
+  const feeResult = document.getElementById('feeResult');
+  const feeZoneName = document.getElementById('feeZoneName');
+  const feeAmount = document.getElementById('feeAmount');
+
+  // district -> zoneKey の逆引きマップを作る
+  const districtToZone = {};
+  Object.entries(ZONES).forEach(([zoneKey, zone]) => {
+    zone.districts.forEach(d => { districtToZone[d] = zoneKey; });
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = `${zone.label} (${zone.fee}B)`;
+    zone.districts.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      optgroup.appendChild(opt);
+    });
+    districtSelect.appendChild(optgroup);
+  });
+
+  districtSelect.addEventListener('change', () => {
+    const district = districtSelect.value;
+    if (!district) { feeResult.classList.remove('show'); return; }
+    const zoneKey = districtToZone[district];
+    const zone = ZONES[zoneKey];
+    feeZoneName.textContent = `${district}(${zone.label})`;
+    feeAmount.innerHTML = `${zone.fee}<span>THB</span>`;
+    feeResult.classList.add('show');
+  });
+
+  // ═══════════════════════════════════════════════
+  // 地図(ピンドラッグで位置情報取得。料金には影響しない)
+  // ═══════════════════════════════════════════════
+  let marker;
+  const coordsText = document.getElementById('coordsText');
+  const pinStatus = document.getElementById('pinStatus');
+
+  function initMap() {
+    const map = new google.maps.Map(document.getElementById('map'), {
+      center: BASE_LOCATION,
+      zoom: 13,
+      mapId: 'DEMO_MAP_ID',
+      disableDefaultUI: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+    });
+
+    marker = new google.maps.Marker({
+      position: BASE_LOCATION,
+      map: map,
+      draggable: true,
+      title: 'ドラッグしてお届け先に合わせてください',
+    });
+
+    marker.addListener('dragend', () => {
+      const pos = marker.getPosition();
+      coordsText.textContent = `${pos.lat().toFixed(6)}, ${pos.lng().toFixed(6)}`;
+      pinStatus.textContent = '確定済み';
+      pinStatus.classList.remove('pending');
+    });
+  }
+  window.initMap = initMap;
+</script>
+<script async
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDV7AZEe0yDZVnsjviK3GTmCc5OyS3jLaQ&callback=initMap">
+</script>
+</body>
+</html>
