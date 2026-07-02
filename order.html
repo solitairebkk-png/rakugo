@@ -127,6 +127,7 @@
   .loading { text-align: center; padding: 40px; color: #AAA; font-size: 14px; grid-column: 1/-1; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -206,6 +207,9 @@
           <div class="pay-option" id="pay-transfer" onclick="selectPayment('transfer')">
             <span class="icon">🏦</span>โอนเงิน<br>Bank transfer
           </div>
+          <div class="pay-option" id="pay-qr" onclick="selectPayment('qr')">
+            <span class="icon">📱</span>QR พร้อมเพย์<br>PromptPay QR
+          </div>
           <div class="pay-option" id="pay-cod" onclick="selectPayment('cod')">
             <span class="icon">💵</span>เก็บเงินปลายทาง<br>Cash on delivery
           </div>
@@ -215,6 +219,13 @@
           เลขที่บัญชี / Account No.: <b>071-296992-2</b><br>
           ชื่อบัญชี / Account name: <b>SAITO FOODS CO.,LTD.</b><br>
           โอนแล้วกรุณาแนบสลิปด้านล่าง 👇
+        </div>
+        <div class="bank-box" id="qr-box" style="text-align:center;">
+          <b>📱 สแกนเพื่อชำระผ่าน PromptPay</b><br>
+          <div id="qr-canvas" style="display:flex;justify-content:center;margin:12px 0;"></div>
+          <div id="qr-amount-label" style="font-size:16px;font-weight:800;color:var(--brand-dark);">฿0</div>
+          <div style="font-size:11.5px;color:#999;margin-top:6px;">บริษัท ไซโตะ ฟู้ดส์ จำกัด</div>
+          <div style="margin-top:8px;">ชำระแล้วกรุณาแนบสลิป/ภาพหน้าจอด้านล่าง 👇</div>
         </div>
         <div class="slip-upload-area" id="slip-upload-area" onclick="document.getElementById('slip-input').click()">
           <input type="file" id="slip-input" accept="image/*" onchange="handleSlipSelect(this)">
@@ -252,6 +263,8 @@ const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxQ3oFskWtZpCTLmkbYxHtrjWirHQKY8JmYHD6z-5zMqh5YTC3aqxksjB5DxdpiJUx2/exec';
 const MAPS_API_KEY = 'AIzaSyDV7AZEe0yDZVnsjviK3GTmCc5OyS3jLaQ';
 const BASE_LOCATION = { lat: 13.721462, lng: 100.5765166 }; // สคุมวิท 36 (拠点)
+const PROMPTPAY_BILLER_ID = '010554007919109';
+const PROMPTPAY_REF1 = 'REF001';
 
 const COOKING_LABELS = {
   microwave: '🔥 ไมโครเวฟ',
@@ -458,14 +471,61 @@ function initMap() {
 window.initMap = initMap;
 
 // ═══════════════════════════════════════════════
+// PromptPay QR生成(EMVCo Merchant Presented QR仕様)
+// ═══════════════════════════════════════════════
+function tlv(tag, value) { return `${tag}${String(value.length).padStart(2,'0')}${value}`; }
+
+function crc16(str) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= (str.charCodeAt(i) << 8);
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+function buildPromptPayPayload(amount) {
+  const merchantInfo = tlv('00', 'A000000677010112') + tlv('01', PROMPTPAY_BILLER_ID) + tlv('02', PROMPTPAY_REF1) + tlv('03', '0');
+  const amountStr = amount.toFixed(2);
+  const payload =
+    tlv('00', '01') +
+    tlv('01', '12') +                 // 12 = dynamic (amount入り)
+    tlv('30', merchantInfo) +
+    tlv('53', '764') +                // THB
+    tlv('54', amountStr) +
+    tlv('58', 'TH') +
+    tlv('62', tlv('07', 'IFB0819093451'));
+  const withCrcTag = payload + '6304';
+  return withCrcTag + crc16(withCrcTag);
+}
+
+function renderPromptPayQR(amount) {
+  const box = document.getElementById('qr-canvas');
+  box.innerHTML = '';
+  if (amount <= 0) return;
+  new QRCode(box, { text: buildPromptPayPayload(amount), width: 200, height: 200 });
+  document.getElementById('qr-amount-label').textContent = `฿${amount.toFixed(2)}`;
+}
+
+// ═══════════════════════════════════════════════
 // 決済方法
 // ═══════════════════════════════════════════════
 function selectPayment(method) {
   selectedPayment = method;
   document.getElementById('pay-transfer').classList.toggle('selected', method === 'transfer');
+  document.getElementById('pay-qr').classList.toggle('selected', method === 'qr');
   document.getElementById('pay-cod').classList.toggle('selected', method === 'cod');
   document.getElementById('bank-box').classList.toggle('show', method === 'transfer');
-  document.getElementById('slip-upload-area').classList.toggle('show', method === 'transfer');
+  document.getElementById('qr-box').classList.toggle('show', method === 'qr');
+  document.getElementById('slip-upload-area').classList.toggle('show', method === 'transfer' || method === 'qr');
+  if (method === 'qr') {
+    const items = Object.values(cart);
+    const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
+    const fee = selectedDistrict ? selectedDistrict.fee : 0;
+    renderPromptPayQR(subtotal + fee);
+  }
 }
 
 async function handleSlipSelect(input) {
@@ -530,6 +590,7 @@ function updateSummary() {
   `).join('');
   document.getElementById('summary-fee').textContent = `฿${fee}`;
   document.getElementById('summary-total').textContent = `฿${subtotal + fee}`;
+  if (selectedPayment === 'qr') renderPromptPayQR(subtotal + fee);
 }
 
 // ═══════════════════════════════════════════════
@@ -555,7 +616,7 @@ async function submitOrder() {
   if (!address) { showToast('กรุณากรอกที่อยู่จัดส่ง', 'error'); return; }
   if (!selectedDistrict) { showToast('กรุณาเลือกเขตจัดส่ง', 'error'); return; }
   if (!selectedPayment) { showToast('กรุณาเลือกวิธีชำระเงิน', 'error'); return; }
-  if (selectedPayment === 'transfer' && !slipImageUrl) { showToast('กรุณาแนบสลิปการโอนเงิน', 'error'); return; }
+  if ((selectedPayment === 'transfer' || selectedPayment === 'qr') && !slipImageUrl) { showToast('กรุณาแนบสลิปการโอนเงิน', 'error'); return; }
 
   const markerPos = marker ? marker.getPosition() : null;
   const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
@@ -592,6 +653,17 @@ async function submitOrder() {
       subtotal: i.qty * i.product.price,
     }));
     await supabase('POST', 'order_items', orderItems);
+
+    // メール通知(GAS経由でinfo@rakugo.storeへ送信 → orders@saitofoods.comに転送される)
+    fetch(GAS_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'notifyOrder',
+        order: orderPayload,
+        items: orderItems,
+      })
+    }).catch(() => {});
 
     showSuccessScreen(orderPayload.order_number);
     cart = {};
