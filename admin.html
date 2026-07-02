@@ -92,6 +92,11 @@
   .upload-status { font-size: 12px; color: #FF6B35; margin-top: 6px; }
 
   /* ORDERS */
+  .slip-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 1.5px solid #FFD4B8; }
+  .slip-none { color: #CCC; font-size: 12px; }
+  .slip-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; padding: 20px; cursor: zoom-out; }
+  .slip-lightbox.open { display: flex; }
+  .slip-lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; }
   .order-status { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
   .status-pending { background: #FEFCBF; color: #744210; }
   .status-confirmed { background: #BEE3F8; color: #2A4365; }
@@ -132,6 +137,7 @@
     <button class="nav-tab active" onclick="showPage('products')">🍱 สินค้า</button>
     <button class="nav-tab" onclick="showPage('orders')">📦 คำสั่งซื้อ</button>
     <button class="nav-tab" onclick="showPage('categories')">🗂️ หมวดหมู่</button>
+    <button class="nav-tab" onclick="showPage('zones')">🗺️ พื้นที่จัดส่ง</button>
   </div>
 </nav>
 
@@ -186,13 +192,14 @@
             <th>ลูกค้า</th>
             <th>โทร</th>
             <th>ยอดรวม</th>
+            <th>สลิป</th>
             <th>สถานะ</th>
             <th>วันที่</th>
             <th></th>
           </tr>
         </thead>
         <tbody id="orders-tbody">
-          <tr><td colspan="7"><div class="loading">กำลังโหลด...</div></td></tr>
+          <tr><td colspan="8"><div class="loading">กำลังโหลด...</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -216,6 +223,29 @@
         </thead>
         <tbody id="categories-tbody">
           <tr><td colspan="4"><div class="loading">กำลังโหลด...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DELIVERY ZONES PAGE -->
+  <div id="page-zones" class="page">
+    <div class="toolbar">
+      <h2>พื้นที่จัดส่งและค่าส่ง</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>เขต (ไทย)</th>
+            <th>เขต (อังกฤษ)</th>
+            <th>โซน</th>
+            <th>ค่าส่ง</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="zones-tbody">
+          <tr><td colspan="5"><div class="loading">กำลังโหลด...</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -362,6 +392,50 @@
   </div>
 </div>
 
+<!-- ZONE EDIT MODAL -->
+<div class="modal-overlay" id="zone-modal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>แก้ไขพื้นที่จัดส่ง</h3>
+      <button class="modal-close" onclick="closeZoneModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>เขต (ไทย)</label>
+        <input type="text" id="z-name-th">
+      </div>
+      <div class="form-group">
+        <label>เขต (อังกฤษ)</label>
+        <input type="text" id="z-name-en">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>ชื่อโซน</label>
+          <input type="text" id="z-zone-label" placeholder="โซน 1">
+        </div>
+        <div class="form-group">
+          <label>ค่าส่ง (฿) *</label>
+          <input type="number" id="z-fee" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Lat</label>
+          <input type="number" id="z-lat" step="0.000001">
+        </div>
+        <div class="form-group">
+          <label>Lng</label>
+          <input type="number" id="z-lng" step="0.000001">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeZoneModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveZone()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- ORDER DETAIL MODAL -->
 <div class="modal-overlay" id="order-modal">
   <div class="modal">
@@ -374,6 +448,11 @@
       <button class="btn btn-secondary" onclick="closeOrderModal()">ปิด</button>
     </div>
   </div>
+</div>
+
+<!-- SLIP LIGHTBOX -->
+<div class="slip-lightbox" id="slip-lightbox" onclick="this.classList.remove('open')">
+  <img id="slip-lightbox-img" src="">
 </div>
 
 <!-- TOAST -->
@@ -404,6 +483,8 @@ let allProducts = [];
 let allOrders = [];
 let allCategories = [];
 let allCondiments = [];
+let allZones = [];
+let editingZoneId = null;
 let editingProductId = null;
 let editingCategoryId = null;
 let uploadedImageId = null;
@@ -438,6 +519,7 @@ function showPage(name) {
   if (name === 'products') loadProducts();
   if (name === 'orders') loadOrders();
   if (name === 'categories') loadCategories();
+  if (name === 'zones') loadZones();
 }
 
 // ── PRODUCTS ─────────────────────────
@@ -704,7 +786,7 @@ async function loadOrders() {
 function renderOrders(orders) {
   const tbody = document.getElementById('orders-tbody');
   if (!orders.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">📦</div>ยังไม่มีคำสั่งซื้อ</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div>ยังไม่มีคำสั่งซื้อ</div></td></tr>`;
     return;
   }
   tbody.innerHTML = orders.map(o => `
@@ -714,6 +796,11 @@ function renderOrders(orders) {
       <td>${o.customer_phone}</td>
       <td>฿${o.total_amount}</td>
       <td>
+        ${o.slip_image_url
+          ? `<img class="slip-thumb" src="${o.slip_image_url}" onclick="openSlipLightbox('${o.slip_image_url}')">`
+          : `<span class="slip-none">—</span>`}
+      </td>
+      <td>
         <select class="order-status status-${o.status}" onchange="updateOrderStatus(${o.id}, this.value)" style="border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;">
           ${Object.entries(STATUS_LABELS).map(([v,l]) => `<option value="${v}" ${o.status===v?'selected':''}>${l}</option>`).join('')}
         </select>
@@ -722,6 +809,11 @@ function renderOrders(orders) {
       <td><button class="btn btn-secondary btn-sm" onclick="viewOrder(${o.id})">ดูรายละเอียด</button></td>
     </tr>
   `).join('');
+}
+
+function openSlipLightbox(url) {
+  document.getElementById('slip-lightbox-img').src = url;
+  document.getElementById('slip-lightbox').classList.add('open');
 }
 
 function filterOrders(status) {
@@ -741,20 +833,34 @@ async function viewOrder(id) {
   if (!order) return;
   const items = await supabase('GET', `order_items?order_id=eq.${id}`);
   document.getElementById('order-modal-title').textContent = `คำสั่งซื้อ #${order.order_number}`;
+  const mapLink = (order.delivery_lat && order.delivery_lng)
+    ? `<a href="https://www.google.com/maps?q=${order.delivery_lat},${order.delivery_lng}" target="_blank">📍 เปิดแผนที่</a>`
+    : '<span style="color:#AAA;">ไม่มีพิกัด</span>';
   document.getElementById('order-modal-body').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
       <div><b>ลูกค้า:</b> ${order.customer_name}</div>
       <div><b>โทร:</b> ${order.customer_phone}</div>
       <div style="grid-column:1/-1;"><b>ที่อยู่:</b> ${order.customer_address}</div>
       ${order.customer_line_id ? `<div><b>LINE:</b> ${order.customer_line_id}</div>` : ''}
+      <div><b>พื้นที่จัดส่ง:</b> ${order.delivery_district || '-'}</div>
+      <div><b>ค่าส่ง:</b> ฿${order.delivery_fee ?? 0}</div>
+      <div><b>ตำแหน่งปักหมุด:</b> ${mapLink}</div>
+      <div><b>วิธีชำระเงิน:</b> ${order.payment_method === 'cod' ? 'เก็บเงินปลายทาง' : 'โอนเงิน'}</div>
       ${order.note ? `<div style="grid-column:1/-1;"><b>หมายเหตุ:</b> ${order.note}</div>` : ''}
     </div>
+    ${order.slip_image_url ? `
+      <div style="margin-top:16px;">
+        <b>สลิปการโอนเงิน:</b><br>
+        <img src="${order.slip_image_url}" style="max-width:100%;max-height:280px;border-radius:8px;margin-top:8px;cursor:zoom-in;border:1.5px solid #FFD4B8;" onclick="openSlipLightbox('${order.slip_image_url}')">
+      </div>
+    ` : ''}
     <div style="margin-top:16px;">
       <b>รายการสินค้า:</b>
       <table style="width:100%;margin-top:8px;font-size:13px;">
         <tr style="background:#FFF0E8;"><th style="padding:6px;text-align:left;">สินค้า</th><th style="padding:6px;">จำนวน</th><th style="padding:6px;text-align:right;">ราคา</th></tr>
         ${items.map(i => `<tr><td style="padding:6px;">${i.product_name_th}</td><td style="padding:6px;text-align:center;">${i.quantity}</td><td style="padding:6px;text-align:right;">฿${i.subtotal}</td></tr>`).join('')}
-        <tr style="border-top:2px solid #FFD4B8;"><td colspan="2" style="padding:8px;font-weight:600;">รวมทั้งสิ้น</td><td style="padding:8px;text-align:right;font-weight:600;color:#FF6B35;">฿${order.total_amount}</td></tr>
+        <tr style="border-top:2px solid #FFD4B8;"><td colspan="2" style="padding:8px;font-weight:600;">ค่าส่ง</td><td style="padding:8px;text-align:right;">฿${order.delivery_fee ?? 0}</td></tr>
+        <tr><td colspan="2" style="padding:8px;font-weight:600;">รวมทั้งสิ้น</td><td style="padding:8px;text-align:right;font-weight:600;color:#FF6B35;">฿${order.total_amount}</td></tr>
       </table>
     </div>
   `;
@@ -837,6 +943,64 @@ async function deleteCategory(id) {
     allCategories = [];
     loadCategories();
   } catch(e) { showToast('ลบไม่สำเร็จ', 'error'); }
+}
+
+// ── DELIVERY ZONES ───────────────────
+async function loadZones() {
+  try {
+    allZones = await supabase('GET', 'delivery_districts?order=sort_order');
+    const tbody = document.getElementById('zones-tbody');
+    if (!allZones.length) {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">🗺️</div>ยังไม่มีพื้นที่จัดส่ง</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = allZones.map(z => `
+      <tr>
+        <td>${z.name_th}</td>
+        <td>${z.name_en}</td>
+        <td>${z.zone_label}</td>
+        <td style="font-weight:600;">฿${z.fee}</td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="openZoneModal(${z.id})">แก้ไข</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) { showToast('โหลดพื้นที่จัดส่งไม่สำเร็จ', 'error'); }
+}
+
+function openZoneModal(id) {
+  const z = allZones.find(x => x.id === id);
+  if (!z) return;
+  editingZoneId = id;
+  document.getElementById('z-name-th').value = z.name_th;
+  document.getElementById('z-name-en').value = z.name_en;
+  document.getElementById('z-zone-label').value = z.zone_label;
+  document.getElementById('z-fee').value = z.fee;
+  document.getElementById('z-lat').value = z.lat;
+  document.getElementById('z-lng').value = z.lng;
+  document.getElementById('zone-modal').classList.add('open');
+}
+
+function closeZoneModal() {
+  document.getElementById('zone-modal').classList.remove('open');
+}
+
+async function saveZone() {
+  const fee = parseFloat(document.getElementById('z-fee').value);
+  if (isNaN(fee) || fee < 0) { showToast('กรุณากรอกค่าส่ง', 'error'); return; }
+  try {
+    await supabase('PATCH', `delivery_districts?id=eq.${editingZoneId}`, {
+      name_th: document.getElementById('z-name-th').value.trim(),
+      name_en: document.getElementById('z-name-en').value.trim(),
+      zone_label: document.getElementById('z-zone-label').value.trim(),
+      fee,
+      lat: parseFloat(document.getElementById('z-lat').value),
+      lng: parseFloat(document.getElementById('z-lng').value),
+    });
+    showToast('บันทึกสำเร็จ ✓', 'success');
+    closeZoneModal();
+    loadZones();
+  } catch(e) { showToast('บันทึกไม่สำเร็จ', 'error'); }
 }
 
 // ── TOAST ────────────────────────────
