@@ -104,27 +104,25 @@
   .notice-strip{
     background:linear-gradient(180deg, #FFF1DC, #FFEAC9);
     border-top:2px solid var(--line); border-bottom:2px solid var(--line);
-    overflow:hidden; padding:14px 0;
+    overflow:hidden; padding:22px 0;
   }
   .notice-track{
     display:flex; width:max-content;
-    animation:noticeScroll 22s linear infinite;
+    animation:noticeScroll 26s linear infinite;
   }
   .notice-item{
-    position:relative; flex:0 0 auto; margin-right:56px;
-    transform:scaleX(-1);
+    position:relative; flex:0 0 auto; margin-right:40px;
   }
-  .notice-item img{height:96px; width:auto; display:block;}
+  .notice-item img{height:230px; width:auto; display:block;}
   .notice-text{
     position:absolute; top:16%; left:41%; width:50%; height:64%;
     display:flex; align-items:center; justify-content:center; text-align:center;
-    font-family:'Kanit'; font-weight:600; font-size:13px; color:#7A3B2E;
+    font-family:'Kanit'; font-weight:600; font-size:26px; color:#7A3B2E;
     line-height:1.25; padding:0 4%;
-    transform:scaleX(-1);
   }
   @keyframes noticeScroll{
-    from{transform:translateX(-50%);}
-    to{transform:translateX(0);}
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
   }
   .sec{padding:52px 0;}
   .sec-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:26px;}
