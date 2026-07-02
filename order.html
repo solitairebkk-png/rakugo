@@ -197,7 +197,11 @@
           <div class="fee-amount" id="fee-amount">-<span>THB</span></div>
         </div>
         <div id="order-map"></div>
-        <div class="map-hint">เมื่อเลือกเขต หมุดจะขยับไปตำแหน่งโดยประมาณ กรุณาลากหมุดไปยังตำแหน่งจริงของท่าน เพื่อให้พนักงานจัดส่งไม่หลงทาง (ค่าส่งไม่เปลี่ยนตามตำแหน่งหมุด)</div>
+        <div style="margin-top:10px; padding:10px 12px; background:#FFEBEB; border:1.5px solid #FEB2B2; border-radius:8px; font-size:12.5px; color:#822727; font-weight:600; line-height:1.6;">
+          ⚠️ กรุณาลากหมุดสีแดงไปยังตำแหน่งจริงของท่านก่อนกดยืนยันคำสั่งซื้อ<br>
+          <span style="font-weight:400;">Please drag the red pin to your real location before placing the order.</span>
+        </div>
+        <div class="map-hint">เมื่อเลือกเขต หมุดจะขยับไปตำแหน่งโดยประมาณเท่านั้น ยังไม่ใช่ตำแหน่งจริง</div>
         <div class="coords-box">
           <code id="coords-text">-</code>
           <span class="pin-status pending" id="pin-status">ยังไม่ระบุ</span>
@@ -302,6 +306,7 @@ let cart = {}; // { product_id: { product, qty } }
 let selectedDistrict = null;
 let selectedPayment = null;
 let slipImageUrl = null;
+let pinConfirmed = false;
 let map, marker;
 
 // ═══════════════════════════════════════════════
@@ -509,6 +514,7 @@ document.getElementById('c-district').addEventListener('change', (e) => {
     document.getElementById('fee-zone-name').textContent = 'นอกพื้นที่จัดส่งปกติ / Outside our usual area';
     document.getElementById('fee-amount').innerHTML = `<span style="font-size:13px;">แจ้งค่าส่งภายหลัง<br>Fee confirmed later</span>`;
     feeResult.classList.add('show');
+    pinConfirmed = false;
     if (marker && map) {
       marker.setPosition(BASE_LOCATION);
       map.panTo(BASE_LOCATION);
@@ -528,6 +534,7 @@ document.getElementById('c-district').addEventListener('change', (e) => {
   document.getElementById('fee-zone-name').textContent = `${district.name_th} (${district.zone_label})`;
   document.getElementById('fee-amount').innerHTML = `${district.fee}<span>THB</span>`;
   feeResult.classList.add('show');
+  pinConfirmed = false;
 
   if (marker && map) {
     const pos = { lat: parseFloat(district.lat), lng: parseFloat(district.lng) };
@@ -559,6 +566,7 @@ function initMap() {
     document.getElementById('coords-text').textContent = `${pos.lat().toFixed(6)}, ${pos.lng().toFixed(6)}`;
     document.getElementById('pin-status').textContent = 'ยืนยันแล้ว';
     document.getElementById('pin-status').classList.remove('pending');
+    pinConfirmed = true;
   });
 }
 window.initMap = initMap;
@@ -717,6 +725,7 @@ async function submitOrder() {
   if (!name || !phone) { showToast('กรุณากรอกชื่อและเบอร์โทร', 'error'); return; }
   if (!address) { showToast('กรุณากรอกที่อยู่จัดส่ง', 'error'); return; }
   if (!selectedDistrict) { showToast('กรุณาเลือกเขตจัดส่ง', 'error'); return; }
+  if (!pinConfirmed) { showToast('กรุณาลากหมุดสีแดงบนแผนที่ไปยังตำแหน่งจริงของท่านก่อน', 'error'); return; }
   if (!deliveryDate) { showToast('กรุณาเลือกวันที่จัดส่ง', 'error'); return; }
   if (!timeSlot) { showToast('กรุณาเลือกช่วงเวลาจัดส่ง', 'error'); return; }
   if (!selectedPayment) { showToast('กรุณาเลือกวิธีชำระเงิน', 'error'); return; }
