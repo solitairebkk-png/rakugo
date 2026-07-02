@@ -202,6 +202,23 @@
           <code id="coords-text">-</code>
           <span class="pin-status pending" id="pin-status">ยังไม่ระบุ</span>
         </div>
+        <div class="form-group" style="margin-top:14px;">
+          <label>วันที่จัดส่ง / Delivery date *</label>
+          <input type="date" id="c-date">
+        </div>
+        <div class="form-group">
+          <label>ช่วงเวลาจัดส่ง / Delivery time slot *</label>
+          <select id="c-timeslot">
+            <option value="">-- เลือกช่วงเวลา --</option>
+            <option value="morning">ช่วงเช้า / Morning</option>
+            <option value="14:00-16:00">14:00 - 16:00</option>
+            <option value="14:30-16:30">14:30 - 16:30</option>
+            <option value="15:00-17:00">15:00 - 17:00</option>
+            <option value="15:30-17:30">15:30 - 17:30</option>
+            <option value="16:00-18:00">16:00 - 18:00</option>
+            <option value="17:00-18:00">17:00 - 18:00</option>
+          </select>
+        </div>
       </div>
 
       <!-- STEP 3: payment -->
@@ -360,6 +377,8 @@ async function showReceiptView(orderNumber) {
         <div class="order-summary-row"><span>โทร / Phone</span><span>${order.customer_phone}</span></div>
         <div class="order-summary-row"><span>ที่อยู่ / Address</span><span style="text-align:right;max-width:65%;">${order.customer_address}</span></div>
         <div class="order-summary-row"><span>พื้นที่จัดส่ง / Area</span><span>${order.delivery_district || '-'}</span></div>
+        <div class="order-summary-row"><span>ช่วงเวลาจัดส่ง / Time slot</span><span>${order.delivery_time_slot || '-'}</span></div>
+        <div class="order-summary-row"><span>วันที่จัดส่ง / Date</span><span>${order.delivery_date || '-'}</span></div>
         <div class="order-summary-row"><span>ชำระเงิน / Payment</span><span>${paymentLabel}</span></div>
         <div style="border-top:1.5px solid var(--line-soft); margin:12px 0;"></div>
         ${items.map(i => `<div class="order-summary-row"><span>${i.product_name_th} × ${i.quantity}</span><span>฿${i.subtotal}</span></div>`).join('')}
@@ -475,13 +494,35 @@ function renderDistrictSelect() {
       <optgroup label="${zoneLabel} (฿${districts[0].fee})">
         ${districts.map(d => `<option value="${d.id}">${d.name_th} / ${d.name_en}</option>`).join('')}
       </optgroup>
-    `).join('');
+    `).join('') +
+    `<option value="other">📍 อื่นๆ / นอกพื้นที่จัดส่ง (Other / Outside area)</option>`;
 }
 
 document.getElementById('c-district').addEventListener('change', (e) => {
-  const id = parseInt(e.target.value);
-  const district = allDistricts.find(d => d.id === id);
+  const val = e.target.value;
   const feeResult = document.getElementById('fee-result');
+
+  if (!val) { feeResult.classList.remove('show'); selectedDistrict = null; updateSummary(); return; }
+
+  if (val === 'other') {
+    selectedDistrict = { id: 'other', name_th: 'นอกพื้นที่จัดส่ง', name_en: 'Outside delivery area', zone_label: 'ต้องยืนยัน', fee: 0, lat: BASE_LOCATION.lat, lng: BASE_LOCATION.lng, isOutOfArea: true };
+    document.getElementById('fee-zone-name').textContent = 'นอกพื้นที่จัดส่งปกติ / Outside our usual area';
+    document.getElementById('fee-amount').innerHTML = `<span style="font-size:13px;">แจ้งค่าส่งภายหลัง<br>Fee confirmed later</span>`;
+    feeResult.classList.add('show');
+    if (marker && map) {
+      marker.setPosition(BASE_LOCATION);
+      map.panTo(BASE_LOCATION);
+      map.setZoom(11);
+      document.getElementById('coords-text').textContent = `${BASE_LOCATION.lat.toFixed(6)}, ${BASE_LOCATION.lng.toFixed(6)}`;
+      document.getElementById('pin-status').textContent = 'กรุณาลากหมุดไปยังตำแหน่งของท่าน';
+      document.getElementById('pin-status').classList.add('pending');
+    }
+    updateSummary();
+    return;
+  }
+
+  const id = parseInt(val);
+  const district = allDistricts.find(d => d.id === id);
   if (!district) { feeResult.classList.remove('show'); selectedDistrict = null; updateSummary(); return; }
   selectedDistrict = district;
   document.getElementById('fee-zone-name').textContent = `${district.name_th} (${district.zone_label})`;
@@ -621,6 +662,12 @@ async function handleSlipSelect(input) {
 function openCheckout() {
   document.getElementById('checkout-modal').classList.add('open');
   updateSummary();
+  const dateInput = document.getElementById('c-date');
+  if (!dateInput.min) {
+    const today = new Date();
+    dateInput.min = today.toISOString().split('T')[0];
+    if (!dateInput.value) dateInput.value = today.toISOString().split('T')[0];
+  }
   if (!map) {
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}&callback=initMap`;
@@ -640,8 +687,8 @@ function updateSummary() {
   document.getElementById('summary-lines').innerHTML = items.map(i => `
     <div class="order-summary-row"><span>${i.product.name_th} × ${i.qty}</span><span>฿${i.qty * i.product.price}</span></div>
   `).join('');
-  document.getElementById('summary-fee').textContent = `฿${fee}`;
-  document.getElementById('summary-total').textContent = `฿${subtotal + fee}`;
+  document.getElementById('summary-fee').textContent = selectedDistrict?.isOutOfArea ? 'แจ้งภายหลัง' : `฿${fee}`;
+  document.getElementById('summary-total').textContent = selectedDistrict?.isOutOfArea ? `฿${subtotal}+` : `฿${subtotal + fee}`;
   if (selectedPayment === 'qr') renderPromptPayQR(subtotal + fee);
 }
 
@@ -661,6 +708,8 @@ async function submitOrder() {
   const lineId = document.getElementById('c-line').value.trim();
   const email = document.getElementById('c-email').value.trim();
   const address = document.getElementById('c-address').value.trim();
+  const deliveryDate = document.getElementById('c-date').value;
+  const timeSlot = document.getElementById('c-timeslot').value;
   const note = document.getElementById('c-note').value.trim();
   const items = Object.values(cart);
 
@@ -668,6 +717,8 @@ async function submitOrder() {
   if (!name || !phone) { showToast('กรุณากรอกชื่อและเบอร์โทร', 'error'); return; }
   if (!address) { showToast('กรุณากรอกที่อยู่จัดส่ง', 'error'); return; }
   if (!selectedDistrict) { showToast('กรุณาเลือกเขตจัดส่ง', 'error'); return; }
+  if (!deliveryDate) { showToast('กรุณาเลือกวันที่จัดส่ง', 'error'); return; }
+  if (!timeSlot) { showToast('กรุณาเลือกช่วงเวลาจัดส่ง', 'error'); return; }
   if (!selectedPayment) { showToast('กรุณาเลือกวิธีชำระเงิน', 'error'); return; }
   if ((selectedPayment === 'transfer' || selectedPayment === 'qr') && !slipImageUrl) { showToast('กรุณาแนบสลิปการโอนเงิน', 'error'); return; }
 
@@ -688,10 +739,13 @@ async function submitOrder() {
       customer_email: email || null,
       customer_address: address,
       note: note || null,
-      delivery_district: `${selectedDistrict.name_th} / ${selectedDistrict.name_en}`,
+      delivery_district: selectedDistrict.isOutOfArea ? `${selectedDistrict.name_th} (นอกพื้นที่)` : `${selectedDistrict.name_th} / ${selectedDistrict.name_en}`,
       delivery_fee: selectedDistrict.fee,
+      area_confirmed: !selectedDistrict.isOutOfArea,
       delivery_lat: markerPos ? markerPos.lat() : selectedDistrict.lat,
       delivery_lng: markerPos ? markerPos.lng() : selectedDistrict.lng,
+      delivery_time_slot: timeSlot,
+      delivery_date: deliveryDate,
       payment_method: selectedPayment,
       slip_image_url: slipImageUrl,
       total_amount: total,
