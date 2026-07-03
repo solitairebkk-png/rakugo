@@ -165,6 +165,7 @@
   .rank-card{
     background:var(--card); border-radius:22px; padding:22px 18px 20px;
     text-align:center; position:relative; border:2px solid var(--line);
+    display:block; text-decoration:none; color:inherit; cursor:pointer;
   }
   .rank-card.gold{border-color:#F0C24A; background:#FFFBF0;}
   .rank-num{
@@ -256,6 +257,22 @@
   .scroll-fab:hover{ transform:translateY(-2px); border-color:var(--orange); }
   .scroll-fab.hidden{ opacity:0; pointer-events:none; }
   .scroll-fab.top{ background:var(--orange); color:#fff; border-color:var(--orange); }
+
+  /* FLOATING CART BUTTON */
+  .cart-fab{
+    position:fixed; left:20px; bottom:20px; z-index:50;
+    width:56px; height:56px; border-radius:50%;
+    background:var(--red); color:#fff; text-decoration:none;
+    display:none; align-items:center; justify-content:center;
+    font-size:24px; box-shadow:0 6px 16px rgba(0,0,0,.2);
+  }
+  .cart-fab.show{ display:flex; }
+  .cart-fab-badge{
+    position:absolute; top:-4px; right:-4px; background:var(--ink); color:#fff;
+    font-family:'Kanit'; font-size:11px; font-weight:700; border-radius:50%;
+    width:21px; height:21px; display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--cream);
+  }
 </style>
 </head>
 <body>
@@ -340,7 +357,7 @@
           <span class="price-new" id="sale-price-new">฿ 231</span>
         </div>
       </div>
-      <a class="sale-cta" href="order.html" style="text-decoration:none;display:inline-block;">หยิบใส่ตะกร้า</a>
+      <a class="sale-cta" id="sale-cta-link" href="order.html" style="text-decoration:none;display:inline-block;">หยิบใส่ตะกร้า</a>
     </div>
   </div>
 </section>
@@ -352,27 +369,27 @@
       <div class="note">Auto-ranked by order volume</div>
     </div>
     <div class="rank-grid" id="rank-grid">
-      <div class="rank-card gold" id="rank-card-1">
+      <a class="rank-card gold" id="rank-card-1" href="order.html">
         <div class="rank-num">1</div>
         <img id="rank-img-1" src="images/icon_soysauce.webp" alt="ranked product 1">
         <div class="rank-title" id="rank-title-1">ซีอิ๊วญี่ปุ่นแท้ 500ml</div>
         <div class="rank-sold" id="rank-sold-1">ขายแล้ว 312 ชิ้น</div>
         <div class="rank-price" id="rank-price-1">฿ 129</div>
-      </div>
-      <div class="rank-card" id="rank-card-2">
+      </a>
+      <a class="rank-card" id="rank-card-2" href="order.html">
         <div class="rank-num">2</div>
         <img id="rank-img-2" src="images/icon_fishsauce.webp" alt="ranked product 2">
         <div class="rank-title" id="rank-title-2">น้ำปลาหมักญี่ปุ่น</div>
         <div class="rank-sold" id="rank-sold-2">ขายแล้ว 268 ชิ้น</div>
         <div class="rank-price" id="rank-price-2">฿ 149</div>
-      </div>
-      <div class="rank-card" id="rank-card-3">
+      </a>
+      <a class="rank-card" id="rank-card-3" href="order.html">
         <div class="rank-num">3</div>
         <img id="rank-img-3" src="images/icon_wasabi.webp" alt="ranked product 3">
         <div class="rank-title" id="rank-title-3">วาซาบิหลอดแท้</div>
         <div class="rank-sold" id="rank-sold-3">ขายแล้ว 201 ชิ้น</div>
         <div class="rank-price" id="rank-price-3">฿ 89</div>
-      </div>
+      </a>
     </div>
   </div>
 </section>
@@ -458,6 +475,12 @@
   <button class="scroll-fab top hidden" id="scroll-top-btn" onclick="scrollToTop()" title="กลับด้านบน">↑</button>
 </div>
 
+<!-- FLOATING CART BUTTON -->
+<a class="cart-fab" id="cart-fab" href="order.html">
+  🛒
+  <span class="cart-fab-badge" id="cart-fab-badge">0</span>
+</a>
+
 <script>
 const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
@@ -480,6 +503,7 @@ async function loadMonthlySale() {
     document.getElementById('sale-product-desc').textContent = p.description_th || '';
     document.getElementById('sale-price-old').textContent = `฿ ${p.price}`;
     document.getElementById('sale-price-new').textContent = `฿ ${p.sale_price}`;
+    document.getElementById('sale-cta-link').href = `order.html?view=${p.id}`;
   } catch(e) {
     console.error('Monthly sale load failed', e);
   }
@@ -524,6 +548,7 @@ async function loadTopRanking() {
       document.getElementById(`rank-title-${i + 1}`).textContent = p.name_th;
       document.getElementById(`rank-sold-${i + 1}`).textContent = `ขายแล้ว ${ranked[i].sold} ชิ้น`;
       document.getElementById(`rank-price-${i + 1}`).textContent = `฿ ${p.price}`;
+      card.href = `order.html?view=${p.id}`;
     }
   } catch(e) {
     console.error('Ranking load failed', e);
@@ -546,6 +571,31 @@ window.addEventListener('scroll', () => {
   scrollTopBtn.classList.toggle('hidden', atTop);
   scrollDownBtn.classList.toggle('hidden', atBottom);
 });
+
+// ── FLOATING CART BUTTON ─────────────
+function updateCartFab() {
+  try {
+    const raw = localStorage.getItem('rakugo_cart_summary');
+    const summary = raw ? JSON.parse(raw) : { count: 0 };
+    const fab = document.getElementById('cart-fab');
+    const badge = document.getElementById('cart-fab-badge');
+    if (summary.count > 0) {
+      badge.textContent = summary.count;
+      fab.classList.add('show');
+    } else {
+      fab.classList.remove('show');
+    }
+  } catch(e) {
+    // localStorage無効環境は無視
+  }
+}
+updateCartFab();
+// 他タブ/order.htmlでカートが変わった場合にも反映
+window.addEventListener('storage', (e) => {
+  if (e.key === 'rakugo_cart_summary') updateCartFab();
+});
+// ページに戻ってきた時(戻るボタン等)にも最新化
+window.addEventListener('pageshow', updateCartFab);
 </script>
 
 </body>
