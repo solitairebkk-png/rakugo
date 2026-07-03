@@ -382,6 +382,48 @@ let pinConfirmed = false;
 let map, marker;
 
 // ═══════════════════════════════════════════════
+// カートの永続化(localStorage) — トップページの
+// フローティングカートボタンと数量を共有するため
+// ═══════════════════════════════════════════════
+function saveCartToStorage() {
+  try {
+    const map = {};
+    Object.values(cart).forEach(i => { map[i.product.id] = i.qty; });
+    localStorage.setItem('rakugo_cart', JSON.stringify(map));
+    const count = Object.values(cart).reduce((s, i) => s + i.qty, 0);
+    const total = Object.values(cart).reduce((s, i) => s + i.qty * i.product.price, 0);
+    localStorage.setItem('rakugo_cart_summary', JSON.stringify({ count, total }));
+  } catch (e) { /* localStorage無効環境は無視 */ }
+}
+
+function loadCartFromStorage() {
+  try {
+    const raw = localStorage.getItem('rakugo_cart');
+    if (!raw) return;
+    const map = JSON.parse(raw);
+    Object.entries(map).forEach(([pid, qty]) => {
+      const product = allProducts.find(p => p.id === parseInt(pid));
+      if (!product) return;
+      const safeQty = Math.max(0, Math.min(product.stock, qty));
+      if (safeQty > 0) cart[product.id] = { product, qty: safeQty };
+    });
+  } catch (e) { /* 壊れたデータは無視 */ }
+}
+
+// トップページのセール品/ベスト3から ?view=商品ID で来た場合、その商品の詳細モーダルを自動で開く
+// (勝手にカートへ入れず、内容を確認してから追加してもらう)
+function handleQuickViewFromQuery() {
+  const params = new URLSearchParams(location.search);
+  const viewId = params.get('view');
+  if (!viewId) return;
+  const product = allProducts.find(p => p.id === parseInt(viewId));
+  if (product) {
+    openPModal(product.id);
+  }
+  history.replaceState(null, '', location.pathname);
+}
+
+// ═══════════════════════════════════════════════
 // SUPABASE ヘルパー
 // ═══════════════════════════════════════════════
 async function supabase(method, path, body) {
@@ -418,9 +460,12 @@ async function init() {
       supabase('GET', 'condiments?order=sort_order'),
       supabase('GET', 'product_condiments?select=product_id,condiment_id'),
     ]);
+    loadCartFromStorage();
     renderCatTabs();
     renderProducts();
     renderDistrictSelect();
+    updateCartBar();
+    handleQuickViewFromQuery();
     // 一緒に買われている商品の集計は失敗しても本体機能に影響しないよう分離
     supabase('GET', 'order_items?select=order_id,product_id').then(buildCoOccurrenceMap).catch(() => {});
   } catch (e) {
@@ -621,6 +666,7 @@ function changeQty(productId, delta) {
   else { cart[productId] = { product, qty: next }; }
   refreshProductView();
   updateCartBar();
+  saveCartToStorage();
 }
 
 function updateCartBar() {
