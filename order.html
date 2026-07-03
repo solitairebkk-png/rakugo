@@ -426,6 +426,7 @@ let coOccurrenceMap = {};
 let cart = {}; // { product_id: { product, qty } }
 let currentSearchQuery = '';
 let currentCookingFilter = null;
+let currentCondimentFilter = null;
 let pmodalProductId = null;
 let pmodalQty = 1;
 let selectedDistrict = null;
@@ -461,6 +462,18 @@ function loadCartFromStorage() {
       if (safeQty > 0) cart[product.id] = { product, qty: safeQty };
     });
   } catch (e) { /* 壊れたデータは無視 */ }
+}
+
+// トップページの「เลือกซื้อตามเครื่องปรุงที่ใช้」から ?condiment=調味料ID で来た場合、自動的に絞り込む
+function handleQuickCondimentFilterFromQuery() {
+  const params = new URLSearchParams(location.search);
+  const condimentId = params.get('condiment');
+  if (!condimentId) return;
+  const id = parseInt(condimentId);
+  if (!allCondiments.some(c => c.id === id)) return;
+  currentCondimentFilter = id;
+  renderFilteredView();
+  history.replaceState(null, '', location.pathname);
 }
 
 // トップページの「เลือกซื้อตามวิธีปรุง」から ?cook=調理法キー で来た場合、その調理法で自動的に絞り込む
@@ -531,6 +544,7 @@ async function init() {
     updateCartBar();
     handleQuickViewFromQuery();
     handleQuickCookFilterFromQuery();
+    handleQuickCondimentFilterFromQuery();
     // 一緒に買われている商品の集計は失敗しても本体機能に影響しないよう分離
     supabase('GET', 'order_items?select=order_id,product_id').then(buildCoOccurrenceMap).catch(() => {});
   } catch (e) {
@@ -647,10 +661,11 @@ function handleCookingFilter(method, btn) {
 }
 
 function scrollToCat(catId, btn) {
-  if (currentSearchQuery || currentCookingFilter) {
+  if (currentSearchQuery || currentCookingFilter || currentCondimentFilter) {
     document.getElementById('product-search').value = '';
     currentSearchQuery = '';
     currentCookingFilter = null;
+    currentCondimentFilter = null;
     document.querySelectorAll('.cook-tab').forEach(t => t.classList.remove('active'));
     const allCookTab = document.getElementById('cook-tab-all');
     if (allCookTab) allCookTab.classList.add('active');
@@ -714,7 +729,7 @@ function productCardHtml(p) {
 }
 
 function refreshProductView() {
-  if (currentSearchQuery || currentCookingFilter) {
+  if (currentSearchQuery || currentCookingFilter || currentCondimentFilter) {
     renderFilteredView();
   } else {
     renderProducts();
@@ -732,6 +747,12 @@ function renderFilteredView() {
   if (currentCookingFilter) {
     matches = matches.filter(p => p.cooking_method === currentCookingFilter);
   }
+  if (currentCondimentFilter) {
+    const productIdsWithCondiment = new Set(
+      allProductCondiments.filter(pc => pc.condiment_id === currentCondimentFilter).map(pc => pc.product_id)
+    );
+    matches = matches.filter(p => productIdsWithCondiment.has(p.id));
+  }
   if (currentSearchQuery) {
     const query = currentSearchQuery.toLowerCase();
     matches = matches.filter(p =>
@@ -744,6 +765,10 @@ function renderFilteredView() {
   }
   const titleParts = [];
   if (currentCookingFilter) titleParts.push(COOKING_LABELS[currentCookingFilter] || currentCookingFilter);
+  if (currentCondimentFilter) {
+    const cond = allCondiments.find(c => c.id === currentCondimentFilter);
+    if (cond) titleParts.push(`${cond.icon_emoji || ''} ${cond.name_th}`);
+  }
   if (currentSearchQuery) titleParts.push(`"${currentSearchQuery}"`);
   const title = titleParts.length ? `ผลการค้นหา: ${titleParts.join(' · ')} (${matches.length})` : `ผลการค้นหา (${matches.length})`;
   wrap.innerHTML = `

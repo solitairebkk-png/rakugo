@@ -195,6 +195,15 @@
   .cat-card .cat-th{font-weight:600; font-size:14px;}
   .cat-card .cat-jp{font-size:12px; color:#9a8973;}
 
+  /* CONDIMENT BROWSE */
+  .cond-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr)); gap:16px;}
+  .cond-card{
+    background:var(--card); border-radius:20px; padding:18px; text-align:center;
+    border:2px solid var(--line); text-decoration:none; color:inherit; cursor:pointer; display:block;
+  }
+  .cond-card .cond-emoji{font-size:36px; margin-bottom:8px;}
+  .cond-card .cond-name{font-weight:600; font-size:13.5px;}
+
   /* HOW TO ORDER */
   .howto-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
   .howto-step{
@@ -383,6 +392,17 @@
   </div>
 </section>
 
+<section class="sec" style="padding-top:0;" id="condiment-browse">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><h2>เลือกซื้อตามเครื่องปรุงที่ใช้</h2></div>
+    </div>
+    <div class="cond-grid" id="cond-grid">
+      <div class="loading">กำลังโหลด...</div>
+    </div>
+  </div>
+</section>
+
 <section class="sec" style="padding-top:0;" id="how-to-order">
   <div class="wrap">
     <div class="sec-head">
@@ -460,6 +480,28 @@
 <script>
 const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
+
+async function loadCondimentBrowse() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/condiments?select=*&order=sort_order`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await res.json();
+    const wrap = document.getElementById('cond-grid');
+    if (!data.length) {
+      wrap.closest('section').style.display = 'none';
+      return;
+    }
+    wrap.innerHTML = data.map(c => `
+      <a class="cond-card" href="order.html?condiment=${c.id}">
+        <div class="cond-emoji">${c.icon_emoji || '🧂'}</div>
+        <div class="cond-name">${c.name_th}</div>
+      </a>
+    `).join('');
+  } catch(e) {
+    console.error('Condiments browse load failed', e);
+  }
+}
 
 async function loadDeliveryAreas() {
   try {
@@ -589,6 +631,7 @@ async function loadTopRanking() {
 loadNotices();
 loadMonthlySale();
 loadTopRanking();
+loadCondimentBrowse();
 loadDeliveryAreas();
 
 // ── SCROLL FLOATING BUTTONS ──────────
