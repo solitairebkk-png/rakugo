@@ -329,33 +329,33 @@
   </div>
 </section>
 
-<section class="sec" style="padding-top:0;">
+<section class="sec" style="padding-top:0;" id="ranking-section">
   <div class="wrap">
     <div class="sec-head">
       <div><h2>สินค้าขายดี TOP 3</h2></div>
       <div class="note">Auto-ranked by order volume</div>
     </div>
-    <div class="rank-grid">
-      <div class="rank-card gold">
+    <div class="rank-grid" id="rank-grid">
+      <div class="rank-card gold" id="rank-card-1">
         <div class="rank-num">1</div>
-        <img src="images/icon_soysauce.webp" alt="ranked product 1">
-        <div class="rank-title">ซีอิ๊วญี่ปุ่นแท้ 500ml</div>
-        <div class="rank-sold">ขายแล้ว 312 ชิ้น</div>
-        <div class="rank-price">฿ 129</div>
+        <img id="rank-img-1" src="images/icon_soysauce.webp" alt="ranked product 1">
+        <div class="rank-title" id="rank-title-1">ซีอิ๊วญี่ปุ่นแท้ 500ml</div>
+        <div class="rank-sold" id="rank-sold-1">ขายแล้ว 312 ชิ้น</div>
+        <div class="rank-price" id="rank-price-1">฿ 129</div>
       </div>
-      <div class="rank-card">
+      <div class="rank-card" id="rank-card-2">
         <div class="rank-num">2</div>
-        <img src="images/icon_fishsauce.webp" alt="ranked product 2">
-        <div class="rank-title">น้ำปลาหมักญี่ปุ่น</div>
-        <div class="rank-sold">ขายแล้ว 268 ชิ้น</div>
-        <div class="rank-price">฿ 149</div>
+        <img id="rank-img-2" src="images/icon_fishsauce.webp" alt="ranked product 2">
+        <div class="rank-title" id="rank-title-2">น้ำปลาหมักญี่ปุ่น</div>
+        <div class="rank-sold" id="rank-sold-2">ขายแล้ว 268 ชิ้น</div>
+        <div class="rank-price" id="rank-price-2">฿ 149</div>
       </div>
-      <div class="rank-card">
+      <div class="rank-card" id="rank-card-3">
         <div class="rank-num">3</div>
-        <img src="images/icon_wasabi.webp" alt="ranked product 3">
-        <div class="rank-title">วาซาบิหลอดแท้</div>
-        <div class="rank-sold">ขายแล้ว 201 ชิ้น</div>
-        <div class="rank-price">฿ 89</div>
+        <img id="rank-img-3" src="images/icon_wasabi.webp" alt="ranked product 3">
+        <div class="rank-title" id="rank-title-3">วาซาบิหลอดแท้</div>
+        <div class="rank-sold" id="rank-sold-3">ขายแล้ว 201 ชิ้น</div>
+        <div class="rank-price" id="rank-price-3">฿ 89</div>
       </div>
     </div>
   </div>
@@ -462,7 +462,52 @@ async function loadMonthlySale() {
     console.error('Monthly sale load failed', e);
   }
 }
-loadMonthlySale();
+async function loadTopRanking() {
+  try {
+    const items = await fetch(`${SUPABASE_URL}/rest/v1/order_items?select=product_id,quantity&limit=10000`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    }).then(r => r.json());
+
+    const soldMap = {};
+    items.forEach(i => {
+      if (!i.product_id) return;
+      soldMap[i.product_id] = (soldMap[i.product_id] || 0) + (i.quantity || 0);
+    });
+    const ranked = Object.entries(soldMap)
+      .map(([productId, sold]) => ({ productId: parseInt(productId), sold }))
+      .sort((a, b) => b.sold - a.sold)
+      .slice(0, 3);
+
+    if (!ranked.length) {
+      document.getElementById('ranking-section').style.display = 'none';
+      return;
+    }
+
+    const ids = ranked.map(r => r.productId).join(',');
+    const products = await fetch(`${SUPABASE_URL}/rest/v1/products?id=in.(${ids})&select=*`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    }).then(r => r.json());
+    const productMap = {};
+    products.forEach(p => productMap[p.id] = p);
+
+    // 3位まで無ければ残りのカードは非表示に
+    for (let i = 0; i < 3; i++) {
+      const card = document.getElementById(`rank-card-${i + 1}`);
+      if (!ranked[i]) { card.style.display = 'none'; continue; }
+      const p = productMap[ranked[i].productId];
+      if (!p) { card.style.display = 'none'; continue; }
+      document.getElementById(`rank-img-${i + 1}`).src = p.image_drive_id
+        ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}`
+        : card.querySelector('img').src;
+      document.getElementById(`rank-title-${i + 1}`).textContent = p.name_th;
+      document.getElementById(`rank-sold-${i + 1}`).textContent = `ขายแล้ว ${ranked[i].sold} ชิ้น`;
+      document.getElementById(`rank-price-${i + 1}`).textContent = `฿ ${p.price}`;
+    }
+  } catch(e) {
+    console.error('Ranking load failed', e);
+  }
+}
+loadTopRanking();
 </script>
 
 </body>
