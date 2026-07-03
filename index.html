@@ -315,13 +315,13 @@
     </div>
     <div class="sale-card">
       <div class="sale-ribbon">SALE</div>
-      <img class="product" src="images/icon_frozen_shrimp.webp" alt="sale product">
+      <img class="product" id="sale-product-img" src="images/icon_frozen_shrimp.webp" alt="sale product">
       <div>
-        <div class="sale-name">กุ้งเทมปุระแช่แข็งพรีเมียม 500g</div>
-        <div class="sale-desc">คัดพิเศษจากตลาดสด ทอดร้อน ๆ พร้อมเสิร์ฟใน 5 นาที เดือนนี้ลดสูงสุด 20%</div>
+        <div class="sale-name" id="sale-product-name">กุ้งเทมปุระแช่แข็งพรีเมียม 500g</div>
+        <div class="sale-desc" id="sale-product-desc">คัดพิเศษจากตลาดสด ทอดร้อน ๆ พร้อมเสิร์ฟใน 5 นาที เดือนนี้ลดสูงสุด 20%</div>
         <div class="price-row">
-          <span class="price-old">฿ 289</span>
-          <span class="price-new">฿ 231</span>
+          <span class="price-old" id="sale-price-old">฿ 289</span>
+          <span class="price-new" id="sale-price-new">฿ 231</span>
         </div>
       </div>
       <div class="sale-cta">หยิบใส่ตะกร้า</div>
@@ -435,6 +435,35 @@
   </div>
   <div class="wrap footer-copy">© 2026 Saito Foods Co., Ltd. — rakugo.store (rough concept for internal review)</div>
 </footer>
+
+<script>
+const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
+
+async function loadMonthlySale() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?is_monthly_sale=eq.true&select=*&limit=1`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await res.json();
+    if (!data.length) {
+      document.querySelector('.sale-card').closest('section').style.display = 'none';
+      return;
+    }
+    const p = data[0];
+    document.getElementById('sale-product-img').src = p.image_drive_id
+      ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}`
+      : 'images/icon_frozen_shrimp.webp';
+    document.getElementById('sale-product-name').textContent = p.name_th;
+    document.getElementById('sale-product-desc').textContent = p.description_th || '';
+    document.getElementById('sale-price-old').textContent = `฿ ${p.price}`;
+    document.getElementById('sale-price-new').textContent = `฿ ${p.sale_price}`;
+  } catch(e) {
+    console.error('Monthly sale load failed', e);
+  }
+}
+loadMonthlySale();
+</script>
 
 </body>
 </html>
