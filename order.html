@@ -16,22 +16,30 @@
     --green: #276749;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Sarabun', "Hiragino Sans", sans-serif; background: #EFE6DC; color: var(--ink); font-size: 15px; }
+  body {
+    font-family: 'Sarabun', "Hiragino Sans", sans-serif; color: var(--ink); font-size: 15px;
+    background: url('images/bg_pattern.webp');
+    background-repeat: repeat; background-size: 900px auto; background-attachment: fixed;
+  }
   a { color: inherit; }
 
   /* APP SHELL — スマホでは1カラム、広い画面では横幅を活かして拡張 */
   .app-shell { max-width: 480px; margin: 0 auto; background: var(--cream); min-height: 100vh; padding-bottom: 90px; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.08); }
 
-  /* HEADER */
-  .header { background: var(--brand); padding: 18px 20px 22px; color: #fff; }
-  .header-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .header-brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; }
-  .header-brand span.logo { background: #fff; color: var(--brand); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-  .header-home-link { flex-shrink: 0; color: #fff; text-decoration: none; font-size: 12.5px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 16px; white-space: nowrap; }
-  .header-tagline { font-size: 12.5px; opacity: 0.9; margin-top: 4px; }
+  /* HEADER — index.htmlと統一 */
+  .site-header{ background: var(--cream); position: sticky; top: 0; z-index: 25; border-bottom: 2px solid var(--line); }
+  .site-header-inner{ display:flex; align-items:center; justify-content:space-between; padding:10px 20px; }
+  .site-logo-mark{ height:36px; display:block; }
+  .site-nav{ display:flex; gap:18px; font-size:13.5px; font-weight:500; }
+  .site-nav a{ color:var(--ink); text-decoration:none; opacity:.75; }
+  .site-cart-btn{
+    background:var(--brand); color:#fff; font-weight:600;
+    border-radius:24px; padding:8px 16px; font-size:13px;
+    text-decoration:none; display:flex; align-items:center; gap:6px;
+  }
 
   /* CATEGORY TABS */
-  .toolbar-sticky { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--line-soft); padding: 12px 16px 0; }
+  .toolbar-sticky { position: sticky; top: 57px; z-index: 20; background: #fff; border-bottom: 1px solid var(--line-soft); padding: 12px 16px 0; }
   .search-input { width: 100%; padding: 10px 16px; border: 1.5px solid var(--line); border-radius: 22px; font-size: 13.5px; font-family: inherit; margin-bottom: 10px; background: var(--cream); }
   .search-input:focus { outline: none; border-color: var(--brand); background: #fff; }
   .cat-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 0 0 12px; background: transparent; border-bottom: none; position: static; z-index: auto; }
@@ -194,14 +202,18 @@
 <body>
 <div class="app-shell">
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-top">
-    <div class="header-brand"><span class="logo">楽</span> Rakugo! GO!</div>
-    <a class="header-home-link" href="index.html">🏠 หน้าแรก</a>
+<!-- HEADER — index.htmlと統一 -->
+<header class="site-header">
+  <div class="site-header-inner">
+    <a href="index.html"><img class="site-logo-mark" src="images/rakugo.webp" alt="Rakugo!"></a>
+    <nav class="site-nav">
+      <a href="index.html">หน้าแรก</a>
+      <a href="#">โปรโมชั่น</a>
+      <a href="#">วิธีสั่งซื้อ</a>
+    </nav>
+    <a class="site-cart-btn" href="javascript:void(0)" onclick="openCheckout()">🛒 <span id="header-cart-count">0</span></a>
   </div>
-  <div class="header-tagline">อาหารญี่ปุ่นสั่งง่าย ส่งไว / Japanese food, easy order, fast delivery</div>
-</div>
+</header>
 
 <!-- SEARCH + CATEGORY TABS -->
 <div class="toolbar-sticky">
@@ -530,7 +542,8 @@ async function init() {
 // 注文控えページ(?receipt=注文番号 でアクセス)
 // ═══════════════════════════════════════════════
 async function showReceiptView(orderNumber) {
-  document.querySelector('.header-tagline').textContent = 'ใบเสร็จคำสั่งซื้อ / Order receipt';
+  const tagline = document.querySelector('.header-tagline');
+  if (tagline) tagline.textContent = 'ใบเสร็จคำสั่งซื้อ / Order receipt';
   document.getElementById('cat-tabs').style.display = 'none';
   const wrap = document.getElementById('product-sections');
   wrap.innerHTML = `<div class="loading">กำลังโหลด...</div>`;
@@ -758,6 +771,8 @@ function updateCartBar() {
   document.getElementById('cart-count').textContent = count;
   document.getElementById('cart-total').textContent = total;
   document.getElementById('cart-bar').classList.toggle('show', count > 0);
+  const headerCount = document.getElementById('header-cart-count');
+  if (headerCount) headerCount.textContent = count;
 }
 
 // ═══════════════════════════════════════════════
