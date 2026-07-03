@@ -136,7 +136,11 @@
 
   /* MONTHLY SALE */
   .sale-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
-  @media (max-width:720px){ .sale-grid{grid-template-columns:1fr;} }
+  @media (max-width:720px){
+    .sale-grid{grid-template-columns:1fr;}
+    .howto-grid{grid-template-columns:1fr 1fr;}
+    .zone-grid{grid-template-columns:1fr;}
+  }
   .sale-card{
     background:linear-gradient(135deg, #FFF1DC, #FFE0B0);
     border-radius:24px; padding:22px; display:flex; align-items:center; gap:18px;
@@ -191,49 +195,31 @@
   .cat-card .cat-th{font-weight:600; font-size:14px;}
   .cat-card .cat-jp{font-size:12px; color:#9a8973;}
 
-  /* FREQUENTLY BOUGHT TOGETHER */
-  .fbt-strip{
-    display:flex; gap:16px; overflow-x:auto; padding-bottom:8px;
+  /* HOW TO ORDER */
+  .howto-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+  .howto-step{
+    background:var(--card); border-radius:20px; padding:24px 18px; text-align:center;
+    border:2px solid var(--line); position:relative;
   }
-  .fbt-item{
-    flex:0 0 auto; width:140px; background:var(--card); border-radius:18px; padding:14px;
-    text-align:center; border:2px solid var(--line);
+  .howto-num{
+    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+    width:30px; height:30px; border-radius:50%; background:var(--red); color:#fff;
+    font-family:'Kanit'; font-weight:700; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
   }
-  .fbt-item img{width:90px; height:90px; object-fit:contain; margin:0 auto 8px;}
-  .fbt-item .name{font-size:13px; font-weight:500;}
-  .fbt-plus{
-    display:flex; align-items:center; justify-content:center; font-size:22px; color:#c9b795; flex:0 0 auto;
-  }
-  .fbt-note{
-    background:#fff; border:2px dashed var(--orange); border-radius:16px; padding:14px 18px;
-    font-size:13px; color:#6b5842; margin-top:16px;
-  }
+  .howto-icon{font-size:36px; margin:10px 0 12px;}
+  .howto-title{font-weight:700; font-size:15px;}
+  .howto-desc{font-size:12.5px; color:#6b5842; margin-top:6px; line-height:1.5;}
 
-  /* PDP concept preview (product detail w/ cooking method + suggest) */
-  .pdp-mock{
-    background:var(--card); border-radius:24px; padding:28px; border:2px solid var(--line);
-    display:grid; grid-template-columns:280px 1fr; gap:30px;
+  /* DELIVERY AREAS */
+  .zone-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .zone-card{
+    background:var(--card); border-radius:18px; padding:18px 20px;
+    border:2px solid var(--line);
   }
-  .pdp-img{
-    background:var(--peach); border-radius:20px; height:280px; display:flex; align-items:center; justify-content:center;
-  }
-  .pdp-img img{width:70%;}
-  .pdp-title{font-size:20px; font-weight:700;}
-  .pdp-desc{font-size:13px; color:#6b5842; margin-top:6px;}
-  .pdp-guide-label{
-    font-size:13px; font-weight:600; color:var(--orange-deep);
-    margin-top:22px; margin-bottom:10px; display:flex; align-items:baseline; gap:6px;
-  }
-  .pdp-guide-label .jp{font-size:11px; font-weight:400; color:#9a8973;}
-  .pdp-methods{display:flex; gap:14px;}
-  .pdp-icon-item{
-    display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;
-  }
-  .pdp-icon-item img{
-    width:56px; height:56px; object-fit:contain; background:var(--cream-2);
-    border-radius:14px; padding:6px; border:1.5px solid var(--line);
-  }
-  .pdp-icon-item span{font-size:11px; color:#6b5842; text-align:center;}
+  .zone-card .zone-label{font-size:12.5px; font-weight:700; color:var(--orange-deep); margin-bottom:8px;}
+  .zone-card .zone-fee{font-family:'Kanit'; font-weight:700; font-size:18px; color:var(--red); margin-bottom:10px;}
+  .zone-card .zone-districts{font-size:12.5px; color:#6b5842; line-height:1.7;}
 
   /* FOOTER */
   footer{
@@ -285,7 +271,7 @@
     <nav>
       <a href="order.html">เมนูทั้งหมด</a>
       <a href="#">โปรโมชั่น</a>
-      <a href="#">วิธีสั่งซื้อ</a>
+      <a href="#how-to-order">วิธีสั่งซื้อ</a>
     </nav>
     <a class="cart-btn" href="order.html" style="text-decoration:none;">🛒 ตะกร้า (0)</a>
   </div>
@@ -397,60 +383,62 @@
   </div>
 </section>
 
-<section class="sec" style="padding-top:0;">
+<section class="sec" style="padding-top:0;" id="how-to-order">
   <div class="wrap">
     <div class="sec-head">
-      <div><h2>หน้ารายละเอียดสินค้า (ตัวอย่าง)</h2></div>
+      <div><h2>วิธีสั่งซื้อ</h2></div>
     </div>
-    <div class="pdp-mock">
-      <div class="pdp-img"><img src="images/icon_frozen_steak.webp" alt="product"></div>
-      <div>
-        <div class="pdp-title">เนื้อวากิว A5 สไลซ์ 300g</div>
-        <div class="pdp-desc">เนื้อวากิวคัดเกรด A5 หั่นบางพร้อมปรุง แช่แข็งสดใหม่จากญี่ปุ่น</div>
-
-        <div class="pdp-guide-label">🔥 วิธีปรุงแนะนำ</div>
-        <div class="pdp-methods">
-          <div class="pdp-icon-item"><img src="images/icon_grill.webp" alt=""><span>ย่าง</span></div>
-          <div class="pdp-icon-item"><img src="images/icon_boil.webp" alt=""><span>ต้ม</span></div>
-          <div class="pdp-icon-item"><img src="images/icon_microwave.webp" alt=""><span>ไมโครเวฟ</span></div>
-          <div class="pdp-icon-item"><img src="images/icon_defrost.webp" alt=""><span>ละลายน้ำแข็ง</span></div>
-        </div>
-
-        <div class="pdp-guide-label">🧂 ทานคู่กับ</div>
-        <div class="pdp-methods">
-          <div class="pdp-icon-item"><img src="images/icon_soysauce.webp" alt=""><span>ซีอิ๊ว</span></div>
-          <div class="pdp-icon-item"><img src="images/icon_salt.webp" alt=""><span>เกลือ</span></div>
-          <div class="pdp-icon-item"><img src="images/icon_wasabi.webp" alt=""><span>วาซาบิ</span></div>
-          <div class="pdp-icon-item"><img src="images/icon_worcester.webp" alt=""><span>ซอสเปรี้ยว</span></div>
-          <div class="pdp-icon-item"><img src="images/icon_ketchup.webp" alt=""><span>ซอสมะเขือเทศ</span></div>
-          <div class="pdp-icon-item"><img src="images/icon_mayo.webp" alt=""><span>มายองเนส</span></div>
-        </div>
+    <div class="howto-grid">
+      <div class="howto-step">
+        <div class="howto-num">1</div>
+        <div class="howto-icon">🍱</div>
+        <div class="howto-title">เลือกเมนู</div>
+        <div class="howto-desc">เลือกจากเมนูทั้งหมด ค้นหา หรือกรองตามวิธีปรุงที่ต้องการ</div>
       </div>
+      <div class="howto-step">
+        <div class="howto-num">2</div>
+        <div class="howto-icon">🛒</div>
+        <div class="howto-title">ใส่ตะกร้า</div>
+        <div class="howto-desc">ดูรายละเอียดสินค้า เลือกจำนวน แล้วหยิบใส่ตะกร้า</div>
+      </div>
+      <div class="howto-step">
+        <div class="howto-num">3</div>
+        <div class="howto-icon">📝</div>
+        <div class="howto-title">กรอกข้อมูล</div>
+        <div class="howto-desc">ระบุที่อยู่จัดส่ง วันเวลาที่สะดวก และช่องทางชำระเงิน</div>
+      </div>
+      <div class="howto-step">
+        <div class="howto-num">4</div>
+        <div class="howto-icon">🛵</div>
+        <div class="howto-title">รอรับสินค้า</div>
+        <div class="howto-desc">ยืนยันคำสั่งซื้อแล้วรอรับอาหารญี่ปุ่นสดใหม่ถึงบ้าน</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:28px;">
+      <a class="btn-primary" href="order.html">เริ่มสั่งเลย</a>
     </div>
   </div>
 </section>
 
-<section class="sec" style="padding-top:0;">
+<section class="sec" style="padding-top:0;" id="delivery-areas">
   <div class="wrap">
     <div class="sec-head">
-      <div><h2>วัตถุดิบแช่แข็งพร้อมส่ง</h2></div>
+      <div><h2>พื้นที่จัดส่ง</h2></div>
+      <div class="note">ค่าส่งขึ้นอยู่กับโซน</div>
     </div>
-    <div class="fbt-strip">
-      <div class="fbt-item"><img src="images/icon_frozen_steak.webp" alt=""><div class="name">เนื้อสเต็ก</div></div>
-      <div class="fbt-item"><img src="images/icon_frozen_shrimp.webp" alt=""><div class="name">กุ้งทอด</div></div>
-      <div class="fbt-item"><img src="images/icon_thaw_shrimp_small.webp" alt=""><div class="name">กุ้งสด</div></div>
-      <div class="fbt-item"><img src="images/icon_frozen_icecube_main.webp" alt=""><div class="name">วิธีละลาย</div></div>
+    <div class="zone-grid" id="zone-grid">
+      <div class="loading">กำลังโหลด...</div>
     </div>
-    <div class="fbt-note">💡 แสดงไอคอน "วิธีละลาย" ไว้ในหน้าสินค้าเสมอ เพื่อลดความกังวลเรื่องการปรุงหลังซื้อ</div>
   </div>
 </section>
 
 <footer>
   <div class="wrap footer-inner">
     <img class="footer-logo" src="images/rakugo2.webp" alt="Rakugo!">
+
     <div class="footer-links">
       <a href="#" style="color:inherit;text-decoration:none;">เกี่ยวกับเรา</a>
-      <a href="#" style="color:inherit;text-decoration:none;">พื้นที่จัดส่ง</a>
+      <a href="#delivery-areas" style="color:inherit;text-decoration:none;">พื้นที่จัดส่ง</a>
       <a href="#" style="color:inherit;text-decoration:none;">ติดต่อ LINE</a>
     </div>
   </div>
@@ -472,6 +460,34 @@
 <script>
 const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
+
+async function loadDeliveryAreas() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/delivery_districts?select=*&order=sort_order`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await res.json();
+    const wrap = document.getElementById('zone-grid');
+    if (!data.length) {
+      wrap.closest('section').style.display = 'none';
+      return;
+    }
+    const zones = {};
+    data.forEach(d => {
+      if (!zones[d.zone_label]) zones[d.zone_label] = { fee: d.fee, districts: [] };
+      zones[d.zone_label].districts.push(d.name_th);
+    });
+    wrap.innerHTML = Object.entries(zones).map(([label, z]) => `
+      <div class="zone-card">
+        <div class="zone-label">${label}</div>
+        <div class="zone-fee">฿ ${z.fee}</div>
+        <div class="zone-districts">${z.districts.join(' · ')}</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    console.error('Delivery areas load failed', e);
+  }
+}
 
 async function loadNotices() {
   try {
@@ -573,6 +589,7 @@ async function loadTopRanking() {
 loadNotices();
 loadMonthlySale();
 loadTopRanking();
+loadDeliveryAreas();
 
 // ── SCROLL FLOATING BUTTONS ──────────
 function scrollByViewport(direction) {
