@@ -161,6 +161,7 @@
     <button class="nav-tab active" onclick="showPage('products', this)">🍱 สินค้า</button>
     <button class="nav-tab" onclick="showPage('orders', this)">📦 คำสั่งซื้อ</button>
     <button class="nav-tab" onclick="showPage('ranking', this)">🏆 อันดับขายดี</button>
+    <button class="nav-tab" onclick="showPage('notices', this)">📢 ประกาศ</button>
     <button class="nav-tab" onclick="showPage('categories', this)">🗂️ หมวดหมู่</button>
     <button class="nav-tab" onclick="showPage('zones', this)">🗺️ พื้นที่จัดส่ง</button>
   </div>
@@ -173,6 +174,7 @@
     <option value="products">🍱 สินค้า</option>
     <option value="orders">📦 คำสั่งซื้อ</option>
     <option value="ranking">🏆 อันดับขายดี</option>
+    <option value="notices">📢 ประกาศ</option>
     <option value="categories">🗂️ หมวดหมู่</option>
     <option value="zones">🗺️ พื้นที่จัดส่ง</option>
   </select>
@@ -262,6 +264,29 @@
         </thead>
         <tbody id="ranking-tbody">
           <tr><td colspan="5"><div class="loading">กำลังโหลด...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- NOTICES PAGE -->
+  <div id="page-notices" class="page">
+    <div class="toolbar">
+      <h2>ข้อความประกาศ (แถบวิ่งบนหน้าแรก)</h2>
+      <button class="btn btn-primary" onclick="openNoticeModal()">+ เพิ่มข้อความ</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ข้อความ</th>
+            <th>ลำดับ</th>
+            <th>สถานะ</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="notices-tbody">
+          <tr><td colspan="4"><div class="loading">กำลังโหลด...</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -440,6 +465,35 @@
   </div>
 </div>
 
+<!-- NOTICE MODAL -->
+<div class="modal-overlay" id="notice-modal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <h3>ข้อความประกาศ</h3>
+      <button class="modal-close" onclick="closeNoticeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>ข้อความ *</label>
+        <textarea id="notice-text" placeholder="เช่น ส่งฟรี! เมื่อสั่งครบ 500 บาทขึ้นไป"></textarea>
+      </div>
+      <div class="form-group">
+        <label>ลำดับ</label>
+        <input type="number" id="notice-sort" value="0" min="0">
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="notice-active" checked style="width:auto;"> แสดงข้อความนี้
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeNoticeModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveNotice()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- CATEGORY MODAL -->
 <div class="modal-overlay" id="category-modal">
   <div class="modal" style="max-width:400px;">
@@ -566,6 +620,8 @@ let allOrders = [];
 let allCategories = [];
 let allCondiments = [];
 let allZones = [];
+let allNotices = [];
+let editingNoticeId = null;
 let editingZoneId = null;
 let editingProductId = null;
 let editingCategoryId = null;
@@ -603,6 +659,7 @@ function showPage(name, btn) {
   if (name === 'products') loadProducts();
   if (name === 'orders') loadOrders();
   if (name === 'ranking') loadRanking();
+  if (name === 'notices') loadNotices();
   if (name === 'categories') loadCategories();
   if (name === 'zones') loadZones();
 }
@@ -1051,6 +1108,79 @@ async function loadRanking() {
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">โหลดข้อมูลไม่สำเร็จ</div></td></tr>`;
   }
+}
+
+// ── NOTICES ──────────────────────────
+async function loadNotices() {
+  try {
+    allNotices = await supabase('GET', 'notices?order=sort_order');
+    const tbody = document.getElementById('notices-tbody');
+    if (!allNotices.length) {
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="icon">📢</div>ยังไม่มีข้อความประกาศ</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = allNotices.map(n => `
+      <tr>
+        <td>${n.text_th}</td>
+        <td>${n.sort_order}</td>
+        <td><span class="badge ${n.is_active ? 'badge-active' : 'badge-inactive'}">${n.is_active ? 'แสดงอยู่' : 'ซ่อนอยู่'}</span></td>
+        <td>
+          <div class="action-btns">
+            <button class="btn btn-secondary btn-sm" onclick="editNotice(${n.id})">แก้ไข</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteNotice(${n.id})">ลบ</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) { showToast('โหลดข้อความไม่สำเร็จ', 'error'); }
+}
+
+function openNoticeModal() {
+  editingNoticeId = null;
+  document.getElementById('notice-text').value = '';
+  document.getElementById('notice-sort').value = 0;
+  document.getElementById('notice-active').checked = true;
+  document.getElementById('notice-modal').classList.add('open');
+}
+
+function editNotice(id) {
+  const n = allNotices.find(x => x.id === id);
+  if (!n) return;
+  editingNoticeId = id;
+  document.getElementById('notice-text').value = n.text_th;
+  document.getElementById('notice-sort').value = n.sort_order;
+  document.getElementById('notice-active').checked = n.is_active;
+  document.getElementById('notice-modal').classList.add('open');
+}
+
+function closeNoticeModal() {
+  document.getElementById('notice-modal').classList.remove('open');
+}
+
+async function saveNotice() {
+  const text = document.getElementById('notice-text').value.trim();
+  const sort = parseInt(document.getElementById('notice-sort').value) || 0;
+  const isActive = document.getElementById('notice-active').checked;
+  if (!text) { showToast('กรุณากรอกข้อความ', 'error'); return; }
+  try {
+    if (editingNoticeId) {
+      await supabase('PATCH', `notices?id=eq.${editingNoticeId}`, { text_th: text, sort_order: sort, is_active: isActive });
+    } else {
+      await supabase('POST', 'notices', { text_th: text, sort_order: sort, is_active: isActive });
+    }
+    showToast('บันทึกสำเร็จ ✓', 'success');
+    closeNoticeModal();
+    loadNotices();
+  } catch(e) { showToast('บันทึกไม่สำเร็จ', 'error'); }
+}
+
+async function deleteNotice(id) {
+  if (!confirm('ต้องการลบข้อความนี้?')) return;
+  try {
+    await supabase('DELETE', `notices?id=eq.${id}`);
+    showToast('ลบสำเร็จ', 'success');
+    loadNotices();
+  } catch(e) { showToast('ลบไม่สำเร็จ', 'error'); }
 }
 
 // ── CATEGORIES ───────────────────────
