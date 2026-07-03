@@ -451,6 +451,16 @@ function loadCartFromStorage() {
   } catch (e) { /* 壊れたデータは無視 */ }
 }
 
+// トップページの「เลือกซื้อตามวิธีปรุง」から ?cook=調理法キー で来た場合、その調理法で自動的に絞り込む
+function handleQuickCookFilterFromQuery() {
+  const params = new URLSearchParams(location.search);
+  const cook = params.get('cook');
+  if (!cook || !COOKING_LABELS[cook]) return;
+  const btn = document.getElementById(`cook-tab-${cook}`);
+  if (btn) handleCookingFilter(cook, btn);
+  history.replaceState(null, '', location.pathname);
+}
+
 // トップページのセール品/ベスト3から ?view=商品ID で来た場合、その商品の詳細モーダルを自動で開く
 // (勝手にカートへ入れず、内容を確認してから追加してもらう)
 function handleQuickViewFromQuery() {
@@ -508,6 +518,7 @@ async function init() {
     renderDistrictSelect();
     updateCartBar();
     handleQuickViewFromQuery();
+    handleQuickCookFilterFromQuery();
     // 一緒に買われている商品の集計は失敗しても本体機能に影響しないよう分離
     supabase('GET', 'order_items?select=order_id,product_id').then(buildCoOccurrenceMap).catch(() => {});
   } catch (e) {

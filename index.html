@@ -185,7 +185,7 @@
   .cat-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:16px;}
   .cat-card{
     background:var(--card); border-radius:20px; padding:18px; text-align:center;
-    border:2px solid var(--line); transition:.15s;
+    border:2px solid var(--line); transition:.15s; display:block; text-decoration:none; color:inherit; cursor:pointer;
   }
   .cat-card img{width:110px; height:110px; object-fit:contain; margin:0 auto 8px;}
   .cat-card .cat-th{font-weight:600; font-size:14px;}
@@ -279,8 +279,6 @@
 </head>
 <body>
 
-<div class="rough-tag">Rough concept / draft</div>
-
 <header>
   <div class="header-inner">
     <img class="logo-mark" src="images/rakugo.webp" alt="Rakugo!">
@@ -296,7 +294,6 @@
 <section class="hero">
   <div class="wrap hero-inner">
     <div>
-      <span class="hero-eyebrow">🚀 ส่งไวใน 60 นาที</span>
       <h1>อาหารญี่ปุ่นแท้<br><span>สั่งง่าย</span> ส่งไวถึงบ้าน</h1>
       <p>วัตถุดิบคัดสรรพร้อมทาน ตั้งแต่ซาชิมิ เทมปุระ ไปจนถึงเครื่องปรุงญี่ปุ่นแท้ ๆ จัดส่งทั่วกรุงเทพฯ</p>
       <div class="hero-ctas">
@@ -417,11 +414,11 @@
       <div><h2>เลือกซื้อตามวิธีปรุง</h2></div>
     </div>
     <div class="cat-grid">
-      <div class="cat-card"><img src="images/icon_microwave.webp" alt="microwave"><div class="cat-th">ไมโครเวฟ</div><div class="cat-jp">MICROWAVE</div></div>
-      <div class="cat-card"><img src="images/icon_deepfry.webp" alt="deep-fry"><div class="cat-th">ทอดแบบจม</div><div class="cat-jp">DEEP-FRY</div></div>
-      <div class="cat-card"><img src="images/icon_grill.webp" alt="grill"><div class="cat-th">ย่าง</div><div class="cat-jp">GRILL</div></div>
-      <div class="cat-card"><img src="images/icon_boil.webp" alt="boil"><div class="cat-th">ต้ม</div><div class="cat-jp">BOIL</div></div>
-      <div class="cat-card"><img src="images/icon_defrost.webp" alt="defrost"><div class="cat-th">ละลายน้ำแข็ง</div><div class="cat-jp">DEFROST</div></div>
+      <a class="cat-card" href="order.html?cook=microwave"><img src="images/icon_microwave.webp" alt="microwave"><div class="cat-th">ไมโครเวฟ</div><div class="cat-jp">MICROWAVE</div></a>
+      <a class="cat-card" href="order.html?cook=fry"><img src="images/icon_deepfry.webp" alt="fry"><div class="cat-th">ทอด</div><div class="cat-jp">FRY</div></a>
+      <a class="cat-card" href="order.html?cook=pan"><img src="images/icon_grill.webp" alt="pan"><div class="cat-th">กระทะ</div><div class="cat-jp">PAN</div></a>
+      <a class="cat-card" href="order.html?cook=boil"><img src="images/icon_boil.webp" alt="boil"><div class="cat-th">ต้ม</div><div class="cat-jp">BOIL</div></a>
+      <a class="cat-card" href="order.html?cook=ready"><img src="images/icon_defrost.webp" alt="ready"><div class="cat-th">พร้อมทาน</div><div class="cat-jp">READY</div></a>
     </div>
   </div>
 </section>
