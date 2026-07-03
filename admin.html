@@ -137,6 +137,7 @@
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('products')">🍱 สินค้า</button>
     <button class="nav-tab" onclick="showPage('orders')">📦 คำสั่งซื้อ</button>
+    <button class="nav-tab" onclick="showPage('ranking')">🏆 อันดับขายดี</button>
     <button class="nav-tab" onclick="showPage('categories')">🗂️ หมวดหมู่</button>
     <button class="nav-tab" onclick="showPage('zones')">🗺️ พื้นที่จัดส่ง</button>
   </div>
@@ -202,6 +203,30 @@
         </thead>
         <tbody id="orders-tbody">
           <tr><td colspan="9"><div class="loading">กำลังโหลด...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RANKING PAGE -->
+  <div id="page-ranking" class="page">
+    <div class="toolbar">
+      <h2>อันดับสินค้าขายดี (TOP 10)</h2>
+      <div style="font-size:12px;color:#9a8973;">คำนวณจากยอดสั่งซื้อทั้งหมด</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px;">อันดับ</th>
+            <th>รูป</th>
+            <th>ชื่อสินค้า</th>
+            <th>ราคา</th>
+            <th>ขายแล้ว (ชิ้น)</th>
+          </tr>
+        </thead>
+        <tbody id="ranking-tbody">
+          <tr><td colspan="5"><div class="loading">กำลังโหลด...</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -533,6 +558,7 @@ function showPage(name) {
   event.currentTarget.classList.add('active');
   if (name === 'products') loadProducts();
   if (name === 'orders') loadOrders();
+  if (name === 'ranking') loadRanking();
   if (name === 'categories') loadCategories();
   if (name === 'zones') loadZones();
 }
@@ -911,6 +937,56 @@ async function viewOrder(id) {
 
 function closeOrderModal() {
   document.getElementById('order-modal').classList.remove('open');
+}
+
+// ── RANKING ──────────────────────────
+async function loadRanking() {
+  const tbody = document.getElementById('ranking-tbody');
+  tbody.innerHTML = `<tr><td colspan="5"><div class="loading">กำลังโหลด...</div></td></tr>`;
+  try {
+    // order_items から product_id と quantity を全件取得して集計
+    const items = await supabase('GET', 'order_items?select=product_id,quantity&limit=10000');
+    const soldMap = {};
+    items.forEach(i => {
+      if (!i.product_id) return;
+      soldMap[i.product_id] = (soldMap[i.product_id] || 0) + (i.quantity || 0);
+    });
+    const ranked = Object.entries(soldMap)
+      .map(([productId, sold]) => ({ productId: parseInt(productId), sold }))
+      .sort((a, b) => b.sold - a.sold)
+      .slice(0, 10);
+
+    if (!ranked.length) {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">🏆</div>ยังไม่มีข้อมูลยอดขาย</div></td></tr>`;
+      return;
+    }
+
+    const ids = ranked.map(r => r.productId).join(',');
+    const products = await supabase('GET', `products?id=in.(${ids})&select=*`);
+    const productMap = {};
+    products.forEach(p => productMap[p.id] = p);
+
+    tbody.innerHTML = ranked.map((r, idx) => {
+      const p = productMap[r.productId];
+      if (!p) return '';
+      return `
+        <tr>
+          <td style="font-weight:700;color:${idx === 0 ? '#D69E2E' : '#7A3A1A'};">#${idx + 1}</td>
+          <td>${p.image_drive_id
+            ? `<img class="product-img" src="https://lh3.googleusercontent.com/d/${p.image_drive_id}" onerror="this.style.display='none'">`
+            : `<div class="product-img-placeholder">🍱</div>`}</td>
+          <td>
+            <div style="font-weight:600;">${p.name_th}</div>
+            <div style="font-size:12px;color:#888;">${p.name_en}</div>
+          </td>
+          <td>฿${p.price}</td>
+          <td style="font-weight:600;">${r.sold}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">โหลดข้อมูลไม่สำเร็จ</div></td></tr>`;
+  }
 }
 
 // ── CATEGORIES ───────────────────────
