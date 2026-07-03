@@ -315,6 +315,7 @@
           <img id="img-preview" class="img-preview" style="display:none;">
           <div class="upload-status" id="upload-status"></div>
         </div>
+        <button type="button" id="img-remove-btn" onclick="removeProductImage()" style="display:none; margin-top:8px; background:#FED7D7; color:#9B2C2C; border:none; border-radius:8px; padding:7px 14px; font-size:12.5px; font-weight:600; cursor:pointer;">🗑️ ลบรูป / Remove image</button>
       </div>
 
       <!-- NAME -->
@@ -641,6 +642,7 @@ async function openProductModal(id) {
   document.getElementById('modal-title').textContent = 'เพิ่มสินค้าใหม่';
   document.getElementById('img-placeholder').style.display = 'block';
   document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('img-remove-btn').style.display = 'none';
   document.getElementById('upload-status').textContent = '';
   ['f-name-th','f-name-en','f-desc-th','f-desc-en','f-youtube'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-price').value = '';
@@ -685,6 +687,7 @@ async function editProduct(id) {
     document.getElementById('img-preview').src = uploadedImageUrl;
     document.getElementById('img-preview').style.display = 'block';
     document.getElementById('img-placeholder').style.display = 'none';
+    document.getElementById('img-remove-btn').style.display = 'inline-block';
   }
   document.getElementById('f-monthly-sale').checked = !!p.is_monthly_sale;
   document.getElementById('f-sale-price').value = p.sale_price || '';
@@ -729,6 +732,19 @@ function updateCookingFields() {
   document.getElementById('cooking-minutes-group').style.display = method === 'ready' ? 'none' : 'block';
 }
 
+// IMAGE REMOVE
+function removeProductImage() {
+  uploadedImageId = null;
+  uploadedImageUrl = null;
+  document.getElementById('img-input').value = '';
+  document.getElementById('img-preview').src = '';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('img-placeholder').style.display = 'block';
+  document.getElementById('img-placeholder').textContent = '📷 คลิกเพื่ออัปโหลดรูป';
+  document.getElementById('upload-status').textContent = '';
+  document.getElementById('img-remove-btn').style.display = 'none';
+}
+
 // IMAGE UPLOAD
 async function handleImageSelect(input) {
   const file = input.files[0];
@@ -758,6 +774,7 @@ async function handleImageSelect(input) {
         document.getElementById('img-preview').src = uploadedImageUrl;
         document.getElementById('img-preview').style.display = 'block';
         document.getElementById('img-placeholder').style.display = 'none';
+        document.getElementById('img-remove-btn').style.display = 'inline-block';
         document.getElementById('upload-status').textContent = 'อัปโหลดสำเร็จ ✓';
       } else {
         document.getElementById('upload-status').textContent = 'อัปโหลดไม่สำเร็จ';
