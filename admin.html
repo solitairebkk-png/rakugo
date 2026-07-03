@@ -856,7 +856,11 @@ async function saveProduct() {
 
   try {
     if (productData.is_monthly_sale) {
-      await supabase('PATCH', 'products?is_monthly_sale=eq.true', { is_monthly_sale: false });
+      const currentSaleItems = await supabase('GET', 'products?is_monthly_sale=eq.true&select=id,updated_at&order=updated_at.asc');
+      const others = currentSaleItems.filter(c => c.id !== editingProductId);
+      if (others.length >= 2) {
+        await supabase('PATCH', `products?id=eq.${others[0].id}`, { is_monthly_sale: false });
+      }
     }
     let productId = editingProductId;
     if (editingProductId) {

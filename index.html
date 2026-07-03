@@ -135,29 +135,31 @@
   .sec-head .note{font-size:13px; color:#9a8973;}
 
   /* MONTHLY SALE */
+  .sale-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media (max-width:720px){ .sale-grid{grid-template-columns:1fr;} }
   .sale-card{
     background:linear-gradient(135deg, #FFF1DC, #FFE0B0);
-    border-radius:28px; padding:30px 36px; display:grid;
-    grid-template-columns:220px 1fr auto; align-items:center; gap:28px;
+    border-radius:24px; padding:22px; display:flex; align-items:center; gap:18px;
     position:relative; overflow:hidden; border:2px solid #F5CE8E;
   }
   .sale-ribbon{
-    position:absolute; top:18px; left:-38px; background:var(--red); color:#fff;
-    font-family:'Kanit'; font-weight:700; font-size:13px; padding:6px 46px;
+    position:absolute; top:14px; left:-34px; background:var(--red); color:#fff;
+    font-family:'Kanit'; font-weight:700; font-size:12px; padding:5px 40px;
     transform:rotate(-38deg); box-shadow:0 3px 6px rgba(0,0,0,.15);
   }
   .sale-card img.product{
-    width:190px; height:190px; object-fit:contain; background:#fff; border-radius:20px; padding:14px;
-    box-shadow:0 10px 24px rgba(0,0,0,.08);
+    width:120px; height:120px; object-fit:contain; background:#fff; border-radius:16px; padding:10px;
+    box-shadow:0 8px 18px rgba(0,0,0,.08); flex-shrink:0;
   }
-  .sale-name{font-size:22px; font-weight:700;}
-  .sale-desc{font-size:14px; color:#6b5842; margin-top:6px; max-width:380px;}
-  .price-row{margin-top:14px; display:flex; align-items:baseline; gap:10px;}
-  .price-old{font-size:15px; color:#a8967d; text-decoration:line-through;}
-  .price-new{font-size:26px; font-weight:700; color:var(--red); font-family:'Kanit';}
+  .sale-body{flex:1; min-width:0;}
+  .sale-name{font-size:17px; font-weight:700; line-height:1.3;}
+  .sale-desc{font-size:12.5px; color:#6b5842; margin-top:4px;}
+  .price-row{margin-top:8px; display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;}
+  .price-old{font-size:13px; color:#a8967d; text-decoration:line-through;}
+  .price-new{font-size:20px; font-weight:700; color:var(--red); font-family:'Kanit';}
   .sale-cta{
-    background:var(--ink); color:#fff; font-family:'Kanit'; font-weight:600; font-size:15px;
-    padding:14px 22px; border-radius:14px; white-space:nowrap;
+    background:var(--ink); color:#fff; font-family:'Kanit'; font-weight:600; font-size:13px;
+    padding:9px 16px; border-radius:12px; white-space:nowrap; margin-top:10px; display:inline-block;
   }
 
   /* RANKING */
@@ -344,20 +346,35 @@
       <div>
         <h2>สินค้าลดราคาประจำเดือน</h2>
       </div>
-      <div class="note">Admin toggle (1 item / month)</div>
+      <div class="note">Admin toggle (up to 2 items / month)</div>
     </div>
-    <div class="sale-card">
-      <div class="sale-ribbon">SALE</div>
-      <img class="product" id="sale-product-img" src="images/icon_frozen_shrimp.webp" alt="sale product" onerror="this.src='images/icon_frozen_shrimp.webp'">
-      <div>
-        <div class="sale-name" id="sale-product-name">กุ้งเทมปุระแช่แข็งพรีเมียม 500g</div>
-        <div class="sale-desc" id="sale-product-desc">คัดพิเศษจากตลาดสด ทอดร้อน ๆ พร้อมเสิร์ฟใน 5 นาที เดือนนี้ลดสูงสุด 20%</div>
-        <div class="price-row">
-          <span class="price-old" id="sale-price-old">฿ 289</span>
-          <span class="price-new" id="sale-price-new">฿ 231</span>
+    <div class="sale-grid" id="sale-grid">
+      <div class="sale-card" id="sale-card-1">
+        <div class="sale-ribbon">SALE</div>
+        <img class="product" id="sale-product-img-1" src="images/icon_frozen_shrimp.webp" alt="sale product" onerror="this.src='images/icon_frozen_shrimp.webp'">
+        <div class="sale-body">
+          <div class="sale-name" id="sale-product-name-1">กุ้งเทมปุระแช่แข็งพรีเมียม 500g</div>
+          <div class="sale-desc" id="sale-product-desc-1">คัดพิเศษจากตลาดสด ทอดร้อน ๆ พร้อมเสิร์ฟใน 5 นาที เดือนนี้ลดสูงสุด 20%</div>
+          <div class="price-row">
+            <span class="price-old" id="sale-price-old-1">฿ 289</span>
+            <span class="price-new" id="sale-price-new-1">฿ 231</span>
+          </div>
+          <a class="sale-cta" id="sale-cta-link-1" href="order.html" style="text-decoration:none;">หยิบใส่ตะกร้า</a>
         </div>
       </div>
-      <a class="sale-cta" id="sale-cta-link" href="order.html" style="text-decoration:none;display:inline-block;">หยิบใส่ตะกร้า</a>
+      <div class="sale-card" id="sale-card-2">
+        <div class="sale-ribbon">SALE</div>
+        <img class="product" id="sale-product-img-2" src="images/icon_frozen_shrimp.webp" alt="sale product" onerror="this.src='images/icon_frozen_shrimp.webp'">
+        <div class="sale-body">
+          <div class="sale-name" id="sale-product-name-2">กุ้งเทมปุระแช่แข็งพรีเมียม 500g</div>
+          <div class="sale-desc" id="sale-product-desc-2">คัดพิเศษจากตลาดสด ทอดร้อน ๆ พร้อมเสิร์ฟใน 5 นาที เดือนนี้ลดสูงสุด 20%</div>
+          <div class="price-row">
+            <span class="price-old" id="sale-price-old-2">฿ 289</span>
+            <span class="price-new" id="sale-price-new-2">฿ 231</span>
+          </div>
+          <a class="sale-cta" id="sale-cta-link-2" href="order.html" style="text-decoration:none;">หยิบใส่ตะกร้า</a>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -487,23 +504,27 @@ const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
 
 async function loadMonthlySale() {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?is_monthly_sale=eq.true&select=*&limit=1`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?is_monthly_sale=eq.true&select=*&limit=2`, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     const data = await res.json();
     if (!data.length) {
-      document.querySelector('.sale-card').closest('section').style.display = 'none';
+      document.getElementById('sale-grid').closest('section').style.display = 'none';
       return;
     }
-    const p = data[0];
-    document.getElementById('sale-product-img').src = p.image_drive_id
-      ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}`
-      : 'images/icon_frozen_shrimp.webp';
-    document.getElementById('sale-product-name').textContent = p.name_th;
-    document.getElementById('sale-product-desc').textContent = p.description_th || '';
-    document.getElementById('sale-price-old').textContent = `฿ ${p.price}`;
-    document.getElementById('sale-price-new').textContent = `฿ ${p.sale_price}`;
-    document.getElementById('sale-cta-link').href = `order.html?view=${p.id}`;
+    for (let i = 0; i < 2; i++) {
+      const card = document.getElementById(`sale-card-${i + 1}`);
+      const p = data[i];
+      if (!p) { card.style.display = 'none'; continue; }
+      document.getElementById(`sale-product-img-${i + 1}`).src = p.image_drive_id
+        ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}`
+        : 'images/icon_frozen_shrimp.webp';
+      document.getElementById(`sale-product-name-${i + 1}`).textContent = p.name_th;
+      document.getElementById(`sale-product-desc-${i + 1}`).textContent = p.description_th || '';
+      document.getElementById(`sale-price-old-${i + 1}`).textContent = `฿ ${p.price}`;
+      document.getElementById(`sale-price-new-${i + 1}`).textContent = `฿ ${p.sale_price}`;
+      document.getElementById(`sale-cta-link-${i + 1}`).href = `order.html?view=${p.id}`;
+    }
   } catch(e) {
     console.error('Monthly sale load failed', e);
   }
