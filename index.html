@@ -240,6 +240,22 @@
   .footer-logo{height:34px;}
   .footer-links{display:flex; gap:24px; font-size:13px; opacity:.8;}
   .footer-copy{font-size:12px; opacity:.5; margin-top:24px;}
+
+  /* FLOATING SCROLL BUTTONS */
+  .scroll-fab-group{
+    position:fixed; right:20px; bottom:20px; z-index:50;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .scroll-fab{
+    width:46px; height:46px; border-radius:50%; border:none; cursor:pointer;
+    background:#fff; color:var(--ink); font-size:18px;
+    box-shadow:0 6px 16px rgba(0,0,0,.15); border:2px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    transition:opacity .2s, transform .15s;
+  }
+  .scroll-fab:hover{ transform:translateY(-2px); border-color:var(--orange); }
+  .scroll-fab.hidden{ opacity:0; pointer-events:none; }
+  .scroll-fab.top{ background:var(--orange); color:#fff; border-color:var(--orange); }
 </style>
 </head>
 <body>
@@ -436,6 +452,12 @@
   <div class="wrap footer-copy">© 2026 Saito Foods Co., Ltd. — rakugo.store (rough concept for internal review) &nbsp;·&nbsp; <a href="admin.html" target="_blank" style="color:inherit;opacity:0.6;">Admin</a></div>
 </footer>
 
+<!-- SCROLL FLOATING BUTTONS -->
+<div class="scroll-fab-group">
+  <button class="scroll-fab down" id="scroll-down-btn" onclick="scrollByViewport(1)" title="เลื่อนลง">↓</button>
+  <button class="scroll-fab top hidden" id="scroll-top-btn" onclick="scrollToTop()" title="กลับด้านบน">↑</button>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
@@ -508,6 +530,22 @@ async function loadTopRanking() {
   }
 }
 loadTopRanking();
+
+// ── SCROLL FLOATING BUTTONS ──────────
+function scrollByViewport(direction) {
+  window.scrollBy({ top: direction * window.innerHeight * 0.85, behavior: 'smooth' });
+}
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.addEventListener('scroll', () => {
+  const scrollTopBtn = document.getElementById('scroll-top-btn');
+  const scrollDownBtn = document.getElementById('scroll-down-btn');
+  const atTop = window.scrollY < 200;
+  const atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 40;
+  scrollTopBtn.classList.toggle('hidden', atTop);
+  scrollDownBtn.classList.toggle('hidden', atBottom);
+});
 </script>
 
 </body>
