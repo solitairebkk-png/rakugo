@@ -326,6 +326,19 @@
         </div>
       </div>
 
+      <!-- MONTHLY SALE -->
+      <div class="form-row">
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="f-monthly-sale" onchange="toggleSalePriceField()" style="width:auto;"> สินค้าลดราคาประจำเดือน
+          </label>
+        </div>
+        <div class="form-group" id="sale-price-group" style="display:none;">
+          <label>ราคาพิเศษ (฿)</label>
+          <input type="number" id="f-sale-price" min="0">
+        </div>
+      </div>
+
       <!-- COOKING METHOD -->
       <div class="form-group">
         <label>วิธีปรุง *</label>
@@ -554,7 +567,7 @@ function renderProducts(products) {
         ${p.cooking_temp ? `<span style="font-size:12px;color:#888;"> ${p.cooking_temp}°C</span>` : ''}
       </td>
       <td>${p.categories?.name_th || '—'}</td>
-      <td><span class="badge ${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'เปิดขาย' : 'ปิดขาย'}</span></td>
+      <td><span class="badge ${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'เปิดขาย' : 'ปิดขาย'}</span>${p.is_monthly_sale ? '<span class="badge" style="background:#FEEBC8;color:#9C4221;margin-left:4px;">SALE</span>' : ''}</td>
       <td>
         <div class="action-btns">
           <button class="btn btn-secondary btn-sm" onclick="editProduct(${p.id})">แก้ไข</button>
@@ -587,10 +600,18 @@ async function openProductModal(id) {
   document.getElementById('f-cooking-temp').value = '';
   document.getElementById('f-cooking-method').value = 'microwave';
   document.getElementById('f-active').value = 'true';
+  document.getElementById('f-monthly-sale').checked = false;
+  document.getElementById('sale-price-group').style.display = 'none';
+  document.getElementById('f-sale-price').value = '';
   updateCookingFields();
   await loadCategorySelect();
   await loadCondimentsGrid([]);
   document.getElementById('product-modal').classList.add('open');
+}
+
+function toggleSalePriceField() {
+  const checked = document.getElementById('f-monthly-sale').checked;
+  document.getElementById('sale-price-group').style.display = checked ? 'block' : 'none';
 }
 
 async function editProduct(id) {
@@ -616,6 +637,9 @@ async function editProduct(id) {
     document.getElementById('img-preview').style.display = 'block';
     document.getElementById('img-placeholder').style.display = 'none';
   }
+  document.getElementById('f-monthly-sale').checked = !!p.is_monthly_sale;
+  document.getElementById('f-sale-price').value = p.sale_price || '';
+  toggleSalePriceField();
   updateCookingFields();
   await loadCategorySelect(p.category_id);
 
@@ -732,7 +756,11 @@ async function saveProduct() {
     cooking_minutes: minutes,
     cooking_temp: temp,
     youtube_url: youtube,
-    is_active: isActive
+    is_active: isActive,
+    is_monthly_sale: document.getElementById('f-monthly-sale').checked,
+    sale_price: document.getElementById('f-monthly-sale').checked
+      ? (parseFloat(document.getElementById('f-sale-price').value) || null)
+      : null
   };
 
   const selectedCondiments = [...document.querySelectorAll('#condiments-grid input:checked')].map(x => parseInt(x.value));
@@ -741,6 +769,9 @@ async function saveProduct() {
   document.getElementById('save-btn').disabled = true;
 
   try {
+    if (productData.is_monthly_sale) {
+      await supabase('PATCH', 'products?is_monthly_sale=eq.true', { is_monthly_sale: false });
+    }
     let productId = editingProductId;
     if (editingProductId) {
       await supabase('PATCH', `products?id=eq.${editingProductId}`, productData);
