@@ -9,7 +9,8 @@
   body { font-family: 'Sarabun', sans-serif; background: #FFF8F3; color: #2C2C2A; font-size: 15px; }
 
   /* NAV */
-  .nav { background: #FF6B35; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 52px; }
+  .nav { background: #FF6B35; padding: 0 20px; height: 52px; }
+  .nav-inner { max-width: 1100px; margin: 0 auto; height: 100%; display: flex; align-items: center; justify-content: space-between; }
   .nav-brand { color: white; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
   .nav-brand span { background: white; color: #FF6B35; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
   .nav-tabs { display: flex; gap: 4px; }
@@ -165,6 +166,11 @@
   .slip-qr-row{ display:flex; gap:16px; margin-top:14px; justify-content:space-around; }
   .slip-qr-box{ text-align:center; font-size:11.5px; font-weight:600; color:#7A3A1A; }
   .slip-qr-box > div{ margin-bottom:6px; display:flex; justify-content:center; }
+  .slip-stamp-box{ margin-top:12px; padding:10px 12px; border:1.5px dashed #FFD4B8; border-radius:10px; font-size:12.5px; font-weight:600; line-height:1.7; }
+  .slip-stamp-badges{ display:inline-flex; gap:5px; align-items:center; margin-top:4px; }
+  .slip-stamp-badge{ display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; font-family:serif; font-weight:700; font-size:13px; }
+  .slip-stamp-badge.filled{ background:#FF6B35; color:#fff; }
+  .slip-stamp-badge.empty{ border:1.5px dashed #FFD4B8; color:#FFD4B8; }
   @media print{
     body *{ visibility:hidden; }
     .print-slip-container, .print-slip-container *{ visibility:visible; }
@@ -178,18 +184,20 @@
 
 <!-- NAV -->
 <nav class="nav">
-  <div class="nav-brand">
-    <span>楽</span> Rakugo! Admin
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <span>楽</span> Rakugo! Admin
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('products', this)">🍱 สินค้า</button>
+      <button class="nav-tab" onclick="showPage('orders', this)">📦 คำสั่งซื้อ</button>
+      <button class="nav-tab" onclick="showPage('ranking', this)">🏆 อันดับขายดี</button>
+      <button class="nav-tab" onclick="showPage('notices', this)">📢 ประกาศ</button>
+      <button class="nav-tab" onclick="showPage('categories', this)">🗂️ หมวดหมู่</button>
+      <button class="nav-tab" onclick="showPage('zones', this)">🗺️ พื้นที่จัดส่ง</button>
+    </div>
+    <a href="index.html" target="_blank" style="color:white;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">🌐 ดูหน้าเว็บไซต์</a>
   </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('products', this)">🍱 สินค้า</button>
-    <button class="nav-tab" onclick="showPage('orders', this)">📦 คำสั่งซื้อ</button>
-    <button class="nav-tab" onclick="showPage('ranking', this)">🏆 อันดับขายดี</button>
-    <button class="nav-tab" onclick="showPage('notices', this)">📢 ประกาศ</button>
-    <button class="nav-tab" onclick="showPage('categories', this)">🗂️ หมวดหมู่</button>
-    <button class="nav-tab" onclick="showPage('zones', this)">🗺️ พื้นที่จัดส่ง</button>
-  </div>
-  <a href="index.html" target="_blank" style="color:white;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">🌐 ดูหน้าเว็บไซต์</a>
 </nav>
 
 <!-- MOBILE NAV DROPDOWN -->
@@ -1162,6 +1170,13 @@ async function printDeliverySlip(orderId) {
   const mapUrl = hasLocation ? `https://www.google.com/maps?q=${order.delivery_lat},${order.delivery_lng}` : null;
   const needsPaymentQr = order.payment_method === 'cod' && order.total_amount > 0;
 
+  // スタンプカードの状況も伝票に載せる(取れなくても伝票印刷自体は続行)
+  let stampInfo = null;
+  try {
+    const custRows = await supabase('GET', `customers?phone=eq.${encodeURIComponent(order.customer_phone)}&select=*`);
+    stampInfo = custRows[0] || null;
+  } catch (e) { /* スタンプ情報が取れなくても伝票は出す */ }
+
   const container = document.getElementById('print-slip-container');
   container.innerHTML = `
     <div class="slip-sheet">
@@ -1188,6 +1203,7 @@ async function printDeliverySlip(orderId) {
           <tr class="slip-total-row"><td colspan="2">รวมทั้งสิ้น</td><td>฿${order.total_amount}</td></tr>
         </tbody>
       </table>
+      ${buildStampSummaryHtml(stampInfo)}
       <div class="slip-qr-row">
         ${hasLocation ? `<div class="slip-qr-box"><div id="slip-qr-map"></div>📍 สแกนนำทางไปที่อยู่ลูกค้า</div>` : ''}
         ${needsPaymentQr ? `<div class="slip-qr-box"><div id="slip-qr-pay"></div>💸 ให้ลูกค้าสแกนจ่าย ฿${order.total_amount}</div>` : ''}
@@ -1206,6 +1222,21 @@ async function printDeliverySlip(orderId) {
 
   // 「帳票印刷済み」を記録(失敗しても印刷自体には影響させない)
   markSlipPrinted(order);
+}
+
+// スタンプカードの状況を伝票用に組み立てる(注文がまだ0回目の新規客ならスタンプ欄自体を出さない)
+const SLIP_STAMPS_REQUIRED = 5;
+function buildStampSummaryHtml(info) {
+  if (!info) return '';
+  if (info.has_free_shipping) {
+    return `<div class="slip-stamp-box">🎉 ลูกค้าท่านนี้ได้รับสิทธิ์ <b>ส่งฟรีในครั้งถัดไป!</b> (สะสมครบ ${SLIP_STAMPS_REQUIRED} ครั้งแล้ว)</div>`;
+  }
+  const n = info.stamp_count || 0;
+  const remaining = SLIP_STAMPS_REQUIRED - n;
+  const badges = Array.from({ length: SLIP_STAMPS_REQUIRED }, (_, i) =>
+    `<span class="slip-stamp-badge ${i < n ? 'filled' : 'empty'}">楽</span>`
+  ).join('');
+  return `<div class="slip-stamp-box">🎟️ สะสมแสตมป์: <span class="slip-stamp-badges">${badges}</span> (${n}/${SLIP_STAMPS_REQUIRED})<br>อีก <b>${remaining}</b> ครั้ง ลูกค้าจะได้รับสิทธิ์ส่งฟรี!</div>`;
 }
 
 async function markSlipPrinted(order) {
