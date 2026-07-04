@@ -589,6 +589,14 @@ async function showReceiptView(orderNumber) {
     const order = orders[0];
     const items = await supabase('GET', `order_items?order_id=eq.${order.id}&select=*`);
     lastReceiptItems = items;
+
+    // このお客様の現在のスタンプ状況も表示する(失敗しても控え表示自体は続行)
+    let receiptStampInfo = null;
+    try {
+      const custRows = await supabase('GET', `customers?phone=eq.${encodeURIComponent(order.customer_phone)}&select=*`);
+      receiptStampInfo = custRows[0] || null;
+    } catch (e) { /* スタンプ情報が取れなくても控え表示は続ける */ }
+
     const statusLabels = { pending: 'รอยืนยัน / Pending', confirmed: 'ยืนยันแล้ว / Confirmed', delivering: 'กำลังส่ง / Delivering', delivered: 'ส่งแล้ว / Delivered', cancelled: 'ยกเลิก / Cancelled' };
     const paymentLabel = order.payment_method === 'cod' ? 'เก็บเงินปลายทาง / Cash on delivery'
                         : order.payment_method === 'qr' ? 'QR พร้อมเพย์ / PromptPay QR'
@@ -609,6 +617,7 @@ async function showReceiptView(orderNumber) {
         ${items.map(i => `<div class="order-summary-row"><span>${i.product_name_th} × ${i.quantity}</span><span>฿${i.subtotal}</span></div>`).join('')}
         <div class="order-summary-row"><span>ค่าส่ง / Delivery fee</span><span>฿${order.delivery_fee || 0}</span></div>
         <div class="order-summary-row total"><span>รวมทั้งสิ้น / Total</span><span>฿${order.total_amount}</span></div>
+        ${stampCardBlockHtml(receiptStampInfo)}
         <button class="submit-btn" style="margin-top:16px;" onclick="reorderFromReceipt()">🔁 สั่งซ้ำอีกครั้ง / Order again</button>
       </div>
     `;
@@ -632,13 +641,13 @@ async function reorderFromReceipt() {
         supabase('GET', 'product_condiments?select=product_id,condiment_id'),
       ]);
     }
-    loadCartFromStorage();
+    // 「同じ内容で注文」なので、既存カートは使わずゼロから作り直す(合算しない)
+    cart = {};
     let addedCount = 0;
     (lastReceiptItems || []).forEach(i => {
       const product = allProducts.find(p => p.id === i.product_id);
       if (!product || product.stock <= 0) return;
-      const existingQty = cart[product.id]?.qty || 0;
-      const qty = Math.max(existingQty, Math.min(i.quantity, product.stock));
+      const qty = Math.min(i.quantity, product.stock);
       cart[product.id] = { product, qty };
       addedCount++;
     });
@@ -723,24 +732,45 @@ async function lookupCustomerStamps(phone) {
   updateSummary();
 }
 
+// スタンプカードの中身(背景色・文字色・HTML)を組み立てる共通ロジック
+// チェックアウト画面・注文完了画面・注文控えページの3箇所で使い回す
+function buildStampCardParts(info) {
+  if (!info) return null;
+  if (info.has_free_shipping) {
+    return {
+      background: '#E6FFFA',
+      borderColor: 'var(--green)',
+      color: 'var(--green)',
+      html: `🎉 คุณได้รับสิทธิ์ <b>ส่งฟรี</b> ในคำสั่งซื้อครั้งถัดไป! (สะสมครบ ${STAMPS_REQUIRED} ครั้ง)`
+    };
+  }
+  const n = info.stamp_count || 0;
+  const stampIcons = Array.from({ length: STAMPS_REQUIRED }, (_, i) => stampBadgeHtml(i < n, i)).join('');
+  return {
+    background: '#FFF8F3',
+    borderColor: 'var(--line)',
+    color: '#7A3A1A',
+    html: `🎟️ สะสมแสตมป์<br><span style="display:inline-flex;gap:5px;align-items:center;margin-top:6px;">${stampIcons}</span> (${n}/${STAMPS_REQUIRED}) — ครบ ${STAMPS_REQUIRED} ครั้งรับสิทธิ์ส่งฟรี!`
+  };
+}
+
+// スタンプカードを単体の<div>として書き出す(成功画面・注文控えページ用)
+function stampCardBlockHtml(info, extraStyle) {
+  const parts = buildStampCardParts(info);
+  if (!parts) return '';
+  return `<div style="margin-top:14px; padding:10px 12px; border:1.5px dashed ${parts.borderColor}; border-radius:10px; font-size:12.5px; font-weight:600; line-height:1.6; background:${parts.background}; color:${parts.color}; text-align:left; ${extraStyle || ''}">${parts.html}</div>`;
+}
+
 function renderStampCard() {
   const el = document.getElementById('stamp-card');
   if (!el) return;
-  if (!customerStampInfo) { el.style.display = 'none'; return; }
+  const parts = buildStampCardParts(customerStampInfo);
+  if (!parts) { el.style.display = 'none'; return; }
   el.style.display = 'block';
-  if (customerStampInfo.has_free_shipping) {
-    el.style.background = '#E6FFFA';
-    el.style.borderColor = 'var(--green)';
-    el.style.color = 'var(--green)';
-    el.innerHTML = `🎉 คุณได้รับสิทธิ์ <b>ส่งฟรี</b> ในคำสั่งซื้อนี้! (สะสมครบ ${STAMPS_REQUIRED} ครั้ง)`;
-  } else {
-    const n = customerStampInfo.stamp_count || 0;
-    const stampIcons = Array.from({ length: STAMPS_REQUIRED }, (_, i) => stampBadgeHtml(i < n, i)).join('');
-    el.style.background = '#FFF8F3';
-    el.style.borderColor = 'var(--line)';
-    el.style.color = '#7A3A1A';
-    el.innerHTML = `🎟️ สะสมแสตมป์<br><span style="display:inline-flex;gap:5px;align-items:center;margin-top:6px;">${stampIcons}</span> (${n}/${STAMPS_REQUIRED}) — ครบ ${STAMPS_REQUIRED} ครั้งรับสิทธิ์ส่งฟรี!`;
-  }
+  el.style.background = parts.background;
+  el.style.borderColor = parts.borderColor;
+  el.style.color = parts.color;
+  el.innerHTML = parts.html;
 }
 
 // オレンジ丸に「楽」の一文字を入れたスタンプバッジ(画像ファイルに依存せずCSSのみで再現)
@@ -759,24 +789,28 @@ function stampBadgeHtml(filled, index) {
   return `<span class="stamp-badge empty" style="--r:${Math.round(r * 0.4)}deg; --ty:${ty}px;">楽</span>`;
 }
 
-// 注文成功後にスタンプ数を更新(失敗しても注文自体には影響させない)
-async function updateCustomerStamps(phone, rewardUsedThisOrder) {
-  try {
-    let stampCount = customerStampInfo?.stamp_count || 0;
-    let hasReward = false;
-    const totalOrders = (customerStampInfo?.total_orders || 0) + 1;
+// 今回の注文の結果、次のスタンプ状態がどうなるかを先に計算する(成功画面にすぐ反映するため)
+function computeNextStampState(prevInfo, rewardUsedThisOrder) {
+  let stampCount = prevInfo?.stamp_count || 0;
+  let hasReward = false;
+  const totalOrders = (prevInfo?.total_orders || 0) + 1;
 
-    if (rewardUsedThisOrder) {
+  if (rewardUsedThisOrder) {
+    stampCount = 0;
+    hasReward = false;
+  } else {
+    stampCount += 1;
+    if (stampCount >= STAMPS_REQUIRED) {
       stampCount = 0;
-      hasReward = false;
-    } else {
-      stampCount += 1;
-      if (stampCount >= STAMPS_REQUIRED) {
-        stampCount = 0;
-        hasReward = true;
-      }
+      hasReward = true;
     }
+  }
+  return { stamp_count: stampCount, has_free_shipping: hasReward, total_orders: totalOrders };
+}
 
+// 注文成功後にスタンプ数をサーバーへ反映(失敗しても注文自体には影響させない)
+async function updateCustomerStamps(phone, nextState) {
+  try {
     await fetch(`${SUPABASE_URL}/rest/v1/customers?on_conflict=phone`, {
       method: 'POST',
       headers: {
@@ -787,9 +821,9 @@ async function updateCustomerStamps(phone, rewardUsedThisOrder) {
       },
       body: JSON.stringify([{
         phone,
-        stamp_count: stampCount,
-        has_free_shipping: hasReward,
-        total_orders: totalOrders,
+        stamp_count: nextState.stamp_count,
+        has_free_shipping: nextState.has_free_shipping,
+        total_orders: nextState.total_orders,
         updated_at: new Date().toISOString()
       }])
     });
@@ -1352,7 +1386,9 @@ async function submitOrder() {
     await supabase('POST', 'order_items', orderItems);
 
     // スタンプカードの更新(失敗しても注文完了を止めない)
-    updateCustomerStamps(phone, rewardActive);
+    const nextStampState = computeNextStampState(customerStampInfo, rewardActive);
+    updateCustomerStamps(phone, nextStampState);
+    customerStampInfo = { phone, ...nextStampState };
 
     const orderWithReceipt = { ...orderPayload, receipt_url: `${location.origin}${location.pathname}?receipt=${orderPayload.order_number}` };
 
@@ -1367,7 +1403,7 @@ async function submitOrder() {
       })
     }).catch(() => {});
 
-    showSuccessScreen(orderPayload.order_number, rewardActive);
+    showSuccessScreen(orderPayload.order_number, rewardActive, nextStampState);
     cart = {};
     updateCartBar();
     saveCartToStorage();
@@ -1378,7 +1414,7 @@ async function submitOrder() {
   }
 }
 
-function showSuccessScreen(orderNumber, rewardUsed) {
+function showSuccessScreen(orderNumber, rewardUsed, nextStampState) {
   const receiptUrl = `${location.origin}${location.pathname}?receipt=${orderNumber}`;
   document.getElementById('checkout-body').innerHTML = `
     <div class="success-screen">
@@ -1388,6 +1424,7 @@ function showSuccessScreen(orderNumber, rewardUsed) {
       <div class="order-num">#${orderNumber}</div>
       <p>เราจะติดต่อกลับเพื่อยืนยันคำสั่งซื้อเร็วๆ นี้</p>
       ${rewardUsed ? `<div style="margin-top:14px; padding:10px 14px; background:#E6FFFA; border-radius:10px; color:var(--green); font-weight:700; font-size:13px;">🎉 ใช้สิทธิ์ส่งฟรีในคำสั่งซื้อนี้แล้ว!</div>` : ''}
+      ${stampCardBlockHtml(nextStampState)}
       <div style="margin-top:20px; padding:16px; background:#FFF0E8; border-radius:10px; text-align:left;">
         <div style="font-size:13px; font-weight:700; color:var(--brand-dark); margin-bottom:8px;">
           📋 บันทึกลิงก์นี้ไว้เพื่อดูรายละเอียดคำสั่งซื้อภายหลัง
