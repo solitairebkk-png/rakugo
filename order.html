@@ -251,6 +251,7 @@
           <label>เบอร์โทร / Phone *</label>
           <input type="tel" id="c-phone" placeholder="08X-XXX-XXXX">
         </div>
+        <div id="stamp-card" style="display:none; margin:-4px 0 12px; padding:10px 12px; border:1.5px dashed var(--line); border-radius:10px; font-size:12.5px; font-weight:600; line-height:1.6;"></div>
         <div class="form-group">
           <label>LINE ID (ถ้ามี / optional)</label>
           <input type="text" id="c-line" placeholder="ไม่บังคับ">
@@ -408,6 +409,7 @@ const MAPS_API_KEY = 'AIzaSyDV7AZEe0yDZVnsjviK3GTmCc5OyS3jLaQ';
 const BASE_LOCATION = { lat: 13.721462, lng: 100.5765166 }; // สคุมวิท 36 (拠点)
 const PROMPTPAY_BILLER_ID = '010554007919109';
 const PROMPTPAY_REF1 = 'REF001';
+const STAMPS_REQUIRED = 5;
 
 const COOKING_LABELS = {
   microwave: '🔥 ไมโครเวฟ',
@@ -434,6 +436,11 @@ let selectedPayment = null;
 let slipImageUrl = null;
 let pinConfirmed = false;
 let map, marker;
+
+// スタンプカード(リピート促進)関連の状態
+let customerStampInfo = null; // { phone, stamp_count, has_free_shipping, total_orders } or null
+let customerLookupTimer = null;
+let lastReceiptItems = null; // 「もう一度注文」用に注文控えの明細を保持
 
 // ═══════════════════════════════════════════════
 // カートの永続化(localStorage) — トップページの
@@ -570,6 +577,7 @@ async function showReceiptView(orderNumber) {
     }
     const order = orders[0];
     const items = await supabase('GET', `order_items?order_id=eq.${order.id}&select=*`);
+    lastReceiptItems = items;
     const statusLabels = { pending: 'รอยืนยัน / Pending', confirmed: 'ยืนยันแล้ว / Confirmed', delivering: 'กำลังส่ง / Delivering', delivered: 'ส่งแล้ว / Delivered', cancelled: 'ยกเลิก / Cancelled' };
     const paymentLabel = order.payment_method === 'cod' ? 'เก็บเงินปลายทาง / Cash on delivery'
                         : order.payment_method === 'qr' ? 'QR พร้อมเพย์ / PromptPay QR'
@@ -590,10 +598,51 @@ async function showReceiptView(orderNumber) {
         ${items.map(i => `<div class="order-summary-row"><span>${i.product_name_th} × ${i.quantity}</span><span>฿${i.subtotal}</span></div>`).join('')}
         <div class="order-summary-row"><span>ค่าส่ง / Delivery fee</span><span>฿${order.delivery_fee || 0}</span></div>
         <div class="order-summary-row total"><span>รวมทั้งสิ้น / Total</span><span>฿${order.total_amount}</span></div>
+        <button class="submit-btn" style="margin-top:16px;" onclick="reorderFromReceipt()">🔁 สั่งซ้ำอีกครั้ง / Order again</button>
       </div>
     `;
   } catch (e) {
     wrap.innerHTML = `<div class="loading">เกิดข้อผิดพลาด / Error loading receipt</div>`;
+  }
+}
+
+// 注文控えページから「もう一度注文」→ 同じ商品をカートに入れて通常の注文画面へ戻す
+async function reorderFromReceipt() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'กำลังโหลด...';
+  try {
+    if (!allProducts.length) {
+      [allCategories, allProducts, allDistricts, allCondiments, allProductCondiments] = await Promise.all([
+        supabase('GET', 'categories?order=sort_order'),
+        supabase('GET', 'products?is_active=eq.true&order=id'),
+        supabase('GET', 'delivery_districts?order=sort_order'),
+        supabase('GET', 'condiments?order=sort_order'),
+        supabase('GET', 'product_condiments?select=product_id,condiment_id'),
+      ]);
+    }
+    loadCartFromStorage();
+    let addedCount = 0;
+    (lastReceiptItems || []).forEach(i => {
+      const product = allProducts.find(p => p.id === i.product_id);
+      if (!product || product.stock <= 0) return;
+      const existingQty = cart[product.id]?.qty || 0;
+      const qty = Math.max(existingQty, Math.min(i.quantity, product.stock));
+      cart[product.id] = { product, qty };
+      addedCount++;
+    });
+    saveCartToStorage();
+    if (!addedCount) {
+      showToast('สินค้าในคำสั่งซื้อนี้หมดสต็อกแล้ว', 'error');
+      btn.disabled = false;
+      btn.textContent = '🔁 สั่งซ้ำอีกครั้ง / Order again';
+      return;
+    }
+    location.href = location.pathname;
+  } catch (e) {
+    showToast('เกิดข้อผิดพลาด กรุณาลองใหม่', 'error');
+    btn.disabled = false;
+    btn.textContent = '🔁 สั่งซ้ำอีกครั้ง / Order again';
   }
 }
 
@@ -634,6 +683,90 @@ function getSuggestions(productId) {
 function getProductCondiments(productId) {
   const ids = allProductCondiments.filter(pc => pc.product_id === productId).map(pc => pc.condiment_id);
   return allCondiments.filter(c => ids.includes(c.id));
+}
+
+// ═══════════════════════════════════════════════
+// スタンプカード(リピート促進) — TAOBIN方式
+// 電話番号ごとに購入回数を記録し、5回で次回送料無料
+// ═══════════════════════════════════════════════
+document.getElementById('c-phone').addEventListener('input', (e) => {
+  clearTimeout(customerLookupTimer);
+  const phone = e.target.value.trim();
+  if (phone.length < 9) {
+    customerStampInfo = null;
+    renderStampCard();
+    updateSummary();
+    return;
+  }
+  customerLookupTimer = setTimeout(() => lookupCustomerStamps(phone), 500);
+});
+
+async function lookupCustomerStamps(phone) {
+  try {
+    const rows = await supabase('GET', `customers?phone=eq.${encodeURIComponent(phone)}&select=*`);
+    customerStampInfo = rows[0] || { phone, stamp_count: 0, has_free_shipping: false, total_orders: 0 };
+  } catch (e) {
+    customerStampInfo = null;
+  }
+  renderStampCard();
+  updateSummary();
+}
+
+function renderStampCard() {
+  const el = document.getElementById('stamp-card');
+  if (!el) return;
+  if (!customerStampInfo) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  if (customerStampInfo.has_free_shipping) {
+    el.style.background = '#E6FFFA';
+    el.style.borderColor = 'var(--green)';
+    el.style.color = 'var(--green)';
+    el.innerHTML = `🎉 คุณได้รับสิทธิ์ <b>ส่งฟรี</b> ในคำสั่งซื้อนี้! (สะสมครบ ${STAMPS_REQUIRED} ครั้ง)`;
+  } else {
+    const n = customerStampInfo.stamp_count || 0;
+    const stamps = Array.from({ length: STAMPS_REQUIRED }, (_, i) => i < n ? '🟠' : '⚪').join(' ');
+    el.style.background = '#FFF8F3';
+    el.style.borderColor = 'var(--line)';
+    el.style.color = '#7A3A1A';
+    el.innerHTML = `🎟️ สะสมแสตมป์: ${stamps} (${n}/${STAMPS_REQUIRED}) — ครบ ${STAMPS_REQUIRED} ครั้งรับสิทธิ์ส่งฟรี!`;
+  }
+}
+
+// 注文成功後にスタンプ数を更新(失敗しても注文自体には影響させない)
+async function updateCustomerStamps(phone, rewardUsedThisOrder) {
+  try {
+    let stampCount = customerStampInfo?.stamp_count || 0;
+    let hasReward = false;
+    const totalOrders = (customerStampInfo?.total_orders || 0) + 1;
+
+    if (rewardUsedThisOrder) {
+      stampCount = 0;
+      hasReward = false;
+    } else {
+      stampCount += 1;
+      if (stampCount >= STAMPS_REQUIRED) {
+        stampCount = 0;
+        hasReward = true;
+      }
+    }
+
+    await fetch(`${SUPABASE_URL}/rest/v1/customers?on_conflict=phone`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify([{
+        phone,
+        stamp_count: stampCount,
+        has_free_shipping: hasReward,
+        total_orders: totalOrders,
+        updated_at: new Date().toISOString()
+      }])
+    });
+  } catch (e) { /* スタンプ更新の失敗は注文完了に影響させない */ }
 }
 
 // ═══════════════════════════════════════════════
@@ -1032,10 +1165,7 @@ function selectPayment(method) {
   document.getElementById('qr-box').classList.toggle('show', method === 'qr');
   document.getElementById('slip-upload-area').classList.toggle('show', method === 'transfer' || method === 'qr');
   if (method === 'qr') {
-    const items = Object.values(cart);
-    const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
-    const fee = selectedDistrict ? selectedDistrict.fee : 0;
-    renderPromptPayQR(subtotal + fee);
+    updateSummary();
   }
 }
 
@@ -1098,14 +1228,22 @@ function closeCheckout() {
   document.getElementById('checkout-modal').classList.remove('open');
 }
 
+// 送料無料特典が今回の注文に適用されるかどうか
+function isFreeShippingRewardActive() {
+  return !!(customerStampInfo && customerStampInfo.has_free_shipping && !(selectedDistrict && selectedDistrict.isOutOfArea));
+}
+
 function updateSummary() {
   const items = Object.values(cart);
   const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
-  const fee = selectedDistrict ? selectedDistrict.fee : 0;
+  const rewardActive = isFreeShippingRewardActive();
+  const fee = selectedDistrict ? (rewardActive ? 0 : selectedDistrict.fee) : 0;
   document.getElementById('summary-lines').innerHTML = items.map(i => `
     <div class="order-summary-row"><span>${i.product.name_th} × ${i.qty}</span><span>฿${i.qty * i.product.price}</span></div>
   `).join('');
-  document.getElementById('summary-fee').textContent = selectedDistrict?.isOutOfArea ? 'แจ้งภายหลัง' : `฿${fee}`;
+  document.getElementById('summary-fee').textContent = selectedDistrict?.isOutOfArea
+    ? 'แจ้งภายหลัง'
+    : (rewardActive ? '🎉 ฟรี' : `฿${fee}`);
   document.getElementById('summary-total').textContent = selectedDistrict?.isOutOfArea ? `฿${subtotal}+` : `฿${subtotal + fee}`;
   if (selectedPayment === 'qr') renderPromptPayQR(subtotal + fee);
 }
@@ -1143,7 +1281,9 @@ async function submitOrder() {
 
   const markerPos = marker ? marker.getPosition() : null;
   const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
-  const total = subtotal + selectedDistrict.fee;
+  const rewardActive = isFreeShippingRewardActive();
+  const effectiveFee = rewardActive ? 0 : selectedDistrict.fee;
+  const total = subtotal + effectiveFee;
 
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
@@ -1159,7 +1299,7 @@ async function submitOrder() {
       customer_address: address,
       note: note || null,
       delivery_district: selectedDistrict.isOutOfArea ? `${selectedDistrict.name_th} (นอกพื้นที่)` : `${selectedDistrict.name_th} / ${selectedDistrict.name_en}`,
-      delivery_fee: selectedDistrict.fee,
+      delivery_fee: effectiveFee,
       area_confirmed: !selectedDistrict.isOutOfArea,
       delivery_lat: markerPos ? markerPos.lat() : selectedDistrict.lat,
       delivery_lng: markerPos ? markerPos.lng() : selectedDistrict.lng,
@@ -1184,6 +1324,9 @@ async function submitOrder() {
     }));
     await supabase('POST', 'order_items', orderItems);
 
+    // スタンプカードの更新(失敗しても注文完了を止めない)
+    updateCustomerStamps(phone, rewardActive);
+
     const orderWithReceipt = { ...orderPayload, receipt_url: `${location.origin}${location.pathname}?receipt=${orderPayload.order_number}` };
 
     // メール通知(GAS経由でinfo@rakugo.storeへ送信 → orders@saitofoods.comに転送される)
@@ -1197,7 +1340,7 @@ async function submitOrder() {
       })
     }).catch(() => {});
 
-    showSuccessScreen(orderPayload.order_number);
+    showSuccessScreen(orderPayload.order_number, rewardActive);
     cart = {};
     updateCartBar();
     saveCartToStorage();
@@ -1208,7 +1351,7 @@ async function submitOrder() {
   }
 }
 
-function showSuccessScreen(orderNumber) {
+function showSuccessScreen(orderNumber, rewardUsed) {
   const receiptUrl = `${location.origin}${location.pathname}?receipt=${orderNumber}`;
   document.getElementById('checkout-body').innerHTML = `
     <div class="success-screen">
@@ -1217,6 +1360,7 @@ function showSuccessScreen(orderNumber) {
       <p>เลขที่คำสั่งซื้อของท่าน / Your order number</p>
       <div class="order-num">#${orderNumber}</div>
       <p>เราจะติดต่อกลับเพื่อยืนยันคำสั่งซื้อเร็วๆ นี้</p>
+      ${rewardUsed ? `<div style="margin-top:14px; padding:10px 14px; background:#E6FFFA; border-radius:10px; color:var(--green); font-weight:700; font-size:13px;">🎉 ใช้สิทธิ์ส่งฟรีในคำสั่งซื้อนี้แล้ว!</div>` : ''}
       <div style="margin-top:20px; padding:16px; background:#FFF0E8; border-radius:10px; text-align:left;">
         <div style="font-size:13px; font-weight:700; color:var(--brand-dark); margin-bottom:8px;">
           📋 บันทึกลิงก์นี้ไว้เพื่อดูรายละเอียดคำสั่งซื้อภายหลัง
