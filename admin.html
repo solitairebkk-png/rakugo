@@ -95,6 +95,7 @@
   .slip-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 1.5px solid #FFD4B8; }
   .slip-none { color: #CCC; font-size: 12px; }
   .area-warning { display: inline-block; background: #FEB2B2; color: #822727; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: 6px; }
+  .printed-badge { display: inline-block; background: #C6F6D5; color: #22543D; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: 6px; }
   .slip-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; padding: 20px; cursor: zoom-out; }
   .slip-lightbox.open { display: flex; }
   .slip-lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; }
@@ -147,8 +148,31 @@
   .scroll-fab:hover{ transform:translateY(-2px); border-color:#FF6B35; }
   .scroll-fab.hidden{ opacity:0; pointer-events:none; }
   .scroll-fab.top{ background:#FF6B35; color:white; border-color:#FF6B35; }
+
+  /* PRINT DELIVERY SLIP */
+  .print-slip-container{ display:none; }
+  .slip-sheet{ width:100%; max-width:480px; margin:0 auto; font-family:'Sarabun',sans-serif; color:#2C2C2A; }
+  .slip-header{ display:flex; align-items:center; gap:12px; border-bottom:3px solid #FF6B35; padding-bottom:12px; margin-bottom:14px; }
+  .slip-header img{ height:44px; }
+  .slip-header .slip-title{ font-size:15px; font-weight:700; color:#E4572E; }
+  .slip-header .slip-ordernum{ font-size:20px; font-weight:800; }
+  .slip-section{ margin-bottom:12px; font-size:13px; line-height:1.7; }
+  .slip-section b{ color:#7A3A1A; }
+  .slip-table{ width:100%; border-collapse:collapse; font-size:13px; margin-bottom:10px; }
+  .slip-table th, .slip-table td{ border-bottom:1px solid #FFD4B8; padding:6px 4px; text-align:left; }
+  .slip-table th:last-child, .slip-table td:last-child{ text-align:right; }
+  .slip-total-row td{ font-weight:800; font-size:15px; color:#E4572E; border-top:2px solid #2C2C2A; border-bottom:none; }
+  .slip-qr-row{ display:flex; gap:16px; margin-top:14px; justify-content:space-around; }
+  .slip-qr-box{ text-align:center; font-size:11.5px; font-weight:600; color:#7A3A1A; }
+  .slip-qr-box > div{ margin-bottom:6px; display:flex; justify-content:center; }
+  @media print{
+    body *{ visibility:hidden; }
+    .print-slip-container, .print-slip-container *{ visibility:visible; }
+    .print-slip-container{ display:block !important; position:absolute; left:0; top:0; width:100%; }
+  }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -214,7 +238,7 @@
   <div id="page-orders" class="page">
     <div class="toolbar">
       <h2>คำสั่งซื้อ</h2>
-      <select class="search-box" style="width:160px;" onchange="filterOrders(this.value)">
+      <select id="order-status-filter" class="search-box" style="width:160px;" onchange="filterOrders(this.value)">
         <option value="">ทั้งหมด</option>
         <option value="pending">รอยืนยัน</option>
         <option value="confirmed">ยืนยันแล้ว</option>
@@ -576,8 +600,14 @@
     <div class="modal-body" id="order-modal-body"></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeOrderModal()">ปิด</button>
+      <button class="btn btn-secondary" id="order-modal-print-btn" onclick="printDeliverySlip(currentOrderModalId)">🖨️ พิมพ์ใบส่งของ</button>
+      <button class="btn btn-primary" id="order-modal-deliver-btn" onclick="markDelivered(currentOrderModalId)">✅ ส่งสำเร็จ</button>
     </div>
   </div>
+</div>
+
+<!-- 印刷専用の伝票(画面には出さず、印刷時のみ表示) -->
+<div class="print-slip-container" id="print-slip-container"></div>
 </div>
 
 <!-- SLIP LIGHTBOX -->
@@ -617,6 +647,7 @@ const STATUS_LABELS = {
 
 let allProducts = [];
 let allOrders = [];
+let currentOrderModalId = null;
 let allCategories = [];
 let allCondiments = [];
 let allZones = [];
@@ -977,7 +1008,7 @@ function renderOrders(orders) {
   }
   tbody.innerHTML = orders.map(o => `
     <tr>
-      <td style="font-weight:600;">#${o.order_number}${o.area_confirmed === false ? '<span class="area-warning">⚠️ นอกพื้นที่</span>' : ''}</td>
+      <td style="font-weight:600;">#${o.order_number}${o.area_confirmed === false ? '<span class="area-warning">⚠️ นอกพื้นที่</span>' : ''}${o.slip_printed_at ? '<span class="printed-badge">🖨️ พิมพ์แล้ว</span>' : ''}</td>
       <td>${o.customer_name}</td>
       <td>${o.customer_phone}</td>
       <td>฿${o.total_amount}</td>
@@ -993,7 +1024,7 @@ function renderOrders(orders) {
         </select>
       </td>
       <td style="font-size:12px;color:#888;">${new Date(o.created_at).toLocaleDateString('th-TH')}</td>
-      <td><button class="btn btn-secondary btn-sm" onclick="viewOrder(${o.id})">ดูรายละเอียด</button></td>
+      <td><button class="btn btn-secondary btn-sm" onclick="viewOrder(${o.id})">ดูรายละเอียด</button> <button class="btn btn-secondary btn-sm" onclick="printDeliverySlip(${o.id})" title="พิมพ์ใบส่งของ">🖨️</button>${(o.status !== 'delivered' && o.status !== 'cancelled') ? ` <button class="btn btn-primary btn-sm" onclick="markDelivered(${o.id})" title="บันทึกว่าส่งสำเร็จแล้ว">✅ ส่งสำเร็จ</button>` : ''}</td>
     </tr>
   `).join('');
 }
@@ -1011,13 +1042,31 @@ function filterOrders(status) {
 async function updateOrderStatus(id, status) {
   try {
     await supabase('PATCH', `orders?id=eq.${id}`, { status });
+    const o = allOrders.find(x => x.id === id);
+    if (o) o.status = status;
     showToast('อัปเดตสถานะสำเร็จ', 'success');
+  } catch(e) { showToast('อัปเดตไม่สำเร็จ', 'error'); }
+}
+
+// 伝票印刷 → 配送 の流れの最後、ワンタップで「配送完了」にする専用ボタン用
+async function markDelivered(id) {
+  try {
+    await supabase('PATCH', `orders?id=eq.${id}`, { status: 'delivered' });
+    const o = allOrders.find(x => x.id === id);
+    if (o) o.status = 'delivered';
+    showToast('บันทึกการส่งสำเร็จแล้ว ✓', 'success');
+    const filterVal = document.getElementById('order-status-filter')?.value || '';
+    filterOrders(filterVal);
+    if (document.getElementById('order-modal').classList.contains('open') && currentOrderModalId === id) {
+      viewOrder(id);
+    }
   } catch(e) { showToast('อัปเดตไม่สำเร็จ', 'error'); }
 }
 
 async function viewOrder(id) {
   const order = allOrders.find(o => o.id === id);
   if (!order) return;
+  currentOrderModalId = id;
   const items = await supabase('GET', `order_items?order_id=eq.${id}`);
   document.getElementById('order-modal-title').textContent = `คำสั่งซื้อ #${order.order_number}`;
   const mapLink = (order.delivery_lat && order.delivery_lng)
@@ -1035,6 +1084,7 @@ async function viewOrder(id) {
       <div><b>วันที่จัดส่ง:</b> ${order.delivery_date || '-'}</div>
       <div><b>ตำแหน่งปักหมุด:</b> ${mapLink}</div>
       <div><b>วิธีชำระเงิน:</b> ${order.payment_method === 'cod' ? 'เก็บเงินปลายทาง' : 'โอนเงิน'}</div>
+      <div><b>สถานะใบส่งของ:</b> ${order.slip_printed_at ? `<span class="printed-badge">🖨️ พิมพ์แล้ว</span> ${new Date(order.slip_printed_at).toLocaleString('th-TH')}` : '<span style="color:#AAA;">ยังไม่ได้พิมพ์</span>'}</div>
       ${order.note ? `<div style="grid-column:1/-1;"><b>หมายเหตุ:</b> ${order.note}</div>` : ''}
     </div>
     ${order.slip_image_url ? `
@@ -1053,11 +1103,121 @@ async function viewOrder(id) {
       </table>
     </div>
   `;
+  const deliverBtn = document.getElementById('order-modal-deliver-btn');
+  if (deliverBtn) deliverBtn.style.display = (order.status === 'delivered' || order.status === 'cancelled') ? 'none' : 'inline-block';
+
   document.getElementById('order-modal').classList.add('open');
 }
 
 function closeOrderModal() {
   document.getElementById('order-modal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════
+// PromptPay QR生成(order.htmlと同じEMVCo仕様)
+// ═══════════════════════════════════════════════
+const PROMPTPAY_BILLER_ID = '010554007919109';
+const PROMPTPAY_REF1 = 'REF001';
+
+function ppTlv(tag, value) { return `${tag}${String(value.length).padStart(2,'0')}${value}`; }
+
+function ppCrc16(str) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= (str.charCodeAt(i) << 8);
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+function buildPromptPayPayload(amount) {
+  const merchantInfo = ppTlv('00', 'A000000677010112') + ppTlv('01', PROMPTPAY_BILLER_ID) + ppTlv('02', PROMPTPAY_REF1) + ppTlv('03', '0');
+  const amountStr = amount.toFixed(2);
+  const payload =
+    ppTlv('00', '01') +
+    ppTlv('01', '12') +
+    ppTlv('30', merchantInfo) +
+    ppTlv('53', '764') +
+    ppTlv('54', amountStr) +
+    ppTlv('58', 'TH') +
+    ppTlv('62', ppTlv('07', 'IFB0819093451'));
+  const withCrcTag = payload + '6304';
+  return withCrcTag + ppCrc16(withCrcTag);
+}
+
+// ═══════════════════════════════════════════════
+// 配送伝票の印刷(ラクゴーヘッダー付き・位置情報QR・支払いQR)
+// ═══════════════════════════════════════════════
+async function printDeliverySlip(orderId) {
+  const order = allOrders.find(o => o.id === orderId) || (await supabase('GET', `orders?id=eq.${orderId}&select=*`))[0];
+  if (!order) { showToast('ไม่พบคำสั่งซื้อ', 'error'); return; }
+  const items = await supabase('GET', `order_items?order_id=eq.${orderId}`);
+
+  const paymentLabel = order.payment_method === 'cod' ? 'เก็บเงินปลายทาง / Cash on delivery'
+                      : order.payment_method === 'qr' ? 'QR พร้อมเพย์ (ชำระแล้ว) / Paid by QR'
+                      : 'โอนเงิน (ชำระแล้ว) / Paid by transfer';
+  const hasLocation = order.delivery_lat && order.delivery_lng;
+  const mapUrl = hasLocation ? `https://www.google.com/maps?q=${order.delivery_lat},${order.delivery_lng}` : null;
+  const needsPaymentQr = order.payment_method === 'cod' && order.total_amount > 0;
+
+  const container = document.getElementById('print-slip-container');
+  container.innerHTML = `
+    <div class="slip-sheet">
+      <div class="slip-header">
+        <img src="images/rakugo.webp" alt="Rakugo!">
+        <div>
+          <div class="slip-title">ใบส่งของ / Delivery Slip</div>
+          <div class="slip-ordernum">#${order.order_number}</div>
+        </div>
+      </div>
+      <div class="slip-section">
+        <b>ลูกค้า:</b> ${order.customer_name} &nbsp; | &nbsp; <b>โทร:</b> ${order.customer_phone}<br>
+        <b>ที่อยู่:</b> ${order.customer_address}<br>
+        <b>พื้นที่จัดส่ง:</b> ${order.delivery_district || '-'}<br>
+        <b>วันที่/เวลาจัดส่ง:</b> ${order.delivery_date || '-'} ${order.delivery_time_slot || ''}<br>
+        <b>ชำระเงิน:</b> ${paymentLabel}
+        ${order.note ? `<br><b>หมายเหตุ:</b> ${order.note}` : ''}
+      </div>
+      <table class="slip-table">
+        <thead><tr><th>สินค้า</th><th>จำนวน</th><th>ราคา</th></tr></thead>
+        <tbody>
+          ${items.map(i => `<tr><td>${i.product_name_th}</td><td>${i.quantity}</td><td>฿${i.subtotal}</td></tr>`).join('')}
+          <tr><td colspan="2">ค่าส่ง</td><td>฿${order.delivery_fee ?? 0}</td></tr>
+          <tr class="slip-total-row"><td colspan="2">รวมทั้งสิ้น</td><td>฿${order.total_amount}</td></tr>
+        </tbody>
+      </table>
+      <div class="slip-qr-row">
+        ${hasLocation ? `<div class="slip-qr-box"><div id="slip-qr-map"></div>📍 สแกนนำทางไปที่อยู่ลูกค้า</div>` : ''}
+        ${needsPaymentQr ? `<div class="slip-qr-box"><div id="slip-qr-pay"></div>💸 ให้ลูกค้าสแกนจ่าย ฿${order.total_amount}</div>` : ''}
+      </div>
+    </div>
+  `;
+
+  if (hasLocation) {
+    new QRCode(document.getElementById('slip-qr-map'), { text: mapUrl, width: 120, height: 120 });
+  }
+  if (needsPaymentQr) {
+    new QRCode(document.getElementById('slip-qr-pay'), { text: buildPromptPayPayload(order.total_amount), width: 120, height: 120 });
+  }
+
+  setTimeout(() => window.print(), 150);
+
+  // 「帳票印刷済み」を記録(失敗しても印刷自体には影響させない)
+  markSlipPrinted(order);
+}
+
+async function markSlipPrinted(order) {
+  try {
+    const printedAt = new Date().toISOString();
+    await supabase('PATCH', `orders?id=eq.${order.id}`, { slip_printed_at: printedAt });
+    order.slip_printed_at = printedAt;
+    const localOrder = allOrders.find(o => o.id === order.id);
+    if (localOrder) localOrder.slip_printed_at = printedAt;
+    const filterVal = document.getElementById('order-status-filter')?.value || '';
+    filterOrders(filterVal);
+  } catch (e) { /* 印刷済みフラグの更新失敗は印刷自体には影響させない */ }
 }
 
 // ── RANKING ──────────────────────────
