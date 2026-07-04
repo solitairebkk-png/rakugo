@@ -184,6 +184,17 @@
   .pmodal-suggest-name { font-size: 11.5px; font-weight: 600; line-height: 1.3; }
   .pmodal-suggest-price { font-size: 11.5px; color: var(--brand-dark); font-weight: 700; margin-top: 2px; }
 
+  /* STAMP CARD (リピート促進スタンプ) */
+  @keyframes stampDown {
+    0%   { transform: scale(2.6) rotate(var(--r,0deg)); opacity: 0; }
+    45%  { transform: scale(0.82) rotate(var(--r,0deg)); opacity: 1; }
+    65%  { transform: scale(1.12) rotate(var(--r,0deg)); }
+    100% { transform: scale(1) rotate(var(--r,0deg)); opacity: 1; }
+  }
+  .stamp-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-family: serif; font-weight: 700; font-size: 14px; flex-shrink: 0; transform: rotate(var(--r,0deg)) translateY(var(--ty,0px)); }
+  .stamp-badge.filled { background: var(--brand); color: #fff; animation: stampDown 0.5s cubic-bezier(.36,1.55,.5,1) both; }
+  .stamp-badge.empty { border: 1.5px dashed var(--line); color: var(--line); }
+
   /* RESPONSIVE OVERRIDES — 必ず最後に書いて確実に優先させる */
   @media (min-width: 700px) {
     .app-shell { max-width: 760px; }
@@ -724,12 +735,28 @@ function renderStampCard() {
     el.innerHTML = `🎉 คุณได้รับสิทธิ์ <b>ส่งฟรี</b> ในคำสั่งซื้อนี้! (สะสมครบ ${STAMPS_REQUIRED} ครั้ง)`;
   } else {
     const n = customerStampInfo.stamp_count || 0;
-    const stamps = Array.from({ length: STAMPS_REQUIRED }, (_, i) => i < n ? '🟠' : '⚪').join(' ');
+    const stampIcons = Array.from({ length: STAMPS_REQUIRED }, (_, i) => stampBadgeHtml(i < n, i)).join('');
     el.style.background = '#FFF8F3';
     el.style.borderColor = 'var(--line)';
     el.style.color = '#7A3A1A';
-    el.innerHTML = `🎟️ สะสมแสตมป์: ${stamps} (${n}/${STAMPS_REQUIRED}) — ครบ ${STAMPS_REQUIRED} ครั้งรับสิทธิ์ส่งฟรี!`;
+    el.innerHTML = `🎟️ สะสมแสตมป์<br><span style="display:inline-flex;gap:5px;align-items:center;margin-top:6px;">${stampIcons}</span> (${n}/${STAMPS_REQUIRED}) — ครบ ${STAMPS_REQUIRED} ครั้งรับสิทธิ์ส่งฟรี!`;
   }
+}
+
+// オレンジ丸に「楽」の一文字を入れたスタンプバッジ(画像ファイルに依存せずCSSのみで再現)
+// 押される毎に角度・位置が微妙にズレる「手押しスタンプ感」を出すため、
+// index に応じた固定パターンの回転・縦ズレを与える(毎回ランダムだと再描画のたびガタつくので固定値にしている)
+const STAMP_ROTATIONS = [-11, 7, -5, 9, -8, 4, -13, 6, -6, 10];
+const STAMP_OFFSETS = [2, -3, 1, -2, 3, -1, 2, -3, 0, 1];
+
+function stampBadgeHtml(filled, index) {
+  const r = STAMP_ROTATIONS[index % STAMP_ROTATIONS.length];
+  const ty = STAMP_OFFSETS[index % STAMP_OFFSETS.length];
+  if (filled) {
+    const delay = (index * 90);
+    return `<span class="stamp-badge filled" style="--r:${r}deg; --ty:${ty}px; animation-delay:${delay}ms;">楽</span>`;
+  }
+  return `<span class="stamp-badge empty" style="--r:${Math.round(r * 0.4)}deg; --ty:${ty}px;">楽</span>`;
 }
 
 // 注文成功後にスタンプ数を更新(失敗しても注文自体には影響させない)
