@@ -111,6 +111,25 @@
   .empty-state { text-align: center; padding: 60px 20px; color: #AAA; }
   .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
 
+  /* HOLIDAY CALENDAR */
+  .cal-card{ background:white; border-radius:12px; border:1px solid #FFD4B8; padding:20px 22px; max-width:420px; margin-bottom:16px; }
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .cal-head .cal-month{ font-weight:700; font-size:15px; }
+  .cal-nav-btn{ width:28px; height:28px; border-radius:50%; border:1.5px solid #FFD4B8; background:#fff; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; }
+  .cal-nav-btn:hover{ border-color:#FF6B35; }
+  .cal-nav-btn:disabled{ opacity:.3; cursor:not-allowed; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; }
+  .cal-dow{ font-size:11px; font-weight:700; color:#9a8973; padding-bottom:5px; }
+  .cal-day{ position:relative; padding:7px 0; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; }
+  .cal-day.empty{ visibility:hidden; cursor:default; }
+  .cal-day.past{ color:#ccc; cursor:default; }
+  .cal-day.today{ background:#FFF0E8; }
+  .cal-day.closed{ background:#FFE3E0; color:#C53030; }
+  .cal-day.satmorning{ background:#FFF3D6; color:#9C6B0A; }
+  .cal-legend{ display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:11px; color:#7A3A1A; }
+  .cal-legend span{ display:inline-flex; align-items:center; gap:5px; }
+  .cal-legend .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+
   /* TOAST */
   .toast { position: fixed; bottom: 24px; right: 24px; background: #2C2C2A; color: white; padding: 10px 18px; border-radius: 10px; font-size: 14px; z-index: 999; display: none; }
   .toast.show { display: block; }
@@ -168,9 +187,9 @@
   .slip-qr-box > div{ margin-bottom:6px; display:flex; justify-content:center; }
   .slip-stamp-box{ margin-top:12px; padding:10px 12px; border:1.5px dashed #FFD4B8; border-radius:10px; font-size:12.5px; font-weight:600; line-height:1.7; }
   .slip-stamp-badges{ display:inline-flex; gap:5px; align-items:center; margin-top:4px; }
-  .slip-stamp-badge{ display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; font-family:serif; font-weight:700; font-size:13px; }
-  .slip-stamp-badge.filled{ background:#FF6B35; color:#fff; }
-  .slip-stamp-badge.empty{ border:1.5px dashed #FFD4B8; color:#FFD4B8; }
+  .slip-stamp-badge{ display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; font-family:serif; font-weight:900; font-size:13px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .slip-stamp-badge.filled{ border:3px solid #000; color:#000; background:#FF6B35; }
+  .slip-stamp-badge.empty{ border:1.5px dashed #BBB; color:#DDD; background:transparent; }
   @media print{
     body *{ visibility:hidden; }
     .print-slip-container, .print-slip-container *{ visibility:visible; }
@@ -377,6 +396,19 @@
     <div class="toolbar">
       <h2>วันหยุด</h2>
       <div style="font-size:12px;color:#9a8973;">ทุกวันอาทิตย์ปิดทำการอัตโนมัติ · วันเสาร์ส่งเฉพาะช่วงเช้าอัตโนมัติ · เพิ่มด้านล่างเฉพาะวันหยุดพิเศษเพิ่มเติม</div>
+    </div>
+    <div class="cal-card">
+      <div class="cal-head">
+        <button class="cal-nav-btn" id="cal-prev-btn" onclick="calChangeMonth(-1)">‹</button>
+        <div class="cal-month" id="cal-month-label"></div>
+        <button class="cal-nav-btn" id="cal-next-btn" onclick="calChangeMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <span><span class="dot" style="background:#FFE3E0;border:1.5px solid #E23F2C;"></span>ปิดทำการ</span>
+        <span><span class="dot" style="background:#FFF3D6;border:1.5px solid #9C6B0A;"></span>ส่งเฉพาะเช้า</span>
+        <span style="opacity:.7;">คลิกวันที่เพื่อกรอกในฟอร์มด้านล่าง</span>
+      </div>
     </div>
     <div class="table-wrap" style="padding:16px; margin-bottom:16px;">
       <div class="form-row">
@@ -1553,16 +1585,82 @@ async function loadHolidays() {
     const tbody = document.getElementById('holidays-tbody');
     if (!allHolidaysAdmin.length) {
       tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state"><div class="icon">📅</div>ยังไม่มีวันหยุดที่เพิ่มเอง</div></td></tr>`;
-      return;
+    } else {
+      tbody.innerHTML = allHolidaysAdmin.map(h => `
+        <tr>
+          <td style="font-weight:600;">${h.holiday_date}</td>
+          <td>${h.note || '-'}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteHoliday(${h.id})">ลบ</button></td>
+        </tr>
+      `).join('');
     }
-    tbody.innerHTML = allHolidaysAdmin.map(h => `
-      <tr>
-        <td style="font-weight:600;">${h.holiday_date}</td>
-        <td>${h.note || '-'}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteHoliday(${h.id})">ลบ</button></td>
-      </tr>
-    `).join('');
   } catch(e) { showToast('โหลดวันหยุดไม่สำเร็จ', 'error'); }
+  calHolidays = allHolidaysAdmin.map(h => h.holiday_date);
+  renderCalendar();
+}
+
+// ── HOLIDAY CALENDAR (visual overview, click a day to prefill the form) ──
+let calHolidays = [];
+let calViewDate = new Date();
+calViewDate.setDate(1);
+
+function calFormatDate(y, m, d) {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
+function calChangeMonth(delta) {
+  calViewDate.setMonth(calViewDate.getMonth() + delta);
+  renderCalendar();
+}
+
+function calDayClick(dateStr, isPast, isSunday) {
+  if (isPast || isSunday) return; // 過去日・日曜(自動休業)はクリック不可
+  document.getElementById('holiday-date').value = dateStr;
+  document.getElementById('holiday-note').focus();
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  if (!grid) return; // 休日ページを開く前は要素が無いので何もしない
+  const y = calViewDate.getFullYear();
+  const m = calViewDate.getMonth();
+  const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  document.getElementById('cal-month-label').textContent = `${monthNames[m]} ${y + 543}`;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = calFormatDate(today.getFullYear(), today.getMonth(), today.getDate());
+
+  const prevBtn = document.getElementById('cal-prev-btn');
+  prevBtn.disabled = (y === today.getFullYear() && m === today.getMonth());
+
+  const firstDayOfWeek = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const dowLabels = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+  let html = dowLabels.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  for (let i = 0; i < firstDayOfWeek; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = calFormatDate(y, m, d);
+    const dow = new Date(y, m, d).getDay();
+    const isPast = dateStr < todayStr;
+    const isToday = dateStr === todayStr;
+    const isHoliday = calHolidays.includes(dateStr);
+    const isSunday = dow === 0;
+    const isClosed = isSunday || isHoliday;
+    const isSatMorning = dow === 6 && !isHoliday;
+
+    let cls = 'cal-day';
+    if (isPast) cls += ' past';
+    if (isToday) cls += ' today';
+    if (isClosed) cls += ' closed';
+    else if (isSatMorning) cls += ' satmorning';
+
+    html += `<div class="${cls}" onclick="calDayClick('${dateStr}', ${isPast}, ${isSunday})" title="${isHoliday ? 'วันหยุดที่เพิ่มไว้ (คลิกด้านล่างเพื่อลบ)' : ''}">${d}</div>`;
+  }
+
+  grid.innerHTML = html;
 }
 
 async function addHoliday() {

@@ -281,7 +281,7 @@
         <div class="form-group">
           <label>เขต / District *</label>
           <select id="c-district">
-            <option value="">-- เลือกเขต --</option>
+            <option value="">-- เลือกเขต / Select district --</option>
           </select>
         </div>
         <div class="fee-result" id="fee-result">
@@ -308,7 +308,7 @@
         <div class="form-group">
           <label>ช่วงเวลาจัดส่ง / Delivery time slot *</label>
           <select id="c-timeslot">
-            <option value="">-- เลือกช่วงเวลา --</option>
+            <option value="">-- เลือกช่วงเวลา / Select time slot --</option>
           </select>
         </div>
       </div>
@@ -417,11 +417,11 @@ const PROMPTPAY_REF1 = 'REF001';
 const STAMPS_REQUIRED = 5;
 
 const COOKING_LABELS = {
-  microwave: '🔥 ไมโครเวฟ',
-  fry: '🍳 ทอด',
-  boil: '💧 ต้ม',
-  pan: '🥘 กระทะ',
-  ready: '✅ พร้อมทาน'
+  microwave: '🔥 ไมโครเวฟ / Microwave',
+  fry: '🍳 ทอด / Fry',
+  boil: '💧 ต้ม / Boil',
+  pan: '🥘 กระทะ / Pan',
+  ready: '✅ พร้อมทาน / Ready to eat'
 };
 
 let allCategories = [];
@@ -740,7 +740,7 @@ function buildStampCardParts(info) {
       background: '#E6FFFA',
       borderColor: 'var(--green)',
       color: 'var(--green)',
-      html: `🎉 คุณได้รับสิทธิ์ <b>ส่งฟรี</b> ในคำสั่งซื้อครั้งถัดไป! (สะสมครบ ${STAMPS_REQUIRED} ครั้ง)`
+      html: `🎉 คุณได้รับสิทธิ์ <b>ส่งฟรี</b> ในคำสั่งซื้อครั้งถัดไป! (สะสมครบ ${STAMPS_REQUIRED} ครั้ง)<br><span style="font-weight:400;">You've earned free shipping on your next order!</span>`
     };
   }
   const n = info.stamp_count || 0;
@@ -749,7 +749,7 @@ function buildStampCardParts(info) {
     background: '#FFF8F3',
     borderColor: 'var(--line)',
     color: '#7A3A1A',
-    html: `🎟️ สะสมแสตมป์<br><span style="display:inline-flex;gap:5px;align-items:center;margin-top:6px;">${stampIcons}</span> (${n}/${STAMPS_REQUIRED}) — ครบ ${STAMPS_REQUIRED} ครั้งรับสิทธิ์ส่งฟรี!`
+    html: `🎟️ สะสมแสตมป์ / Stamp card<br><span style="display:inline-flex;gap:5px;align-items:center;margin-top:6px;">${stampIcons}</span> (${n}/${STAMPS_REQUIRED}) — ครบ ${STAMPS_REQUIRED} ครั้งรับสิทธิ์ส่งฟรี! / Free shipping at ${STAMPS_REQUIRED}!`
   };
 }
 
@@ -834,13 +834,13 @@ async function updateCustomerStamps(phone, nextState) {
 // ═══════════════════════════════════════════════
 function renderCatTabs() {
   const wrap = document.getElementById('cat-tabs');
-  wrap.innerHTML = `<button class="cat-tab active" onclick="scrollToCat('all', this)">ทั้งหมด</button>` +
-    allCategories.map(c => `<button class="cat-tab" onclick="scrollToCat(${c.id}, this)">${c.name_th}</button>`).join('');
+  wrap.innerHTML = `<button class="cat-tab active" onclick="scrollToCat('all', this)">ทั้งหมด / All</button>` +
+    allCategories.map(c => `<button class="cat-tab" onclick="scrollToCat(${c.id}, this)">${c.name_th} / ${c.name_en}</button>`).join('');
 }
 
 function renderCookFilterTabs() {
   const wrap = document.getElementById('cook-filter-tabs');
-  wrap.innerHTML = `<button class="cook-tab active" id="cook-tab-all" onclick="handleCookingFilter(null, this)">ทั้งหมด</button>` +
+  wrap.innerHTML = `<button class="cook-tab active" id="cook-tab-all" onclick="handleCookingFilter(null, this)">ทั้งหมด / All</button>` +
     Object.entries(COOKING_LABELS).map(([key, label]) =>
       `<button class="cook-tab" id="cook-tab-${key}" onclick="handleCookingFilter('${key}', this)">${label}</button>`
     ).join('');
@@ -1097,7 +1097,7 @@ function renderDistrictSelect() {
     if (!zoneGroups[d.zone_label]) zoneGroups[d.zone_label] = [];
     zoneGroups[d.zone_label].push(d);
   });
-  sel.innerHTML = '<option value="">-- เลือกเขต --</option>' +
+  sel.innerHTML = '<option value="">-- เลือกเขต / Select district --</option>' +
     Object.entries(zoneGroups).map(([zoneLabel, districts]) => `
       <optgroup label="${zoneLabel} (฿${districts[0].fee})">
         ${districts.map(d => `<option value="${d.id}">${d.name_th} / ${d.name_en}</option>`).join('')}
@@ -1206,7 +1206,7 @@ function renderTimeSlotOptions(dateStr) {
   const sel = document.getElementById('c-timeslot');
   const previousValue = sel.value;
   if (!dateStr) {
-    sel.innerHTML = '<option value="">-- เลือกช่วงเวลา --</option>';
+    sel.innerHTML = '<option value="">-- เลือกช่วงเวลา / Select time slot --</option>';
     return;
   }
   const d = new Date(dateStr + 'T00:00:00');
@@ -1231,7 +1231,7 @@ function renderTimeSlotOptions(dateStr) {
     return;
   }
 
-  sel.innerHTML = '<option value="">-- เลือกช่วงเวลา --</option>' +
+  sel.innerHTML = '<option value="">-- เลือกช่วงเวลา / Select time slot --</option>' +
     slots.map(s => `<option value="${s.value}">${s.label}</option>`).join('');
 
   // 以前選んでいた時間帯がまだ選択肢に残っていれば復元する
