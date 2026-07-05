@@ -129,6 +129,13 @@
 
   .order-summary-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 5px 0; }
   .order-summary-row.total { border-top: 1.5px solid var(--line-soft); margin-top: 8px; padding-top: 10px; font-size: 16px; font-weight: 800; color: var(--brand-dark); }
+  .summary-item-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+  .summary-item-name { flex: 1; min-width: 0; }
+  .summary-item-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .summary-qty-btn { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--brand); background: #fff; color: var(--brand); font-size: 13px; font-weight: 700; cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; }
+  .summary-qty-num { font-size: 13px; font-weight: 700; min-width: 14px; text-align: center; }
+  .summary-item-price { font-size: 13.5px; font-weight: 700; min-width: 52px; text-align: right; }
+  .summary-remove-btn { width: 22px; height: 22px; border-radius: 50%; border: none; background: #FEE2E2; color: #C53030; font-size: 13px; font-weight: 700; cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
   .submit-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--brand); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; }
   .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -355,8 +362,17 @@
           <label>หมายเหตุ (ถ้ามี)</label>
           <textarea id="c-note" placeholder="เช่น ไม่ใส่ผัก, โทรก่อนส่ง"></textarea>
         </div>
+        <div class="form-group">
+          <label>โค้ดส่วนลด (ถ้ามี) / Coupon code (optional)</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="c-coupon" placeholder="เช่น SUMMER50" style="flex:1; text-transform:uppercase;">
+            <button type="button" onclick="applyCoupon()" style="flex-shrink:0; padding:0 16px; border-radius:8px; border:1.5px solid var(--brand); background:#fff; color:var(--brand-dark); font-weight:700; font-size:13px; cursor:pointer;">ใช้โค้ด / Apply</button>
+          </div>
+          <div id="coupon-status" style="font-size:12px; margin-top:6px; display:none;"></div>
+        </div>
         <div id="summary-lines"></div>
         <div class="order-summary-row"><span>ค่าส่ง / Delivery fee</span><span id="summary-fee">฿0</span></div>
+        <div class="order-summary-row" id="summary-discount-row" style="display:none; color:var(--green);"><span>ส่วนลด / Discount</span><span id="summary-discount">-฿0</span></div>
         <div class="order-summary-row total"><span>รวมทั้งสิ้น / Total</span><span id="summary-total">฿0</span></div>
       </div>
 
@@ -430,6 +446,7 @@ let allDistricts = [];
 let allCondiments = [];
 let allProductCondiments = [];
 let allHolidays = []; // ['2026-07-13', ...] 休業日として登録された日付
+let appliedCoupon = null; // { code, discount_amount, ... } or null
 let coOccurrenceMap = {};
 let cart = {}; // { product_id: { product, qty } }
 let currentSearchQuery = '';
@@ -615,6 +632,7 @@ async function showReceiptView(orderNumber) {
         <div style="border-top:1.5px solid var(--line-soft); margin:12px 0;"></div>
         ${items.map(i => `<div class="order-summary-row"><span>${i.product_name_th} × ${i.quantity}</span><span>฿${i.subtotal}</span></div>`).join('')}
         <div class="order-summary-row"><span>ค่าส่ง / Delivery fee</span><span>฿${order.delivery_fee || 0}</span></div>
+        ${order.discount_amount > 0 ? `<div class="order-summary-row" style="color:var(--green);"><span>ส่วนลด (${order.coupon_code || ''}) / Discount</span><span>-฿${order.discount_amount}</span></div>` : ''}
         <div class="order-summary-row total"><span>รวมทั้งสิ้น / Total</span><span>฿${order.total_amount}</span></div>
         ${stampCardBlockHtml(receiptStampInfo)}
         <button class="submit-btn" style="margin-top:16px;" onclick="reorderFromReceipt()">🔁 สั่งซ้ำอีกครั้ง / Order again</button>
@@ -980,6 +998,16 @@ function changeQty(productId, delta) {
   refreshProductView();
   updateCartBar();
   saveCartToStorage();
+  if (document.getElementById('checkout-modal').classList.contains('open')) updateSummary();
+}
+
+function removeFromCart(productId) {
+  delete cart[productId];
+  refreshProductView();
+  updateCartBar();
+  saveCartToStorage();
+  if (document.getElementById('checkout-modal').classList.contains('open')) updateSummary();
+  if (!Object.keys(cart).length) closeCheckout();
 }
 
 function updateCartBar() {
@@ -1395,19 +1423,102 @@ function isFreeShippingRewardActive() {
   return !!(customerStampInfo && customerStampInfo.has_free_shipping && !(selectedDistrict && selectedDistrict.isOutOfArea));
 }
 
+// ═══════════════════════════════════════════════
+// クーポンコード(スタンプとは別軸の割引施策)
+// ═══════════════════════════════════════════════
+document.getElementById('c-coupon').addEventListener('input', () => {
+  if (appliedCoupon) {
+    appliedCoupon = null;
+    document.getElementById('coupon-status').style.display = 'none';
+    updateSummary();
+  }
+});
+
+async function applyCoupon() {
+  const codeInput = document.getElementById('c-coupon');
+  const code = codeInput.value.trim().toUpperCase();
+  const statusEl = document.getElementById('coupon-status');
+  statusEl.style.display = 'block';
+
+  if (!code) {
+    statusEl.style.color = '#9B2C2C';
+    statusEl.textContent = 'กรุณากรอกโค้ดส่วนลด / Please enter a coupon code';
+    return;
+  }
+
+  statusEl.style.color = '#999';
+  statusEl.textContent = 'กำลังตรวจสอบ... / Checking...';
+
+  try {
+    const rows = await supabase('GET', `coupons?code=eq.${encodeURIComponent(code)}&select=*`);
+    const coupon = rows[0];
+
+    if (!coupon || !coupon.is_active) {
+      throw new Error('ไม่พบโค้ดนี้ หรือโค้ดถูกปิดใช้งานแล้ว / Invalid or inactive coupon code');
+    }
+    if (coupon.expires_at && coupon.expires_at < formatDateLocal(new Date())) {
+      throw new Error('โค้ดนี้หมดอายุแล้ว / This coupon has expired');
+    }
+    if (coupon.max_uses !== null && coupon.used_count >= coupon.max_uses) {
+      throw new Error('โค้ดนี้ถูกใช้ครบจำนวนแล้ว / This coupon has reached its usage limit');
+    }
+    if (coupon.per_customer_limit) {
+      const phone = document.getElementById('c-phone').value.trim();
+      if (!phone) {
+        throw new Error('กรุณากรอกเบอร์โทรก่อนใช้โค้ดนี้ / Please enter your phone number first');
+      }
+      const priorOrders = await supabase('GET', `orders?coupon_code=eq.${encodeURIComponent(coupon.code)}&customer_phone=eq.${encodeURIComponent(phone)}&select=id`);
+      if (priorOrders.length >= coupon.per_customer_limit) {
+        throw new Error('คุณใช้โค้ดนี้ครบจำนวนสิทธิ์แล้ว / You have already used this coupon');
+      }
+    }
+
+    appliedCoupon = coupon;
+    statusEl.style.color = 'var(--green)';
+    statusEl.textContent = `✓ ใช้โค้ด "${coupon.code}" สำเร็จ ลด ฿${coupon.discount_amount} / Coupon applied: -฿${coupon.discount_amount}`;
+    updateSummary();
+  } catch (e) {
+    appliedCoupon = null;
+    statusEl.style.color = '#9B2C2C';
+    statusEl.textContent = e.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่ / Something went wrong';
+    updateSummary();
+  }
+}
+
 function updateSummary() {
   const items = Object.values(cart);
   const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
   const rewardActive = isFreeShippingRewardActive();
   const fee = selectedDistrict ? (rewardActive ? 0 : selectedDistrict.fee) : 0;
+  const preDiscountTotal = subtotal + fee;
+  const discount = appliedCoupon ? Math.min(appliedCoupon.discount_amount, preDiscountTotal) : 0;
+
   document.getElementById('summary-lines').innerHTML = items.map(i => `
-    <div class="order-summary-row"><span>${i.product.name_th} × ${i.qty}</span><span>฿${i.qty * i.product.price}</span></div>
+    <div class="summary-item-row">
+      <div class="summary-item-name">${i.product.name_th}</div>
+      <div class="summary-item-controls">
+        <button class="summary-qty-btn" onclick="changeQty(${i.product.id}, -1)">−</button>
+        <span class="summary-qty-num">${i.qty}</span>
+        <button class="summary-qty-btn" onclick="changeQty(${i.product.id}, 1)">+</button>
+        <span class="summary-item-price">฿${i.qty * i.product.price}</span>
+        <button class="summary-remove-btn" onclick="removeFromCart(${i.product.id})" title="ลบสินค้านี้ / Remove">✕</button>
+      </div>
+    </div>
   `).join('');
   document.getElementById('summary-fee').textContent = selectedDistrict?.isOutOfArea
     ? 'แจ้งภายหลัง'
     : (rewardActive ? '🎉 ฟรี' : `฿${fee}`);
-  document.getElementById('summary-total').textContent = selectedDistrict?.isOutOfArea ? `฿${subtotal}+` : `฿${subtotal + fee}`;
-  if (selectedPayment === 'qr') renderPromptPayQR(subtotal + fee);
+
+  const discountRow = document.getElementById('summary-discount-row');
+  if (discount > 0) {
+    discountRow.style.display = 'flex';
+    document.getElementById('summary-discount').textContent = `-฿${discount}`;
+  } else {
+    discountRow.style.display = 'none';
+  }
+
+  document.getElementById('summary-total').textContent = selectedDistrict?.isOutOfArea ? `฿${subtotal - discount}+` : `฿${preDiscountTotal - discount}`;
+  if (selectedPayment === 'qr') renderPromptPayQR(preDiscountTotal - discount);
 }
 
 // ═══════════════════════════════════════════════
@@ -1447,7 +1558,8 @@ async function submitOrder() {
   const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
   const rewardActive = isFreeShippingRewardActive();
   const effectiveFee = rewardActive ? 0 : selectedDistrict.fee;
-  const total = subtotal + effectiveFee;
+  const couponDiscount = appliedCoupon ? Math.min(appliedCoupon.discount_amount, subtotal + effectiveFee) : 0;
+  const total = subtotal + effectiveFee - couponDiscount;
 
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
@@ -1472,10 +1584,17 @@ async function submitOrder() {
       payment_method: selectedPayment,
       slip_image_url: slipImageUrl,
       total_amount: total,
+      coupon_code: appliedCoupon ? appliedCoupon.code : null,
+      discount_amount: couponDiscount,
       status: 'pending',
     };
     const orderResult = await supabase('POST', 'orders', orderPayload);
     const orderId = orderResult[0].id;
+
+    // クーポンの使用回数を反映(失敗しても注文完了は止めない)
+    if (appliedCoupon) {
+      supabase('PATCH', `coupons?id=eq.${appliedCoupon.id}`, { used_count: appliedCoupon.used_count + 1 }).catch(() => {});
+    }
 
     const orderItems = items.map(i => ({
       order_id: orderId,
@@ -1508,6 +1627,7 @@ async function submitOrder() {
 
     showSuccessScreen(orderPayload.order_number, rewardActive, nextStampState);
     cart = {};
+    appliedCoupon = null;
     updateCartBar();
     saveCartToStorage();
   } catch (e) {

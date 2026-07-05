@@ -215,6 +215,7 @@
       <button class="nav-tab" onclick="showPage('categories', this)">🗂️ หมวดหมู่</button>
       <button class="nav-tab" onclick="showPage('zones', this)">🗺️ พื้นที่จัดส่ง</button>
       <button class="nav-tab" onclick="showPage('holidays', this)">📅 วันหยุด</button>
+      <button class="nav-tab" onclick="showPage('coupons', this)">🎟️ คูปอง</button>
     </div>
     <a href="index.html" target="_blank" style="color:white;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">🌐 ดูหน้าเว็บไซต์</a>
   </div>
@@ -230,6 +231,7 @@
     <option value="categories">🗂️ หมวดหมู่</option>
     <option value="zones">🗺️ พื้นที่จัดส่ง</option>
     <option value="holidays">📅 วันหยุด</option>
+    <option value="coupons">🎟️ คูปอง</option>
   </select>
 </div>
 
@@ -434,6 +436,62 @@
         </thead>
         <tbody id="holidays-tbody">
           <tr><td colspan="3"><div class="loading">กำลังโหลด...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COUPONS PAGE -->
+  <div id="page-coupons" class="page">
+    <div class="toolbar">
+      <h2>คูปองส่วนลด</h2>
+    </div>
+    <div class="table-wrap" style="padding:16px; margin-bottom:16px;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>โค้ดคูปอง</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="coupon-code" placeholder="เช่น SUMMER50 หรือปล่อยว่างแล้วกดสุ่ม" style="flex:1;">
+            <button type="button" class="btn btn-secondary" style="white-space:nowrap;" onclick="generateCouponCode()">🎲 สุ่มโค้ด</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>ส่วนลด (฿) *</label>
+          <input type="number" id="coupon-amount" placeholder="50" min="0">
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:12px;">
+        <div class="form-group">
+          <label>จำกัดจำนวนครั้งที่ใช้ได้ทั้งหมด (เว้นว่าง = ไม่จำกัด)</label>
+          <input type="number" id="coupon-max-uses" placeholder="เว้นว่าง = ไม่จำกัด" min="1">
+        </div>
+        <div class="form-group">
+          <label>วันหมดอายุ (ถ้ามี)</label>
+          <input type="date" id="coupon-expires">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="coupon-per-customer" style="width:auto;"> จำกัด 1 สิทธิ์ต่อเบอร์โทรลูกค้า 1 คน
+        </label>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="addCoupon()">+ เพิ่มคูปอง</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>โค้ด</th>
+            <th>ส่วนลด</th>
+            <th>ใช้ไปแล้ว</th>
+            <th>จำกัด/คน</th>
+            <th>หมดอายุ</th>
+            <th>สถานะ</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="coupons-tbody">
+          <tr><td colspan="7"><div class="loading">กำลังโหลด...</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -771,6 +829,7 @@ function showPage(name, btn) {
   if (name === 'categories') loadCategories();
   if (name === 'zones') loadZones();
   if (name === 'holidays') loadHolidays();
+  if (name === 'coupons') loadCoupons();
 }
 
 // ── PRODUCTS ─────────────────────────
@@ -1177,6 +1236,7 @@ async function viewOrder(id) {
         <tr style="background:#FFF0E8;"><th style="padding:6px;text-align:left;">สินค้า</th><th style="padding:6px;">จำนวน</th><th style="padding:6px;text-align:right;">ราคา</th></tr>
         ${items.map(i => `<tr><td style="padding:6px;">${i.product_name_th}</td><td style="padding:6px;text-align:center;">${i.quantity}</td><td style="padding:6px;text-align:right;">฿${i.subtotal}</td></tr>`).join('')}
         <tr style="border-top:2px solid #FFD4B8;"><td colspan="2" style="padding:8px;font-weight:600;">ค่าส่ง</td><td style="padding:8px;text-align:right;">฿${order.delivery_fee ?? 0}</td></tr>
+        ${order.discount_amount > 0 ? `<tr><td colspan="2" style="padding:8px;font-weight:600;color:#276749;">ส่วนลด (${order.coupon_code || ''})</td><td style="padding:8px;text-align:right;color:#276749;">-฿${order.discount_amount}</td></tr>` : ''}
         <tr><td colspan="2" style="padding:8px;font-weight:600;">รวมทั้งสิ้น</td><td style="padding:8px;text-align:right;font-weight:600;color:#FF6B35;">฿${order.total_amount}</td></tr>
       </table>
     </div>
@@ -1270,6 +1330,7 @@ async function printDeliverySlip(orderId) {
         <tbody>
           ${items.map(i => `<tr><td>${i.product_name_th}</td><td>${i.quantity}</td><td>฿${i.subtotal}</td></tr>`).join('')}
           <tr><td colspan="2">ค่าส่ง</td><td>฿${order.delivery_fee ?? 0}</td></tr>
+          ${order.discount_amount > 0 ? `<tr><td colspan="2">ส่วนลด (${order.coupon_code || ''})</td><td>-฿${order.discount_amount}</td></tr>` : ''}
           <tr class="slip-total-row"><td colspan="2">รวมทั้งสิ้น</td><td>฿${order.total_amount}</td></tr>
         </tbody>
       </table>
@@ -1682,6 +1743,89 @@ async function deleteHoliday(id) {
     await supabase('DELETE', `holidays?id=eq.${id}`);
     showToast('ลบสำเร็จ', 'success');
     loadHolidays();
+  } catch(e) { showToast('ลบไม่สำเร็จ', 'error'); }
+}
+
+// ── COUPONS ──────────────────────────
+let allCoupons = [];
+
+function generateCouponCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 紛らわしい文字(I/O/0/1)は除外
+  let code = 'RG';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('coupon-code').value = code;
+}
+
+async function loadCoupons() {
+  try {
+    allCoupons = await supabase('GET', 'coupons?order=created_at.desc');
+    const tbody = document.getElementById('coupons-tbody');
+    if (!allCoupons.length) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">🎟️</div>ยังไม่มีคูปอง</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = allCoupons.map(c => `
+      <tr>
+        <td style="font-weight:700;">${c.code}</td>
+        <td>฿${c.discount_amount}</td>
+        <td>${c.used_count}${c.max_uses ? ' / ' + c.max_uses : ' (ไม่จำกัด)'}</td>
+        <td>${c.per_customer_limit ? c.per_customer_limit + ' ครั้ง/คน' : '-'}</td>
+        <td>${c.expires_at || '-'}</td>
+        <td><span class="badge ${c.is_active ? 'badge-active' : 'badge-inactive'}">${c.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}</span></td>
+        <td>
+          <div class="action-btns">
+            <button class="btn btn-secondary btn-sm" onclick="toggleCoupon(${c.id}, ${!c.is_active})">${c.is_active ? 'ปิด' : 'เปิด'}</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteCoupon(${c.id})">ลบ</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) { showToast('โหลดคูปองไม่สำเร็จ', 'error'); }
+}
+
+async function addCoupon() {
+  let code = document.getElementById('coupon-code').value.trim().toUpperCase();
+  const amount = parseFloat(document.getElementById('coupon-amount').value);
+  const maxUsesRaw = document.getElementById('coupon-max-uses').value;
+  const maxUses = maxUsesRaw ? parseInt(maxUsesRaw) : null;
+  const expiresRaw = document.getElementById('coupon-expires').value;
+  const perCustomer = document.getElementById('coupon-per-customer').checked ? 1 : null;
+
+  if (!code) { showToast('กรุณากรอกโค้ด หรือกดสุ่มโค้ด', 'error'); return; }
+  if (isNaN(amount) || amount <= 0) { showToast('กรุณากรอกส่วนลด', 'error'); return; }
+
+  try {
+    await supabase('POST', 'coupons', {
+      code,
+      discount_amount: amount,
+      max_uses: maxUses,
+      per_customer_limit: perCustomer,
+      expires_at: expiresRaw || null,
+      is_active: true,
+    });
+    showToast('เพิ่มคูปองสำเร็จ ✓', 'success');
+    document.getElementById('coupon-code').value = '';
+    document.getElementById('coupon-amount').value = '';
+    document.getElementById('coupon-max-uses').value = '';
+    document.getElementById('coupon-expires').value = '';
+    document.getElementById('coupon-per-customer').checked = false;
+    loadCoupons();
+  } catch(e) { showToast('เพิ่มไม่สำเร็จ (โค้ดนี้อาจมีอยู่แล้ว)', 'error'); }
+}
+
+async function toggleCoupon(id, nextActive) {
+  try {
+    await supabase('PATCH', `coupons?id=eq.${id}`, { is_active: nextActive });
+    loadCoupons();
+  } catch(e) { showToast('อัปเดตไม่สำเร็จ', 'error'); }
+}
+
+async function deleteCoupon(id) {
+  if (!confirm('ต้องการลบคูปองนี้?')) return;
+  try {
+    await supabase('DELETE', `coupons?id=eq.${id}`);
+    showToast('ลบสำเร็จ', 'success');
+    loadCoupons();
   } catch(e) { showToast('ลบไม่สำเร็จ', 'error'); }
 }
 
