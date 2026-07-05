@@ -430,6 +430,7 @@ const MAPS_API_KEY = 'AIzaSyDV7AZEe0yDZVnsjviK3GTmCc5OyS3jLaQ';
 const BASE_LOCATION = { lat: 13.721462, lng: 100.5765166 }; // สคุมวิท 36 (拠点)
 const PROMPTPAY_BILLER_ID = '010554007919109';
 const PROMPTPAY_REF1 = 'REF001';
+const PROMPTPAY_REF2 = 'REF002';
 const STAMPS_REQUIRED = 5;
 
 const COOKING_LABELS = {
@@ -1319,7 +1320,7 @@ function crc16(str) {
 }
 
 function buildPromptPayPayload(amount) {
-  const merchantInfo = tlv('00', 'A000000677010112') + tlv('01', PROMPTPAY_BILLER_ID) + tlv('02', PROMPTPAY_REF1) + tlv('03', '0');
+  const merchantInfo = tlv('00', 'A000000677010112') + tlv('01', PROMPTPAY_BILLER_ID) + tlv('02', PROMPTPAY_REF1) + tlv('03', PROMPTPAY_REF2);
   const amountStr = amount.toFixed(2);
   const payload =
     tlv('00', '01') +
@@ -1328,7 +1329,7 @@ function buildPromptPayPayload(amount) {
     tlv('53', '764') +                // THB
     tlv('54', amountStr) +
     tlv('58', 'TH') +
-    tlv('62', tlv('07', 'IFB0819093451'));
+    tlv('62', tlv('07', 'IFB0639311943'));
   const withCrcTag = payload + '6304';
   return withCrcTag + crc16(withCrcTag);
 }

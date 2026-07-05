@@ -1256,6 +1256,7 @@ function closeOrderModal() {
 // ═══════════════════════════════════════════════
 const PROMPTPAY_BILLER_ID = '010554007919109';
 const PROMPTPAY_REF1 = 'REF001';
+const PROMPTPAY_REF2 = 'REF002';
 
 function ppTlv(tag, value) { return `${tag}${String(value.length).padStart(2,'0')}${value}`; }
 
@@ -1271,7 +1272,7 @@ function ppCrc16(str) {
 }
 
 function buildPromptPayPayload(amount) {
-  const merchantInfo = ppTlv('00', 'A000000677010112') + ppTlv('01', PROMPTPAY_BILLER_ID) + ppTlv('02', PROMPTPAY_REF1) + ppTlv('03', '0');
+  const merchantInfo = ppTlv('00', 'A000000677010112') + ppTlv('01', PROMPTPAY_BILLER_ID) + ppTlv('02', PROMPTPAY_REF1) + ppTlv('03', PROMPTPAY_REF2);
   const amountStr = amount.toFixed(2);
   const payload =
     ppTlv('00', '01') +
@@ -1280,7 +1281,7 @@ function buildPromptPayPayload(amount) {
     ppTlv('53', '764') +
     ppTlv('54', amountStr) +
     ppTlv('58', 'TH') +
-    ppTlv('62', ppTlv('07', 'IFB0819093451'));
+    ppTlv('62', ppTlv('07', 'IFB0639311943'));
   const withCrcTag = payload + '6304';
   return withCrcTag + ppCrc16(withCrcTag);
 }
