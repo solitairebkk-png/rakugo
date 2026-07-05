@@ -960,7 +960,7 @@ function renderFilteredView() {
   if (currentCookingFilter) titleParts.push(COOKING_LABELS[currentCookingFilter] || currentCookingFilter);
   if (currentCondimentFilter) {
     const cond = allCondiments.find(c => c.id === currentCondimentFilter);
-    if (cond) titleParts.push(`${cond.icon_emoji || ''} ${cond.name_th}`);
+    if (cond) titleParts.push(`${cond.icon_emoji || ''} ${cond.name_th}${cond.name_en ? ' / ' + cond.name_en : ''}`);
   }
   if (currentSearchQuery) titleParts.push(`"${currentSearchQuery}"`);
   const title = titleParts.length ? `ผลการค้นหา: ${titleParts.join(' · ')} (${matches.length})` : `ผลการค้นหา (${matches.length})`;
@@ -1029,7 +1029,7 @@ function openPModal(productId) {
   const condWrap = document.getElementById('pmodal-condiments');
   if (condiments.length) {
     document.getElementById('pmodal-condiments-label').style.display = 'block';
-    condWrap.innerHTML = condiments.map(c => `<span class="pmodal-chip-item">${c.icon_emoji || ''} ${c.name_th}</span>`).join('');
+    condWrap.innerHTML = condiments.map(c => `<span class="pmodal-chip-item">${c.icon_emoji || ''} ${c.name_th}${c.name_en ? ' / ' + c.name_en : ''}</span>`).join('');
   } else {
     document.getElementById('pmodal-condiments-label').style.display = 'none';
     condWrap.innerHTML = '';
