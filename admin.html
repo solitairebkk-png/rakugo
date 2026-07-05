@@ -195,6 +195,7 @@
       <button class="nav-tab" onclick="showPage('notices', this)">📢 ประกาศ</button>
       <button class="nav-tab" onclick="showPage('categories', this)">🗂️ หมวดหมู่</button>
       <button class="nav-tab" onclick="showPage('zones', this)">🗺️ พื้นที่จัดส่ง</button>
+      <button class="nav-tab" onclick="showPage('holidays', this)">📅 วันหยุด</button>
     </div>
     <a href="index.html" target="_blank" style="color:white;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">🌐 ดูหน้าเว็บไซต์</a>
   </div>
@@ -209,6 +210,7 @@
     <option value="notices">📢 ประกาศ</option>
     <option value="categories">🗂️ หมวดหมู่</option>
     <option value="zones">🗺️ พื้นที่จัดส่ง</option>
+    <option value="holidays">📅 วันหยุด</option>
   </select>
 </div>
 
@@ -365,6 +367,41 @@
         </thead>
         <tbody id="zones-tbody">
           <tr><td colspan="5"><div class="loading">กำลังโหลด...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- HOLIDAYS PAGE -->
+  <div id="page-holidays" class="page">
+    <div class="toolbar">
+      <h2>วันหยุด</h2>
+      <div style="font-size:12px;color:#9a8973;">ทุกวันอาทิตย์ปิดทำการอัตโนมัติ · วันเสาร์ส่งเฉพาะช่วงเช้าอัตโนมัติ · เพิ่มด้านล่างเฉพาะวันหยุดพิเศษเพิ่มเติม</div>
+    </div>
+    <div class="table-wrap" style="padding:16px; margin-bottom:16px;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>วันที่หยุด</label>
+          <input type="date" id="holiday-date">
+        </div>
+        <div class="form-group">
+          <label>หมายเหตุ (ถ้ามี)</label>
+          <input type="text" id="holiday-note" placeholder="เช่น วันหยุดนักขัตฤกษ์">
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="addHoliday()">+ เพิ่มวันหยุด</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>วันที่</th>
+            <th>หมายเหตุ</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="holidays-tbody">
+          <tr><td colspan="3"><div class="loading">กำลังโหลด...</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -701,6 +738,7 @@ function showPage(name, btn) {
   if (name === 'notices') loadNotices();
   if (name === 'categories') loadCategories();
   if (name === 'zones') loadZones();
+  if (name === 'holidays') loadHolidays();
 }
 
 // ── PRODUCTS ─────────────────────────
@@ -1504,6 +1542,49 @@ async function saveZone() {
     closeZoneModal();
     loadZones();
   } catch(e) { showToast('บันทึกไม่สำเร็จ', 'error'); }
+}
+
+// ── HOLIDAYS ─────────────────────────
+let allHolidaysAdmin = [];
+
+async function loadHolidays() {
+  try {
+    allHolidaysAdmin = await supabase('GET', 'holidays?order=holiday_date.asc');
+    const tbody = document.getElementById('holidays-tbody');
+    if (!allHolidaysAdmin.length) {
+      tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state"><div class="icon">📅</div>ยังไม่มีวันหยุดที่เพิ่มเอง</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = allHolidaysAdmin.map(h => `
+      <tr>
+        <td style="font-weight:600;">${h.holiday_date}</td>
+        <td>${h.note || '-'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteHoliday(${h.id})">ลบ</button></td>
+      </tr>
+    `).join('');
+  } catch(e) { showToast('โหลดวันหยุดไม่สำเร็จ', 'error'); }
+}
+
+async function addHoliday() {
+  const date = document.getElementById('holiday-date').value;
+  const note = document.getElementById('holiday-note').value.trim();
+  if (!date) { showToast('กรุณาเลือกวันที่', 'error'); return; }
+  try {
+    await supabase('POST', 'holidays', { holiday_date: date, note: note || null });
+    showToast('เพิ่มวันหยุดสำเร็จ ✓', 'success');
+    document.getElementById('holiday-date').value = '';
+    document.getElementById('holiday-note').value = '';
+    loadHolidays();
+  } catch(e) { showToast('เพิ่มไม่สำเร็จ (อาจมีวันนี้อยู่แล้ว)', 'error'); }
+}
+
+async function deleteHoliday(id) {
+  if (!confirm('ต้องการลบวันหยุดนี้?')) return;
+  try {
+    await supabase('DELETE', `holidays?id=eq.${id}`);
+    showToast('ลบสำเร็จ', 'success');
+    loadHolidays();
+  } catch(e) { showToast('ลบไม่สำเร็จ', 'error'); }
 }
 
 // ── TOAST ────────────────────────────

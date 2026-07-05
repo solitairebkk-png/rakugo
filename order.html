@@ -218,9 +218,7 @@
   <div class="site-header-inner">
     <a href="index.html"><img class="site-logo-mark" src="images/rakugo.webp" alt="Rakugo!"></a>
     <nav class="site-nav">
-      <a href="index.html">หน้าแรก</a>
-      <a href="#">โปรโมชั่น</a>
-      <a href="#">วิธีสั่งซื้อ</a>
+      <a href="index.html">← หน้าแรก / Back to home</a>
     </nav>
     <a class="site-cart-btn" href="javascript:void(0)" onclick="openCheckout()">🛒 <span id="header-cart-count">0</span></a>
   </div>
@@ -303,18 +301,14 @@
         <div class="form-group" style="margin-top:14px;">
           <label>วันที่จัดส่ง / Delivery date *</label>
           <input type="date" id="c-date">
+          <div style="font-size:11.5px; color:#999; margin-top:4px; line-height:1.6;">
+            ⏰ ปิดทำการทุกวันอาทิตย์ / Closed on Sundays &nbsp;·&nbsp; วันเสาร์ส่งเฉพาะช่วงเช้า / Saturday: morning delivery only
+          </div>
         </div>
         <div class="form-group">
           <label>ช่วงเวลาจัดส่ง / Delivery time slot *</label>
           <select id="c-timeslot">
             <option value="">-- เลือกช่วงเวลา --</option>
-            <option value="morning">ช่วงเช้า / Morning</option>
-            <option value="14:00-16:00">14:00 - 16:00</option>
-            <option value="14:30-16:30">14:30 - 16:30</option>
-            <option value="15:00-17:00">15:00 - 17:00</option>
-            <option value="15:30-17:30">15:30 - 17:30</option>
-            <option value="16:00-18:00">16:00 - 18:00</option>
-            <option value="17:00-18:00">17:00 - 18:00</option>
           </select>
         </div>
       </div>
@@ -435,6 +429,7 @@ let allProducts = [];
 let allDistricts = [];
 let allCondiments = [];
 let allProductCondiments = [];
+let allHolidays = []; // ['2026-07-13', ...] 休業日として登録された日付
 let coOccurrenceMap = {};
 let cart = {}; // { product_id: { product, qty } }
 let currentSearchQuery = '';
@@ -565,6 +560,10 @@ async function init() {
     handleQuickCondimentFilterFromQuery();
     // 一緒に買われている商品の集計は失敗しても本体機能に影響しないよう分離
     supabase('GET', 'order_items?select=order_id,product_id').then(buildCoOccurrenceMap).catch(() => {});
+    // 休業日の取得も失敗しても本体機能に影響しないよう分離(取れない間は「日曜定休+土曜午前のみ」だけで判定)
+    supabase('GET', 'holidays?select=holiday_date').then(rows => {
+      allHolidays = rows.map(r => r.holiday_date);
+    }).catch(() => {});
   } catch (e) {
     document.getElementById('product-sections').innerHTML = `<div class="loading">โหลดข้อมูลไม่สำเร็จ / Failed to load</div>`;
   }
@@ -1152,6 +1151,106 @@ document.getElementById('c-district').addEventListener('change', (e) => {
   updateSummary();
 });
 
+// ═══════════════════════════════════════════════
+// 配送日・配送時間帯のルール
+// (日曜定休・土曜午前のみ・過ぎた時間帯は選択不可・登録済み休業日は選択不可)
+// ═══════════════════════════════════════════════
+const TIME_SLOT_DEFS = [
+  { value: 'morning', label: 'ช่วงเช้า / Morning', endHour: 12, endMinute: 0, saturdayOk: true },
+  { value: '14:00-16:00', label: '14:00 - 16:00', endHour: 16, endMinute: 0, saturdayOk: false },
+  { value: '14:30-16:30', label: '14:30 - 16:30', endHour: 16, endMinute: 30, saturdayOk: false },
+  { value: '15:00-17:00', label: '15:00 - 17:00', endHour: 17, endMinute: 0, saturdayOk: false },
+  { value: '15:30-17:30', label: '15:30 - 17:30', endHour: 17, endMinute: 30, saturdayOk: false },
+  { value: '16:00-18:00', label: '16:00 - 18:00', endHour: 18, endMinute: 0, saturdayOk: false },
+  { value: '17:00-18:00', label: '17:00 - 18:00', endHour: 18, endMinute: 0, saturdayOk: false },
+];
+
+function formatDateLocal(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// 指定日が注文可能かどうか(過去日・日曜・休業日を除外)
+function validateDeliveryDate(dateStr) {
+  if (!dateStr) return { valid: false, message: 'กรุณาเลือกวันที่จัดส่ง' };
+  const todayStr = formatDateLocal(new Date());
+  if (dateStr < todayStr) {
+    return { valid: false, message: 'ไม่สามารถเลือกวันที่ผ่านมาแล้วได้ / Cannot select a past date' };
+  }
+  const day = new Date(dateStr + 'T00:00:00').getDay(); // 0=日曜, 6=土曜
+  if (day === 0) {
+    return { valid: false, message: 'ขออภัย ปิดทำการทุกวันอาทิตย์ / Closed on Sundays' };
+  }
+  if (allHolidays.includes(dateStr)) {
+    return { valid: false, message: 'วันที่เลือกเป็นวันหยุด กรุณาเลือกวันอื่น / This date is a holiday' };
+  }
+  return { valid: true };
+}
+
+// 今日から数えて最初に選択可能な日を返す(初期値・エラー時のフォールバック用)
+function getNextValidDeliveryDate(fromDateStr) {
+  let d = new Date(fromDateStr + 'T00:00:00');
+  for (let i = 0; i < 30; i++) {
+    const str = formatDateLocal(d);
+    if (validateDeliveryDate(str).valid) return str;
+    d.setDate(d.getDate() + 1);
+  }
+  return fromDateStr;
+}
+
+// 選択された日付に応じて時間帯の選択肢を組み立て直す
+// (土曜は午前のみ・当日は既に過ぎた時間帯を除外)
+function renderTimeSlotOptions(dateStr) {
+  const sel = document.getElementById('c-timeslot');
+  const previousValue = sel.value;
+  if (!dateStr) {
+    sel.innerHTML = '<option value="">-- เลือกช่วงเวลา --</option>';
+    return;
+  }
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay();
+  const isSaturday = day === 6;
+  const todayStr = formatDateLocal(new Date());
+  const isToday = dateStr === todayStr;
+  const now = new Date();
+
+  let slots = TIME_SLOT_DEFS;
+  if (isSaturday) slots = slots.filter(s => s.saturdayOk);
+  if (isToday) {
+    slots = slots.filter(s => {
+      const slotEnd = new Date();
+      slotEnd.setHours(s.endHour, s.endMinute, 0, 0);
+      return slotEnd > now;
+    });
+  }
+
+  if (!slots.length) {
+    sel.innerHTML = '<option value="">ไม่มีช่วงเวลาว่างสำหรับวันนี้แล้ว / No slots left today</option>';
+    return;
+  }
+
+  sel.innerHTML = '<option value="">-- เลือกช่วงเวลา --</option>' +
+    slots.map(s => `<option value="${s.value}">${s.label}</option>`).join('');
+
+  // 以前選んでいた時間帯がまだ選択肢に残っていれば復元する
+  if (slots.some(s => s.value === previousValue)) sel.value = previousValue;
+}
+
+document.getElementById('c-date').addEventListener('change', (e) => {
+  const val = e.target.value;
+  const check = validateDeliveryDate(val);
+  if (!check.valid) {
+    showToast(check.message, 'error');
+    const fallback = getNextValidDeliveryDate(formatDateLocal(new Date()));
+    e.target.value = fallback;
+    renderTimeSlotOptions(fallback);
+    return;
+  }
+  renderTimeSlotOptions(val);
+});
+
 function initMap() {
   map = new google.maps.Map(document.getElementById('order-map'), {
     center: BASE_LOCATION,
@@ -1272,11 +1371,13 @@ function openCheckout() {
   document.getElementById('checkout-modal').classList.add('open');
   updateSummary();
   const dateInput = document.getElementById('c-date');
-  if (!dateInput.min) {
-    const today = new Date();
-    dateInput.min = today.toISOString().split('T')[0];
-    if (!dateInput.value) dateInput.value = today.toISOString().split('T')[0];
+  const today = new Date();
+  const todayStr = formatDateLocal(today);
+  if (!dateInput.min) dateInput.min = todayStr;
+  if (!dateInput.value) {
+    dateInput.value = getNextValidDeliveryDate(todayStr);
   }
+  renderTimeSlotOptions(dateInput.value);
   if (!map) {
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}&callback=initMap`;
@@ -1336,6 +1437,8 @@ async function submitOrder() {
   if (!selectedDistrict) { showToast('กรุณาเลือกเขตจัดส่ง', 'error'); return; }
   if (!pinConfirmed) { showToast('กรุณาลากหมุดสีแดงบนแผนที่ไปยังตำแหน่งจริงของท่านก่อน', 'error'); return; }
   if (!deliveryDate) { showToast('กรุณาเลือกวันที่จัดส่ง', 'error'); return; }
+  const dateCheck = validateDeliveryDate(deliveryDate);
+  if (!dateCheck.valid) { showToast(dateCheck.message, 'error'); return; }
   if (!timeSlot) { showToast('กรุณาเลือกช่วงเวลาจัดส่ง', 'error'); return; }
   if (!selectedPayment) { showToast('กรุณาเลือกวิธีชำระเงิน', 'error'); return; }
   if ((selectedPayment === 'transfer' || selectedPayment === 'qr') && !slipImageUrl) { showToast('กรุณาแนบสลิปการโอนเงิน', 'error'); return; }
