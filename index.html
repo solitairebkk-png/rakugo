@@ -108,7 +108,10 @@
   .notice-strip{
     background:linear-gradient(180deg, #FFF1DC, #FFEAC9);
     border-top:2px solid var(--line); border-bottom:2px solid var(--line);
-    display:flex; align-items:stretch; min-height:230px;
+    display:flex; justify-content:center;
+  }
+  .notice-strip-inner{
+    width:100%; max-width:1180px; display:flex; align-items:stretch; min-height:230px;
   }
   .notice-cal-half{
     width:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
@@ -136,7 +139,7 @@
     to{transform:translateX(-50%);}
   }
   @media (max-width:720px){
-    .notice-strip{ flex-direction:column; min-height:0; }
+    .notice-strip-inner{ flex-direction:column; min-height:0; }
     .notice-cal-half{ width:100%; border-right:none; border-bottom:2px solid var(--line); padding:16px; }
     .notice-ticker-half{ width:100%; }
   }
@@ -335,22 +338,24 @@
 </section>
 
 <div class="notice-strip" id="notice-strip">
-  <div class="notice-cal-half">
-    <div class="cal-card">
-      <div class="cal-head">
-        <button class="cal-nav-btn" id="cal-prev-btn" onclick="calChangeMonth(-1)">‹</button>
-        <div class="cal-month" id="cal-month-label"></div>
-        <button class="cal-nav-btn" id="cal-next-btn" onclick="calChangeMonth(1)">›</button>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
-      <div class="cal-legend">
-        <span><span class="dot" style="background:#FFE3E0;border:1.5px solid #E23F2C;"></span>ปิด / Closed</span>
-        <span><span class="dot" style="background:#FFF3D6;border:1.5px solid #9C6B0A;"></span>เช้าเท่านั้น / AM only</span>
+  <div class="notice-strip-inner">
+    <div class="notice-cal-half">
+      <div class="cal-card">
+        <div class="cal-head">
+          <button class="cal-nav-btn" id="cal-prev-btn" onclick="calChangeMonth(-1)">‹</button>
+          <div class="cal-month" id="cal-month-label"></div>
+          <button class="cal-nav-btn" id="cal-next-btn" onclick="calChangeMonth(1)">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <span><span class="dot" style="background:#FFE3E0;border:1.5px solid #E23F2C;"></span>ปิด / Closed</span>
+          <span><span class="dot" style="background:#FFF3D6;border:1.5px solid #9C6B0A;"></span>เช้าเท่านั้น / AM only</span>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="notice-ticker-half" id="notice-ticker-half">
-    <div class="notice-track" id="notice-track"></div>
+    <div class="notice-ticker-half" id="notice-ticker-half">
+      <div class="notice-track" id="notice-track"></div>
+    </div>
   </div>
 </div>
 
@@ -454,7 +459,7 @@
 <section class="sec" style="padding-top:0;" id="how-to-order">
   <div class="wrap">
     <div class="sec-head">
-      <div><h2>วิธีสั่งซื้อ</h2></div>
+      <div><h2>วิธีสั่งซื้อ / How to Order</h2></div>
     </div>
     <div class="howto-grid">
       <div class="howto-step">
@@ -491,7 +496,7 @@
 <section class="sec" style="padding-top:0;" id="delivery-areas">
   <div class="wrap">
     <div class="sec-head">
-      <div><h2>พื้นที่จัดส่ง</h2></div>
+      <div><h2>พื้นที่จัดส่ง / Delivery Areas & Fees</h2></div>
       <div class="note">ค่าส่งขึ้นอยู่กับโซน</div>
     </div>
     <div class="zone-grid" id="zone-grid">
@@ -565,7 +570,7 @@ async function loadDeliveryAreas() {
     const zones = {};
     data.forEach(d => {
       if (!zones[d.zone_label]) zones[d.zone_label] = { fee: d.fee, districts: [] };
-      zones[d.zone_label].districts.push(d.name_th);
+      zones[d.zone_label].districts.push(d.name_en ? `${d.name_th} / ${d.name_en}` : d.name_th);
     });
     wrap.innerHTML = Object.entries(zones).map(([label, z]) => `
       <div class="zone-card">
