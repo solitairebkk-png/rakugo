@@ -40,9 +40,9 @@
   .search-box:focus { outline: none; border-color: #FF6B35; }
 
   /* PRODUCT TABLE */
-  .table-wrap { background: white; border-radius: 12px; border: 1px solid #FFD4B8; overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; }
-  th { background: #FFF0E8; padding: 10px 14px; text-align: left; font-size: 13px; color: #7A3A1A; font-weight: 600; }
+  .table-wrap { background: white; border-radius: 12px; border: 1px solid #FFD4B8; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; min-width: 640px; border-collapse: collapse; }
+  th { background: #FFF0E8; padding: 10px 14px; text-align: left; font-size: 13px; color: #7A3A1A; font-weight: 600; white-space: nowrap; }
   td { padding: 10px 14px; border-top: 1px solid #FFE8D6; font-size: 14px; vertical-align: middle; }
   tr:hover td { background: #FFF8F3; }
   .product-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #FFE8D6; }
