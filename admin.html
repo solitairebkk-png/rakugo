@@ -195,11 +195,49 @@
     .print-slip-container, .print-slip-container *{ visibility:visible; }
     .print-slip-container{ display:block !important; position:absolute; left:0; top:0; width:100%; }
   }
+  /* ADMIN LOCK SCREEN (簡易パスワード・応急処置) */
+  .lock-overlay { position: fixed; inset: 0; background: #FFF8F3; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+  .lock-overlay.hidden { display: none; }
+  .lock-box { background: white; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 340px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); text-align: center; }
+  .lock-box .icon { font-size: 40px; margin-bottom: 12px; }
+  .lock-box h3 { font-size: 16px; margin-bottom: 18px; color: #7A3A1A; }
+  .lock-box input { width: 100%; padding: 12px 14px; border: 1.5px solid #FFD4B8; border-radius: 8px; font-size: 15px; text-align: center; margin-bottom: 12px; }
+  .lock-box input:focus { outline: none; border-color: #FF6B35; }
+  .lock-box button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #FF6B35; color: white; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .lock-box .lock-error { color: #E53E3E; font-size: 12.5px; margin-top: 10px; display: none; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
+
+<!-- ADMIN LOCK SCREEN -->
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-box">
+    <div class="icon">🔒</div>
+    <h3>กรุณาใส่รหัสผ่าน / Enter password</h3>
+    <input type="password" id="lockPasswordInput" placeholder="Password" onkeydown="if(event.key==='Enter') checkAdminPassword()">
+    <button onclick="checkAdminPassword()">เข้าสู่ระบบ / Unlock</button>
+    <div class="lock-error" id="lockError">รหัสผ่านไม่ถูกต้อง / Incorrect password</div>
+  </div>
+</div>
+<script>
+  (function() {
+    const ADMIN_PASSWORD = 'd5m6gej8';
+    if (localStorage.getItem('rakugo_admin_unlocked') === 'true') {
+      document.getElementById('lockOverlay') && document.getElementById('lockOverlay').classList.add('hidden');
+    }
+    window.checkAdminPassword = function() {
+      const input = document.getElementById('lockPasswordInput').value;
+      if (input === ADMIN_PASSWORD) {
+        localStorage.setItem('rakugo_admin_unlocked', 'true');
+        document.getElementById('lockOverlay').classList.add('hidden');
+      } else {
+        document.getElementById('lockError').style.display = 'block';
+      }
+    };
+  })();
+</script>
 
 <!-- NAV -->
 <nav class="nav">
