@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>เกี่ยวกับเรา / About Us — Rakugo!</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF6E9;
+    --ink:#3A2A1E;
+    --orange:#F0741E;
+    --orange-deep:#D65A0F;
+    --line:#F0DAB8;
+    --card:#FFFFFF;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Prompt', sans-serif;
+    line-height:1.7;
+  }
+  h1,h2{font-family:'Kanit', sans-serif;}
+  .wrap{max-width:720px; margin:0 auto; padding:48px 28px 80px;}
+  a{color:var(--orange-deep);}
+  .back-link{display:inline-block; margin-bottom:24px; font-size:14px; text-decoration:none; color:var(--orange-deep); font-weight:600;}
+  h1{font-size:26px; margin-bottom:24px;}
+  h2{font-size:17px; margin:32px 0 10px; color:var(--orange-deep);}
+  p{font-size:14.5px; margin-bottom:10px;}
+  .card{background:var(--card); border:2px solid var(--line); border-radius:16px; padding:24px 28px; margin-bottom:8px;}
+  .lang-toggle{display:flex; gap:8px; margin-bottom:24px;}
+  .lang-toggle button{padding:6px 14px; border:1.5px solid var(--line); border-radius:20px; background:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;}
+  .lang-toggle button.active{background:var(--orange); color:#fff; border-color:var(--orange);}
+  .lang-block{display:none;}
+  .lang-block.active{display:block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← กลับหน้าแรก / Back to home</a>
+
+  <div class="lang-toggle">
+    <button class="active" onclick="setLang('th', this)">ไทย</button>
+    <button onclick="setLang('en', this)">EN</button>
+  </div>
+
+  <div class="lang-block active" id="lang-th">
+    <h1>เกี่ยวกับเรา</h1>
+    <div class="card">
+      <p><b>Rakugo!</b> ดำเนินการโดย <b>บริษัท ไซโตะ ฟู้ดส์ จำกัด (SAITO FOODS CO.,LTD.)</b></p>
+      <p>ก่อตั้งขึ้นในปี 1997 เราให้บริการจัดส่งอาหารญี่ปุ่นแท้ในกรุงเทพฯ มายาวนานกว่า 25 ปี Rakugo! คือบริการสั่งซื้อออนไลน์รูปแบบใหม่ของเรา มุ่งเน้นความสะดวก รวดเร็ว และคุณภาพของวัตถุดิบญี่ปุ่นแท้</p>
+    </div>
+
+    <h2>ที่อยู่บริษัท</h2>
+    <p>23/7 Soi Naphasub 2, Sukhumvit Soi 36,<br>Klongton, Klongtoei, Bangkok 10110</p>
+
+    <h2>ติดต่อเรา</h2>
+    <p>อีเมล: saitofoods@live.jp</p>
+
+    <h2>ข้อกำหนดการใช้งาน</h2>
+    <p>
+      1. การสั่งซื้อผ่านเว็บไซต์นี้ถือว่าท่านยืนยันข้อมูลสินค้า จำนวน ที่อยู่จัดส่ง และยอดชำระที่แสดงในหน้าสรุปคำสั่งซื้อว่าถูกต้องแล้ว<br>
+      2. เราหยุดทำการทุกวันอาทิตย์ วันเสาร์ให้บริการจัดส่งเฉพาะช่วงเช้าเท่านั้น<br>
+      3. คำสั่งซื้อที่ชำระผ่านการโอนเงินหรือ QR จะได้รับการยืนยันหลังจากทางร้านตรวจสอบสลิปการชำระเงินแล้วเท่านั้น<br>
+      4. สิทธิ์ส่วนลด สแตมป์สะสม และโค้ดคูปองต่าง ๆ ไม่สามารถแลกเปลี่ยนเป็นเงินสดได้
+    </p>
+
+    <h2>นโยบายความเป็นส่วนตัว</h2>
+    <p>เราเก็บรวบรวมชื่อ เบอร์โทรศัพท์ ที่อยู่จัดส่ง อีเมล และภาพสลิปการโอนเงิน เพื่อดำเนินการและจัดส่งคำสั่งซื้อของท่านเท่านั้น เราจะไม่ขายข้อมูลส่วนบุคคลของท่านให้บุคคลภายนอก ข้อมูลจะถูกเปิดเผยเท่าที่จำเป็นแก่พนักงานจัดส่งและธนาคารที่เกี่ยวข้องเพื่อยืนยันการชำระเงินเท่านั้น หากต้องการเข้าถึง แก้ไข หรือลบข้อมูลของท่าน กรุณาติดต่อ saitofoods@live.jp</p>
+
+    <h2>นโยบายการคืนสินค้าและยกเลิกคำสั่งซื้อ</h2>
+    <p>เนื่องจากสินค้าของเราเป็นอาหารสด เราไม่รับคืนสินค้าหลังจากจัดส่งสำเร็จแล้ว ยกเว้นกรณีสินค้าที่ได้รับไม่ตรงกับที่สั่ง หรือเสียหาย/มีคุณภาพผิดปกติ ณ เวลาที่ได้รับ กรุณาติดต่อเราภายใน 24 ชั่วโมงหลังได้รับสินค้าพร้อมภาพถ่ายสินค้า ท่านสามารถขอยกเลิกคำสั่งซื้อได้ก่อนที่ร้านจะเริ่มเตรียมสินค้าเท่านั้น</p>
+  </div>
+
+  <div class="lang-block" id="lang-en">
+    <h1>About Us</h1>
+    <div class="card">
+      <p><b>Rakugo!</b> is operated by <b>SAITO FOODS CO., LTD.</b></p>
+      <p>Founded in 1997, we have been delivering authentic Japanese food across Bangkok for over 25 years. Rakugo! is our new online ordering platform, built for convenience, speed, and genuine Japanese ingredients.</p>
+    </div>
+
+    <h2>Company Address</h2>
+    <p>23/7 Soi Naphasub 2, Sukhumvit Soi 36,<br>Klongton, Klongtoei, Bangkok 10110</p>
+
+    <h2>Contact Us</h2>
+    <p>Email: saitofoods@live.jp</p>
+
+    <h2>Terms of Service</h2>
+    <p>
+      1. By placing an order on this website, you confirm that the items, quantities, delivery address, and total amount shown are correct.<br>
+      2. We are closed every Sunday. Saturday deliveries are available in the morning only.<br>
+      3. Orders paid by bank transfer or QR are confirmed only after we verify the payment slip.<br>
+      4. Loyalty stamps, discounts, and coupon codes cannot be exchanged for cash.
+    </p>
+
+    <h2>Privacy Policy</h2>
+    <p>We collect your name, phone number, delivery address, email, and payment slip images solely to process and deliver your orders. We do not sell your personal data to third parties. Your information is shared only as necessary with our delivery staff and the relevant bank for payment verification. To access, correct, or delete your data, please contact saitofoods@live.jp</p>
+
+    <h2>Return & Cancellation Policy</h2>
+    <p>As our products are fresh food items, we do not accept returns after successful delivery, except when the item received does not match what was ordered, or is damaged/abnormal upon receipt. Please contact us within 24 hours of receiving your order with photos. Orders may only be cancelled before we begin preparing them.</p>
+  </div>
+</div>
+
+<script>
+function setLang(lang, btn) {
+  document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.lang-block').forEach(b => b.classList.remove('active'));
+  document.getElementById('lang-' + lang).classList.add('active');
+}
+</script>
+</body>
+</html>
