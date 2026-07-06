@@ -317,7 +317,7 @@
       <a href="#promotions">โปรโมชั่น / Promotions</a>
       <a href="#how-to-order">วิธีสั่งซื้อ / How to order</a>
     </nav>
-    <a class="cart-btn" href="order.html" style="text-decoration:none;">🛒 ตะกร้า / Cart (0)</a>
+    <a class="cart-btn" href="order.html" style="text-decoration:none;">🛒 ตะกร้า / Cart (<span id="header-cart-count">0</span>)</a>
   </div>
 </header>
 
@@ -791,6 +791,8 @@ function updateCartFab() {
     } else {
       fab.classList.remove('show');
     }
+    const headerCount = document.getElementById('header-cart-count');
+    if (headerCount) headerCount.textContent = summary.count;
   } catch(e) {
     // localStorage無効環境は無視
   }
