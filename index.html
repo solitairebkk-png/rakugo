@@ -122,11 +122,11 @@
 
   /* CONDIMENT BROWSE ★画像対応版 */
   .cond-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:16px;}
-  .cond-card{ background:var(--card); border-radius:20px; padding:14px 10px 16px; text-align:center; border:2px solid var(--line); text-decoration:none; color:inherit; cursor:pointer; display:block; transition:border-color .15s, transform .15s; }
+  .cond-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(100px,1fr)); gap:12px;}
+  .cond-card{ background:var(--card); border-radius:16px; padding:10px 8px; text-align:center; border:2px solid var(--line); text-decoration:none; color:inherit; cursor:pointer; display:block; transition:border-color .15s, transform .15s; }
   .cond-card:hover{ border-color:var(--orange); transform:translateY(-2px); }
-  .cond-card .cond-img{ width:90px; height:90px; object-fit:contain; margin:0 auto 10px; display:block; }
-  .cond-card .cond-emoji{ font-size:52px; line-height:1; margin-bottom:10px; display:block; }
-  .cond-card .cond-name{font-weight:600; font-size:13px; line-height:1.35;}
+  .cond-card .cond-img{ width:80px; height:80px; object-fit:contain; margin:0 auto; display:block; }
+  .cond-card .cond-emoji{ font-size:48px; line-height:1; display:block; }
 
   /* HOW TO ORDER */
   .howto-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
@@ -402,9 +402,8 @@ async function loadCondimentBrowse() {
         ? `<img class="cond-img" src="${c.image_drive_id}" alt="${c.name_th}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"><span class="cond-emoji" style="display:none;">${c.icon_emoji || '🧂'}</span>`
         : `<span class="cond-emoji">${c.icon_emoji || '🧂'}</span>`;
       return `
-        <a class="cond-card" href="order.html?condiment=${c.id}">
+        <a class="cond-card" href="order.html?condiment=${c.id}" title="${c.name_th}">
           ${imgHtml}
-          <div class="cond-name">${c.name_th}${c.name_en ? `<br><span style="font-weight:400;font-size:11px;color:#9a8973;">${c.name_en}</span>` : ''}</div>
         </a>
       `;
     }).join('');
