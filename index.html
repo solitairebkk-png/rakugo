@@ -28,13 +28,10 @@
     font-family:'Prompt', sans-serif;
     line-height:1.5;
   }
-  h1,h2,h3,.display{
-    font-family:'Kanit', sans-serif;
-  }
+  h1,h2,h3,.display{ font-family:'Kanit', sans-serif; }
   img{display:block; max-width:100%;}
   .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
 
-  /* rough label ribbon shown on every section for internal review */
   .rough-tag{
     position:fixed; top:14px; right:14px; z-index:99;
     background:var(--ink); color:#fff; font-family:'Kanit';
@@ -43,101 +40,38 @@
   }
 
   /* HEADER */
-  header{
-    background:var(--cream); position:sticky; top:0; z-index:10;
-    border-bottom:2px solid var(--line);
-  }
-  .header-inner{
-    max-width:1180px; margin:0 auto;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:12px 28px;
-  }
+  header{ background:var(--cream); position:sticky; top:0; z-index:10; border-bottom:2px solid var(--line); }
+  .header-inner{ max-width:1180px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:12px 28px; }
   .logo-mark{height:42px;}
   nav{display:flex; gap:28px; font-size:15px; font-weight:500;}
   nav a{color:var(--ink); text-decoration:none; opacity:.75;}
-  .cart-btn{
-    background:var(--orange); color:#fff; font-family:'Kanit'; font-weight:600;
-    border-radius:30px; padding:9px 20px; font-size:14px;
-    display:flex; align-items:center; gap:6px;
-  }
+  .cart-btn{ background:var(--orange); color:#fff; font-family:'Kanit'; font-weight:600; border-radius:30px; padding:9px 20px; font-size:14px; display:flex; align-items:center; gap:6px; }
 
   /* HERO */
-  .hero{
-    position:relative; overflow:hidden;
-    padding:64px 0 44px;
-    background:radial-gradient(ellipse at 78% 30%, var(--peach) 0%, var(--cream) 60%);
-  }
-  .hero-inner{
-    display:grid; grid-template-columns:0.85fr 1.15fr; align-items:center; gap:24px;
-  }
-  .hero-eyebrow{
-    display:inline-block; background:#fff; border:1.5px solid var(--orange);
-    color:var(--orange-deep); font-weight:600; font-size:13px;
-    padding:5px 14px; border-radius:20px; margin-bottom:16px;
-  }
-  .hero h1{
-    font-size:42px; color:var(--ink); font-weight:700; line-height:1.25;
-  }
+  .hero{ position:relative; overflow:hidden; padding:64px 0 44px; background:radial-gradient(ellipse at 78% 30%, var(--peach) 0%, var(--cream) 60%); }
+  .hero-inner{ display:grid; grid-template-columns:0.85fr 1.15fr; align-items:center; gap:24px; }
+  .hero-eyebrow{ display:inline-block; background:#fff; border:1.5px solid var(--orange); color:var(--orange-deep); font-weight:600; font-size:13px; padding:5px 14px; border-radius:20px; margin-bottom:16px; }
+  .hero h1{ font-size:42px; color:var(--ink); font-weight:700; line-height:1.25; }
   .hero h1 span{color:var(--red);}
   .hero p{margin-top:16px; font-size:16px; color:#5b4a3a; max-width:440px;}
   .hero-ctas{margin-top:26px; display:flex; gap:12px;}
-  .btn-primary{
-    background:var(--red); color:#fff; font-family:'Kanit'; font-weight:600; font-size:16px;
-    border-radius:14px; padding:14px 26px; text-decoration:none; box-shadow:0 6px 0 var(--orange-deep);
-  }
-  .btn-secondary{
-    background:#fff; color:var(--ink); font-family:'Kanit'; font-weight:600; font-size:16px;
-    border-radius:14px; padding:14px 22px; text-decoration:none; border:2px solid var(--line);
-  }
+  .btn-primary{ background:var(--red); color:#fff; font-family:'Kanit'; font-weight:600; font-size:16px; border-radius:14px; padding:14px 26px; text-decoration:none; box-shadow:0 6px 0 var(--orange-deep); }
+  .btn-secondary{ background:#fff; color:var(--ink); font-family:'Kanit'; font-weight:600; font-size:16px; border-radius:14px; padding:14px 22px; text-decoration:none; border:2px solid var(--line); }
   .hero-visual{position:relative; display:flex; justify-content:center;}
-  .hero-visual img{
-    width:100%; max-width:760px;
-    filter:
-      drop-shadow(0 0 10px rgba(255,200,110,0.55))
-      drop-shadow(0 0 26px rgba(255,168,60,0.45))
-      drop-shadow(0 0 55px rgba(255,140,30,0.35));
-  }
-  .hero-badge{
-    position:absolute; top:6%; left:0; background:#fff; border-radius:16px;
-    padding:8px 14px; box-shadow:0 8px 20px rgba(0,0,0,.08); font-size:13px; font-weight:600;
-    display:flex; align-items:center; gap:6px;
-  }
+  .hero-visual img{ width:100%; max-width:760px; filter: drop-shadow(0 0 10px rgba(255,200,110,0.55)) drop-shadow(0 0 26px rgba(255,168,60,0.45)) drop-shadow(0 0 55px rgba(255,140,30,0.35)); }
+  .hero-badge{ position:absolute; top:6%; left:0; background:#fff; border-radius:16px; padding:8px 14px; box-shadow:0 8px 20px rgba(0,0,0,.08); font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; }
   .hero-badge .dot{width:8px; height:8px; border-radius:50%; background:#3CB878;}
 
-  /* NOTICE STRIP — 左半分:カレンダー / 右半分:お知らせ(ゆっくりスクロール) */
-  .notice-strip{
-    background:linear-gradient(180deg, #FFF1DC, #FFEAC9);
-    border-top:2px solid var(--line); border-bottom:2px solid var(--line);
-    display:flex; justify-content:center;
-  }
-  .notice-strip-inner{
-    width:100%; max-width:1180px; display:flex; align-items:stretch; min-height:230px;
-  }
-  .notice-cal-half{
-    width:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-    padding:14px 20px; border-right:2px solid var(--line); box-sizing:border-box;
-  }
-  .notice-ticker-half{
-    width:50%; overflow:hidden; position:relative; display:flex; align-items:center;
-  }
-  .notice-track{
-    display:flex; width:max-content;
-    animation:noticeScroll 70s linear infinite;
-  }
-  .notice-item{
-    position:relative; flex:0 0 auto; margin-right:40px;
-  }
+  /* NOTICE STRIP */
+  .notice-strip{ background:linear-gradient(180deg, #FFF1DC, #FFEAC9); border-top:2px solid var(--line); border-bottom:2px solid var(--line); display:flex; justify-content:center; }
+  .notice-strip-inner{ width:100%; max-width:1180px; display:flex; align-items:stretch; min-height:230px; }
+  .notice-cal-half{ width:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:14px 20px; border-right:2px solid var(--line); box-sizing:border-box; }
+  .notice-ticker-half{ width:50%; overflow:hidden; position:relative; display:flex; align-items:center; }
+  .notice-track{ display:flex; width:max-content; animation:noticeScroll 70s linear infinite; }
+  .notice-item{ position:relative; flex:0 0 auto; margin-right:40px; }
   .notice-item img{height:190px; width:auto; display:block;}
-  .notice-text{
-    position:absolute; top:14%; left:40%; width:55%; height:60%;
-    display:flex; align-items:center; justify-content:center; text-align:center;
-    font-family:'Kanit'; font-weight:600; font-size:19px; color:#8A2E23;
-    line-height:1.25; padding:0 4%;
-  }
-  @keyframes noticeScroll{
-    from{transform:translateX(0);}
-    to{transform:translateX(-50%);}
-  }
+  .notice-text{ position:absolute; top:14%; left:40%; width:55%; height:60%; display:flex; align-items:center; justify-content:center; text-align:center; font-family:'Kanit'; font-weight:600; font-size:19px; color:#8A2E23; line-height:1.25; padding:0 4%; }
+  @keyframes noticeScroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
   @media (max-width:720px){
     .notice-strip-inner{ flex-direction:column; min-height:0; }
     .notice-cal-half{ width:100%; border-right:none; border-bottom:2px solid var(--line); padding:16px; }
@@ -157,44 +91,22 @@
     .howto-grid{grid-template-columns:1fr 1fr;}
     .zone-grid{grid-template-columns:1fr;}
   }
-  .sale-card{
-    background:linear-gradient(135deg, #FFF1DC, #FFE0B0);
-    border-radius:24px; padding:22px; display:flex; align-items:center; gap:18px;
-    position:relative; overflow:hidden; border:2px solid #F5CE8E;
-  }
-  .sale-ribbon{
-    position:absolute; top:14px; left:-34px; background:var(--red); color:#fff;
-    font-family:'Kanit'; font-weight:700; font-size:12px; padding:5px 40px;
-    transform:rotate(-38deg); box-shadow:0 3px 6px rgba(0,0,0,.15);
-  }
-  .sale-card img.product{
-    width:120px; height:120px; object-fit:contain; background:#fff; border-radius:16px; padding:10px;
-    box-shadow:0 8px 18px rgba(0,0,0,.08); flex-shrink:0;
-  }
+  .sale-card{ background:linear-gradient(135deg, #FFF1DC, #FFE0B0); border-radius:24px; padding:22px; display:flex; align-items:center; gap:18px; position:relative; overflow:hidden; border:2px solid #F5CE8E; }
+  .sale-ribbon{ position:absolute; top:14px; left:-34px; background:var(--red); color:#fff; font-family:'Kanit'; font-weight:700; font-size:12px; padding:5px 40px; transform:rotate(-38deg); box-shadow:0 3px 6px rgba(0,0,0,.15); }
+  .sale-card img.product{ width:120px; height:120px; object-fit:contain; background:#fff; border-radius:16px; padding:10px; box-shadow:0 8px 18px rgba(0,0,0,.08); flex-shrink:0; }
   .sale-body{flex:1; min-width:0;}
   .sale-name{font-size:17px; font-weight:700; line-height:1.3;}
   .sale-desc{font-size:12.5px; color:#6b5842; margin-top:4px;}
   .price-row{margin-top:8px; display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;}
   .price-old{font-size:13px; color:#a8967d; text-decoration:line-through;}
   .price-new{font-size:20px; font-weight:700; color:var(--red); font-family:'Kanit';}
-  .sale-cta{
-    background:var(--ink); color:#fff; font-family:'Kanit'; font-weight:600; font-size:13px;
-    padding:9px 16px; border-radius:12px; white-space:nowrap; margin-top:10px; display:inline-block;
-  }
+  .sale-cta{ background:var(--ink); color:#fff; font-family:'Kanit'; font-weight:600; font-size:13px; padding:9px 16px; border-radius:12px; white-space:nowrap; margin-top:10px; display:inline-block; }
 
   /* RANKING */
   .rank-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
-  .rank-card{
-    background:var(--card); border-radius:22px; padding:22px 18px 20px;
-    text-align:center; position:relative; border:2px solid var(--line);
-    display:block; text-decoration:none; color:inherit; cursor:pointer;
-  }
+  .rank-card{ background:var(--card); border-radius:22px; padding:22px 18px 20px; text-align:center; position:relative; border:2px solid var(--line); display:block; text-decoration:none; color:inherit; cursor:pointer; }
   .rank-card.gold{border-color:#F0C24A; background:#FFFBF0;}
-  .rank-num{
-    position:absolute; top:-16px; left:18px; width:38px; height:38px; border-radius:50%;
-    background:var(--ink); color:#fff; font-family:'Kanit'; font-weight:700; font-size:17px;
-    display:flex; align-items:center; justify-content:center;
-  }
+  .rank-num{ position:absolute; top:-16px; left:18px; width:38px; height:38px; border-radius:50%; background:var(--ink); color:#fff; font-family:'Kanit'; font-weight:700; font-size:17px; display:flex; align-items:center; justify-content:center; }
   .rank-card.gold .rank-num{background:#F0A93A;}
   .rank-card img{width:120px; height:120px; object-fit:contain; margin:14px auto 10px;}
   .rank-title{font-weight:600; font-size:15px;}
@@ -203,50 +115,35 @@
 
   /* CATEGORY (cooking method icons) */
   .cat-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:16px;}
-  .cat-card{
-    background:var(--card); border-radius:20px; padding:18px; text-align:center;
-    border:2px solid var(--line); transition:.15s; display:block; text-decoration:none; color:inherit; cursor:pointer;
-  }
+  .cat-card{ background:var(--card); border-radius:20px; padding:18px; text-align:center; border:2px solid var(--line); transition:.15s; display:block; text-decoration:none; color:inherit; cursor:pointer; }
   .cat-card img{width:110px; height:110px; object-fit:contain; margin:0 auto 8px;}
   .cat-card .cat-th{font-weight:600; font-size:14px;}
   .cat-card .cat-jp{font-size:12px; color:#9a8973;}
 
-  /* CONDIMENT BROWSE */
-  .cond-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr)); gap:16px;}
-  .cond-card{
-    background:var(--card); border-radius:20px; padding:18px; text-align:center;
-    border:2px solid var(--line); text-decoration:none; color:inherit; cursor:pointer; display:block;
-  }
-  .cond-card .cond-emoji{font-size:36px; margin-bottom:8px;}
-  .cond-card .cond-name{font-weight:600; font-size:13.5px;}
+  /* CONDIMENT BROWSE ★画像対応版 */
+  .cond-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:16px;}
+  .cond-card{ background:var(--card); border-radius:20px; padding:14px 10px 16px; text-align:center; border:2px solid var(--line); text-decoration:none; color:inherit; cursor:pointer; display:block; transition:border-color .15s, transform .15s; }
+  .cond-card:hover{ border-color:var(--orange); transform:translateY(-2px); }
+  .cond-card .cond-img{ width:90px; height:90px; object-fit:contain; margin:0 auto 10px; display:block; }
+  .cond-card .cond-emoji{ font-size:52px; line-height:1; margin-bottom:10px; display:block; }
+  .cond-card .cond-name{font-weight:600; font-size:13px; line-height:1.35;}
 
   /* HOW TO ORDER */
   .howto-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
-  .howto-step{
-    background:var(--card); border-radius:20px; padding:24px 18px; text-align:center;
-    border:2px solid var(--line); position:relative;
-  }
-  .howto-num{
-    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
-    width:30px; height:30px; border-radius:50%; background:var(--red); color:#fff;
-    font-family:'Kanit'; font-weight:700; font-size:14px;
-    display:flex; align-items:center; justify-content:center;
-  }
+  .howto-step{ background:var(--card); border-radius:20px; padding:24px 18px; text-align:center; border:2px solid var(--line); position:relative; }
+  .howto-num{ position:absolute; top:-14px; left:50%; transform:translateX(-50%); width:30px; height:30px; border-radius:50%; background:var(--red); color:#fff; font-family:'Kanit'; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; }
   .howto-icon{font-size:36px; margin:10px 0 12px;}
   .howto-title{font-weight:700; font-size:15px;}
   .howto-desc{font-size:12.5px; color:#6b5842; margin-top:6px; line-height:1.5;}
 
   /* DELIVERY AREAS */
   .zone-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
-  .zone-card{
-    background:var(--card); border-radius:18px; padding:18px 20px;
-    border:2px solid var(--line);
-  }
+  .zone-card{ background:var(--card); border-radius:18px; padding:18px 20px; border:2px solid var(--line); }
   .zone-card .zone-label{font-size:12.5px; font-weight:700; color:var(--orange-deep); margin-bottom:8px;}
   .zone-card .zone-fee{font-family:'Kanit'; font-weight:700; font-size:18px; color:var(--red); margin-bottom:10px;}
   .zone-card .zone-districts{font-size:12.5px; color:#6b5842; line-height:1.7;}
 
-  /* DELIVERY CALENDAR (お知らせ帯の左半分に収まるコンパクト版) */
+  /* DELIVERY CALENDAR */
   .cal-card{ background:var(--card); border-radius:16px; border:2px solid var(--line); padding:12px 16px; width:280px; margin:0 auto; }
   .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
   .cal-head .cal-month{ font-family:'Kanit'; font-weight:700; font-size:13.5px; }
@@ -266,45 +163,23 @@
   .cal-legend .dot{ width:7px; height:7px; border-radius:50%; display:inline-block; }
 
   /* FOOTER */
-  footer{
-    background:var(--ink); color:#f4e9d8; padding:44px 0 26px; margin-top:20px;
-  }
+  footer{ background:var(--ink); color:#f4e9d8; padding:44px 0 26px; margin-top:20px; }
   .footer-inner{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;}
   .footer-logo{height:34px;}
   .footer-links{display:flex; gap:24px; font-size:13px; opacity:.8;}
   .footer-copy{font-size:12px; opacity:.5; margin-top:24px;}
 
   /* FLOATING SCROLL BUTTONS */
-  .scroll-fab-group{
-    position:fixed; right:20px; bottom:20px; z-index:50;
-    display:flex; flex-direction:column; gap:10px;
-  }
-  .scroll-fab{
-    width:46px; height:46px; border-radius:50%; border:none; cursor:pointer;
-    background:#fff; color:var(--ink); font-size:18px;
-    box-shadow:0 6px 16px rgba(0,0,0,.15); border:2px solid var(--line);
-    display:flex; align-items:center; justify-content:center;
-    transition:opacity .2s, transform .15s;
-  }
+  .scroll-fab-group{ position:fixed; right:20px; bottom:20px; z-index:50; display:flex; flex-direction:column; gap:10px; }
+  .scroll-fab{ width:46px; height:46px; border-radius:50%; border:none; cursor:pointer; background:#fff; color:var(--ink); font-size:18px; box-shadow:0 6px 16px rgba(0,0,0,.15); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; transition:opacity .2s, transform .15s; }
   .scroll-fab:hover{ transform:translateY(-2px); border-color:var(--orange); }
   .scroll-fab.hidden{ opacity:0; pointer-events:none; }
   .scroll-fab.top{ background:var(--orange); color:#fff; border-color:var(--orange); }
 
   /* FLOATING CART BUTTON */
-  .cart-fab{
-    position:fixed; left:20px; bottom:20px; z-index:50;
-    width:56px; height:56px; border-radius:50%;
-    background:var(--red); color:#fff; text-decoration:none;
-    display:none; align-items:center; justify-content:center;
-    font-size:24px; box-shadow:0 6px 16px rgba(0,0,0,.2);
-  }
+  .cart-fab{ position:fixed; left:20px; bottom:20px; z-index:50; width:56px; height:56px; border-radius:50%; background:var(--red); color:#fff; text-decoration:none; display:none; align-items:center; justify-content:center; font-size:24px; box-shadow:0 6px 16px rgba(0,0,0,.2); }
   .cart-fab.show{ display:flex; }
-  .cart-fab-badge{
-    position:absolute; top:-4px; right:-4px; background:var(--ink); color:#fff;
-    font-family:'Kanit'; font-size:11px; font-weight:700; border-radius:50%;
-    width:21px; height:21px; display:flex; align-items:center; justify-content:center;
-    border:2px solid var(--cream);
-  }
+  .cart-fab-badge{ position:absolute; top:-4px; right:-4px; background:var(--ink); color:#fff; font-family:'Kanit'; font-size:11px; font-weight:700; border-radius:50%; width:21px; height:21px; display:flex; align-items:center; justify-content:center; border:2px solid var(--cream); }
 </style>
 </head>
 <body>
@@ -362,9 +237,7 @@
 <section class="sec" id="promotions">
   <div class="wrap">
     <div class="sec-head">
-      <div>
-        <h2>สินค้าลดราคาประจำเดือน / Promotion of the Month</h2>
-      </div>
+      <div><h2>สินค้าลดราคาประจำเดือน / Promotion of the Month</h2></div>
       <div class="note">Admin toggle (up to 2 items / month)</div>
     </div>
     <div class="sale-grid" id="sale-grid">
@@ -462,30 +335,10 @@
       <div><h2>วิธีสั่งซื้อ / How to Order</h2></div>
     </div>
     <div class="howto-grid">
-      <div class="howto-step">
-        <div class="howto-num">1</div>
-        <div class="howto-icon">🍱</div>
-        <div class="howto-title">เลือกเมนู / Choose menu</div>
-        <div class="howto-desc">เลือกจากเมนูทั้งหมด ค้นหา หรือกรองตามวิธีปรุงที่ต้องการ</div>
-      </div>
-      <div class="howto-step">
-        <div class="howto-num">2</div>
-        <div class="howto-icon">🛒</div>
-        <div class="howto-title">ใส่ตะกร้า / Add to cart</div>
-        <div class="howto-desc">ดูรายละเอียดสินค้า เลือกจำนวน แล้วหยิบใส่ตะกร้า</div>
-      </div>
-      <div class="howto-step">
-        <div class="howto-num">3</div>
-        <div class="howto-icon">📝</div>
-        <div class="howto-title">กรอกข้อมูล / Fill in details</div>
-        <div class="howto-desc">ระบุที่อยู่จัดส่ง วันเวลาที่สะดวก และช่องทางชำระเงิน</div>
-      </div>
-      <div class="howto-step">
-        <div class="howto-num">4</div>
-        <div class="howto-icon">🛵</div>
-        <div class="howto-title">รอรับสินค้า / Receive order</div>
-        <div class="howto-desc">ยืนยันคำสั่งซื้อแล้วรอรับอาหารญี่ปุ่นสดใหม่ถึงบ้าน</div>
-      </div>
+      <div class="howto-step"><div class="howto-num">1</div><div class="howto-icon">🍱</div><div class="howto-title">เลือกเมนู / Choose menu</div><div class="howto-desc">เลือกจากเมนูทั้งหมด ค้นหา หรือกรองตามวิธีปรุงที่ต้องการ</div></div>
+      <div class="howto-step"><div class="howto-num">2</div><div class="howto-icon">🛒</div><div class="howto-title">ใส่ตะกร้า / Add to cart</div><div class="howto-desc">ดูรายละเอียดสินค้า เลือกจำนวน แล้วหยิบใส่ตะกร้า</div></div>
+      <div class="howto-step"><div class="howto-num">3</div><div class="howto-icon">📝</div><div class="howto-title">กรอกข้อมูล / Fill in details</div><div class="howto-desc">ระบุที่อยู่จัดส่ง วันเวลาที่สะดวก และช่องทางชำระเงิน</div></div>
+      <div class="howto-step"><div class="howto-num">4</div><div class="howto-icon">🛵</div><div class="howto-title">รอรับสินค้า / Receive order</div><div class="howto-desc">ยืนยันคำสั่งซื้อแล้วรอรับอาหารญี่ปุ่นสดใหม่ถึงบ้าน</div></div>
     </div>
     <div style="text-align:center; margin-top:28px;">
       <a class="btn-primary" href="order.html">เริ่มสั่งเลย / Start ordering</a>
@@ -508,7 +361,6 @@
 <footer>
   <div class="wrap footer-inner">
     <img class="footer-logo" src="images/rakugo2.webp" alt="Rakugo!">
-
     <div class="footer-links">
       <a href="about.html" style="color:inherit;text-decoration:none;">เกี่ยวกับเรา / About us</a>
       <a href="#delivery-areas" style="color:inherit;text-decoration:none;">พื้นที่จัดส่ง / Delivery areas</a>
@@ -518,13 +370,11 @@
   <div class="wrap footer-copy">© 2026 Rakugo! (rakugo.store) &nbsp;·&nbsp; <a href="admin.html" target="_blank" style="color:inherit;opacity:0.6;">Admin</a></div>
 </footer>
 
-<!-- SCROLL FLOATING BUTTONS -->
 <div class="scroll-fab-group">
   <button class="scroll-fab down" id="scroll-down-btn" onclick="scrollByViewport(1)" title="เลื่อนลง">↓</button>
   <button class="scroll-fab top hidden" id="scroll-top-btn" onclick="scrollToTop()" title="กลับด้านบน">↑</button>
 </div>
 
-<!-- FLOATING CART BUTTON -->
 <a class="cart-fab" id="cart-fab" href="order.html">
   🛒
   <span class="cart-fab-badge" id="cart-fab-badge">0</span>
@@ -534,6 +384,7 @@
 const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
 
+// ★ 調味料一覧（画像対応版）
 async function loadCondimentBrowse() {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/condiments?select=*&order=sort_order`, {
@@ -545,12 +396,18 @@ async function loadCondimentBrowse() {
       wrap.closest('section').style.display = 'none';
       return;
     }
-    wrap.innerHTML = data.map(c => `
-      <a class="cond-card" href="order.html?condiment=${c.id}">
-        <div class="cond-emoji">${c.icon_emoji || '🧂'}</div>
-        <div class="cond-name">${c.name_th}${c.name_en ? `<br><span style="font-weight:400;font-size:11px;color:#9a8973;">${c.name_en}</span>` : ''}</div>
-      </a>
-    `).join('');
+    wrap.innerHTML = data.map(c => {
+      // image_drive_idがURLそのものかDrive IDかを判定して表示
+      const imgHtml = c.image_drive_id
+        ? `<img class="cond-img" src="${c.image_drive_id}" alt="${c.name_th}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"><span class="cond-emoji" style="display:none;">${c.icon_emoji || '🧂'}</span>`
+        : `<span class="cond-emoji">${c.icon_emoji || '🧂'}</span>`;
+      return `
+        <a class="cond-card" href="order.html?condiment=${c.id}">
+          ${imgHtml}
+          <div class="cond-name">${c.name_th}${c.name_en ? `<br><span style="font-weight:400;font-size:11px;color:#9a8973;">${c.name_en}</span>` : ''}</div>
+        </a>
+      `;
+    }).join('');
   } catch(e) {
     console.error('Condiments browse load failed', e);
   }
@@ -563,10 +420,7 @@ async function loadDeliveryAreas() {
     });
     const data = await res.json();
     const wrap = document.getElementById('zone-grid');
-    if (!data.length) {
-      wrap.closest('section').style.display = 'none';
-      return;
-    }
+    if (!data.length) { wrap.closest('section').style.display = 'none'; return; }
     const zones = {};
     data.forEach(d => {
       if (!zones[d.zone_label]) zones[d.zone_label] = { fee: d.fee, districts: [] };
@@ -579,9 +433,7 @@ async function loadDeliveryAreas() {
         <div class="zone-districts">${z.districts.join(' · ')}</div>
       </div>
     `).join('');
-  } catch(e) {
-    console.error('Delivery areas load failed', e);
-  }
+  } catch(e) { console.error('Delivery areas load failed', e); }
 }
 
 async function loadNotices() {
@@ -597,17 +449,9 @@ async function loadNotices() {
       document.querySelector('.notice-cal-half').style.justifyContent = 'center';
       return;
     }
-    const itemHtml = n => `
-      <div class="notice-item">
-        <img src="images/icon_autosanrin_banner.webp" alt="">
-        <div class="notice-text">${n.text_th}</div>
-      </div>
-    `;
-    // シームレスループのため2セット分並べる
+    const itemHtml = n => `<div class="notice-item"><img src="images/icon_autosanrin_banner.webp" alt=""><div class="notice-text">${n.text_th}</div></div>`;
     document.getElementById('notice-track').innerHTML = data.map(itemHtml).join('') + data.map(itemHtml).join('');
-  } catch(e) {
-    console.error('Notices load failed', e);
-  }
+  } catch(e) { console.error('Notices load failed', e); }
 }
 
 async function loadMonthlySale() {
@@ -616,76 +460,49 @@ async function loadMonthlySale() {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     const data = await res.json();
-    if (!data.length) {
-      document.getElementById('sale-grid').closest('section').style.display = 'none';
-      return;
-    }
+    if (!data.length) { document.getElementById('sale-grid').closest('section').style.display = 'none'; return; }
     for (let i = 0; i < 2; i++) {
       const card = document.getElementById(`sale-card-${i + 1}`);
       const p = data[i];
       if (!p) { card.style.display = 'none'; continue; }
-      document.getElementById(`sale-product-img-${i + 1}`).src = p.image_drive_id
-        ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}`
-        : 'images/icon_frozen_shrimp.webp';
+      document.getElementById(`sale-product-img-${i + 1}`).src = p.image_drive_id ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}` : 'images/icon_frozen_shrimp.webp';
       document.getElementById(`sale-product-name-${i + 1}`).textContent = p.name_th;
       document.getElementById(`sale-product-desc-${i + 1}`).textContent = p.description_th || '';
       document.getElementById(`sale-price-old-${i + 1}`).textContent = `฿ ${p.price}`;
       document.getElementById(`sale-price-new-${i + 1}`).textContent = `฿ ${p.sale_price}`;
       document.getElementById(`sale-cta-link-${i + 1}`).href = `order.html?view=${p.id}`;
     }
-  } catch(e) {
-    console.error('Monthly sale load failed', e);
-  }
+  } catch(e) { console.error('Monthly sale load failed', e); }
 }
+
 async function loadTopRanking() {
   try {
     const items = await fetch(`${SUPABASE_URL}/rest/v1/order_items?select=product_id,quantity&limit=10000`, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     }).then(r => r.json());
-
     const soldMap = {};
-    items.forEach(i => {
-      if (!i.product_id) return;
-      soldMap[i.product_id] = (soldMap[i.product_id] || 0) + (i.quantity || 0);
-    });
-    const ranked = Object.entries(soldMap)
-      .map(([productId, sold]) => ({ productId: parseInt(productId), sold }))
-      .sort((a, b) => b.sold - a.sold)
-      .slice(0, 3);
-
-    if (!ranked.length) {
-      document.getElementById('ranking-section').style.display = 'none';
-      return;
-    }
-
+    items.forEach(i => { if (!i.product_id) return; soldMap[i.product_id] = (soldMap[i.product_id] || 0) + (i.quantity || 0); });
+    const ranked = Object.entries(soldMap).map(([productId, sold]) => ({ productId: parseInt(productId), sold })).sort((a, b) => b.sold - a.sold).slice(0, 3);
+    if (!ranked.length) { document.getElementById('ranking-section').style.display = 'none'; return; }
     const ids = ranked.map(r => r.productId).join(',');
-    const products = await fetch(`${SUPABASE_URL}/rest/v1/products?id=in.(${ids})&select=*`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    }).then(r => r.json());
+    const products = await fetch(`${SUPABASE_URL}/rest/v1/products?id=in.(${ids})&select=*`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }).then(r => r.json());
     const productMap = {};
     products.forEach(p => productMap[p.id] = p);
-
-    // 3位まで無ければ残りのカードは非表示に
     for (let i = 0; i < 3; i++) {
       const card = document.getElementById(`rank-card-${i + 1}`);
       if (!ranked[i]) { card.style.display = 'none'; continue; }
       const p = productMap[ranked[i].productId];
       if (!p) { card.style.display = 'none'; continue; }
-      document.getElementById(`rank-img-${i + 1}`).src = p.image_drive_id
-        ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}`
-        : card.querySelector('img').src;
+      document.getElementById(`rank-img-${i + 1}`).src = p.image_drive_id ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}` : card.querySelector('img').src;
       document.getElementById(`rank-title-${i + 1}`).textContent = p.name_th;
       document.getElementById(`rank-sold-${i + 1}`).textContent = `ขายแล้ว ${ranked[i].sold} ชิ้น`;
       document.getElementById(`rank-price-${i + 1}`).textContent = `฿ ${p.price}`;
       card.href = `order.html?view=${p.id}`;
     }
-  } catch(e) {
-    console.error('Ranking load failed', e);
-  }
+  } catch(e) { console.error('Ranking load failed', e); }
 }
-// ═══════════════════════════════════════════════
-// 配送カレンダー(日曜定休・土曜午前のみ・登録済み休業日を表示)
-// ═══════════════════════════════════════════════
+
+// 配送カレンダー
 let calHolidays = [];
 let calViewDate = new Date();
 calViewDate.setDate(1);
@@ -696,14 +513,10 @@ function calFormatDate(y, m, d) {
 
 async function loadCalendarHolidays() {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/holidays?select=holiday_date`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/holidays?select=holiday_date`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
     const data = await res.json();
     calHolidays = data.map(h => h.holiday_date);
-  } catch (e) {
-    console.error('Holidays load failed', e);
-  }
+  } catch (e) { console.error('Holidays load failed', e); }
   renderCalendar();
 }
 
@@ -717,23 +530,15 @@ function renderCalendar() {
   const m = calViewDate.getMonth();
   const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
   document.getElementById('cal-month-label').textContent = `${monthNames[m]} ${y + 543}`;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = calFormatDate(today.getFullYear(), today.getMonth(), today.getDate());
-
-  // 今月より前には戻れないようにする
   const prevBtn = document.getElementById('cal-prev-btn');
   prevBtn.disabled = (y === today.getFullYear() && m === today.getMonth());
-
   const firstDayOfWeek = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
-
   const dowLabels = ['อา','จ','อ','พ','พฤ','ศ','ส'];
   let html = dowLabels.map(d => `<div class="cal-dow">${d}</div>`).join('');
-
   for (let i = 0; i < firstDayOfWeek; i++) html += `<div class="cal-day empty"></div>`;
-
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = calFormatDate(y, m, d);
     const dow = new Date(y, m, d).getDay();
@@ -742,16 +547,13 @@ function renderCalendar() {
     const isHoliday = calHolidays.includes(dateStr);
     const isClosed = dow === 0 || isHoliday;
     const isSatMorning = dow === 6 && !isHoliday;
-
     let cls = 'cal-day';
     if (isPast) cls += ' past';
     if (isToday) cls += ' today';
     if (isClosed) cls += ' closed';
     else if (isSatMorning) cls += ' satmorning';
-
     html += `<div class="${cls}">${d}</div>`;
   }
-
   document.getElementById('cal-grid').innerHTML = html;
 }
 
@@ -762,47 +564,29 @@ loadTopRanking();
 loadCondimentBrowse();
 loadDeliveryAreas();
 
-// ── SCROLL FLOATING BUTTONS ──────────
-function scrollByViewport(direction) {
-  window.scrollBy({ top: direction * window.innerHeight * 0.85, behavior: 'smooth' });
-}
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+function scrollByViewport(direction) { window.scrollBy({ top: direction * window.innerHeight * 0.85, behavior: 'smooth' }); }
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 window.addEventListener('scroll', () => {
-  const scrollTopBtn = document.getElementById('scroll-top-btn');
-  const scrollDownBtn = document.getElementById('scroll-down-btn');
   const atTop = window.scrollY < 200;
   const atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 40;
-  scrollTopBtn.classList.toggle('hidden', atTop);
-  scrollDownBtn.classList.toggle('hidden', atBottom);
+  document.getElementById('scroll-top-btn').classList.toggle('hidden', atTop);
+  document.getElementById('scroll-down-btn').classList.toggle('hidden', atBottom);
 });
 
-// ── FLOATING CART BUTTON ─────────────
 function updateCartFab() {
   try {
     const raw = localStorage.getItem('rakugo_cart_summary');
     const summary = raw ? JSON.parse(raw) : { count: 0 };
     const fab = document.getElementById('cart-fab');
     const badge = document.getElementById('cart-fab-badge');
-    if (summary.count > 0) {
-      badge.textContent = summary.count;
-      fab.classList.add('show');
-    } else {
-      fab.classList.remove('show');
-    }
+    if (summary.count > 0) { badge.textContent = summary.count; fab.classList.add('show'); }
+    else { fab.classList.remove('show'); }
     const headerCount = document.getElementById('header-cart-count');
     if (headerCount) headerCount.textContent = summary.count;
-  } catch(e) {
-    // localStorage無効環境は無視
-  }
+  } catch(e) {}
 }
 updateCartFab();
-// 他タブ/order.htmlでカートが変わった場合にも反映
-window.addEventListener('storage', (e) => {
-  if (e.key === 'rakugo_cart_summary') updateCartFab();
-});
-// ページに戻ってきた時(戻るボタン等)にも最新化
+window.addEventListener('storage', (e) => { if (e.key === 'rakugo_cart_summary') updateCartFab(); });
 window.addEventListener('pageshow', updateCartFab);
 </script>
 
