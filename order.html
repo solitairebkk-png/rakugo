@@ -17,16 +17,14 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Sarabun', "Hiragino Sans", sans-serif; color: var(--ink); font-size: 15px;
+    font-family: 'Sarabun', sans-serif; color: var(--ink); font-size: 15px;
     background: url('images/bg_pattern.webp');
     background-repeat: repeat; background-size: 900px auto; background-attachment: fixed;
   }
   a { color: inherit; }
 
-  /* APP SHELL — スマホでは1カラム、広い画面では横幅を活かして拡張 */
   .app-shell { max-width: 480px; margin: 0 auto; background: var(--cream); min-height: 100vh; padding-bottom: 90px; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.08); }
 
-  /* HEADER — index.htmlと統一 */
   .site-header{ background: var(--cream); position: sticky; top: 0; z-index: 25; border-bottom: 2px solid var(--line); }
   .site-header-inner{ display:flex; align-items:center; justify-content:space-between; padding:10px 20px; }
   .site-logo-mark{ height:36px; display:block; }
@@ -38,20 +36,17 @@
     text-decoration:none; display:flex; align-items:center; gap:6px;
   }
 
-  /* CATEGORY TABS */
   .toolbar-sticky { position: sticky; top: 57px; z-index: 20; background: #fff; border-bottom: 1px solid var(--line-soft); padding: 12px 16px 0; }
   .search-input { width: 100%; padding: 10px 16px; border: 1.5px solid var(--line); border-radius: 22px; font-size: 13.5px; font-family: inherit; margin-bottom: 10px; background: var(--cream); }
   .search-input:focus { outline: none; border-color: var(--brand); background: #fff; }
-  .cat-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 0 0 12px; background: transparent; border-bottom: none; position: static; z-index: auto; }
+  .cat-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 0 0 12px; }
   .cat-tab { flex-shrink: 0; padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--line); background: #fff; color: var(--brand-dark); font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .cat-tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
 
-  /* COOKING METHOD FILTER */
   .cook-filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 0 0 12px; margin-top: -2px; }
   .cook-tab { flex-shrink: 0; padding: 5px 12px; border-radius: 16px; border: 1.5px dashed var(--line); background: #fff; color: #8a6b4a; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .cook-tab.active { background: var(--yellow); border-color: var(--yellow); border-style: solid; color: #5a3e00; }
 
-  /* PRODUCT GRID */
   .section-title { padding: 18px 16px 8px; font-size: 15px; font-weight: 700; color: var(--brand-dark); }
   .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
   .product-card { background: #fff; border: 1px solid var(--line-soft); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
@@ -70,14 +65,12 @@
   .qty-num { font-size: 14px; font-weight: 700; min-width: 16px; text-align: center; }
   .out-of-stock { font-size: 11px; color: #C53030; font-weight: 700; }
 
-  /* CART BAR */
   .cart-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--brand-dark); color: #fff; padding: 14px 18px; display: none; align-items: center; justify-content: space-between; z-index: 50; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); }
   .cart-bar.show { display: flex; }
   .cart-bar-info { font-size: 13px; }
   .cart-bar-info b { font-size: 16px; }
   .cart-bar-btn { background: #fff; color: var(--brand-dark); border: none; padding: 10px 20px; border-radius: 24px; font-weight: 700; font-size: 14px; cursor: pointer; }
 
-  /* MODAL (checkout) */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 0; overflow-y: auto; }
   .modal-overlay.open { display: flex; }
   .modal { background: #fff; width: 100%; max-width: 560px; margin: 0 auto; min-height: 100vh; }
@@ -140,28 +133,25 @@
   .submit-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--brand); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; }
   .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* SUCCESS SCREEN */
   .success-screen { text-align: center; padding: 60px 24px; }
   .success-screen .icon { font-size: 56px; margin-bottom: 16px; }
   .success-screen h3 { font-size: 20px; margin-bottom: 8px; color: var(--brand-dark); }
   .success-screen p { font-size: 14px; color: #777; margin-bottom: 4px; }
   .success-screen .order-num { font-size: 22px; font-weight: 800; margin: 16px 0; color: var(--ink); }
 
-  /* TOAST */
   .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13.5px; z-index: 999; display: none; }
   .toast.show { display: block; }
   .toast.error { background: #9B2C2C; }
 
   .loading { text-align: center; padding: 40px; color: #AAA; font-size: 14px; grid-column: 1/-1; }
 
-  /* FLOATING SCROLL BUTTONS */
   .scroll-fab-group { position: fixed; right: 20px; bottom: 100px; z-index: 60; display: flex; flex-direction: column; gap: 10px; }
   .scroll-fab { width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer; background: #fff; color: var(--ink); font-size: 18px; box-shadow: 0 6px 16px rgba(0,0,0,0.15); border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; transition: opacity 0.2s, transform 0.15s; }
   .scroll-fab:hover { transform: translateY(-2px); border-color: var(--brand); }
   .scroll-fab.hidden { opacity: 0; pointer-events: none; }
   .scroll-fab.top { background: var(--brand); color: #fff; border-color: var(--brand); }
 
-  /* PRODUCT DETAIL MODAL */
+  /* ── 商品詳細モーダル ── */
   .pmodal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 120; align-items: flex-end; justify-content: center; }
   .pmodal-overlay.open { display: flex; }
   .pmodal { background: #fff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; max-height: 92vh; overflow-y: auto; position: relative; }
@@ -170,8 +160,22 @@
     .pmodal { border-radius: 20px; }
   }
   .pmodal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.45); color: #fff; border: none; font-size: 16px; cursor: pointer; z-index: 2; line-height: 1; }
-  .pmodal-img-wrap { width: 100%; aspect-ratio: 4/3; background: var(--line-soft); display: flex; align-items: center; justify-content: center; font-size: 60px; overflow: hidden; }
-  .pmodal-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ── 画像ギャラリー（新規追加） ── */
+  .pmodal-gallery { position: relative; width: 100%; aspect-ratio: 4/3; background: var(--line-soft); overflow: hidden; }
+  .pmodal-gallery-track { display: flex; height: 100%; transition: transform 0.3s ease; }
+  .pmodal-gallery-slide { flex: 0 0 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 60px; overflow: hidden; }
+  .pmodal-gallery-slide img { width: 100%; height: 100%; object-fit: cover; }
+  /* 左右矢印ボタン */
+  .pmodal-gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; background: rgba(0,0,0,0.35); color: #fff; border: none; border-radius: 50%; font-size: 16px; cursor: pointer; z-index: 3; display: flex; align-items: center; justify-content: center; }
+  .pmodal-gallery-arrow.prev { left: 8px; }
+  .pmodal-gallery-arrow.next { right: 8px; }
+  .pmodal-gallery-arrow.hidden { display: none; }
+  /* ドットインジケーター */
+  .pmodal-gallery-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+  .pmodal-gallery-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.55); border: none; cursor: pointer; padding: 0; transition: background 0.2s, transform 0.2s; }
+  .pmodal-gallery-dot.active { background: #fff; transform: scale(1.3); }
+
   .pmodal-body { padding: 18px 20px 26px; }
   .pmodal-name-th { font-size: 18px; font-weight: 800; }
   .pmodal-name-en { font-size: 12.5px; color: #999; margin-top: 2px; }
@@ -191,7 +195,7 @@
   .pmodal-suggest-name { font-size: 11.5px; font-weight: 600; line-height: 1.3; }
   .pmodal-suggest-price { font-size: 11.5px; color: var(--brand-dark); font-weight: 700; margin-top: 2px; }
 
-  /* STAMP CARD (リピート促進スタンプ) */
+  /* STAMP CARD */
   @keyframes stampDown {
     0%   { transform: scale(2.6) rotate(var(--r,0deg)); opacity: 0; }
     45%  { transform: scale(0.82) rotate(var(--r,0deg)); opacity: 1; }
@@ -202,7 +206,6 @@
   .stamp-badge.filled { background: var(--brand); color: #fff; animation: stampDown 0.5s cubic-bezier(.36,1.55,.5,1) both; }
   .stamp-badge.empty { border: 1.5px dashed var(--line); color: var(--line); }
 
-  /* RESPONSIVE OVERRIDES — 必ず最後に書いて確実に優先させる */
   @media (min-width: 700px) {
     .app-shell { max-width: 760px; }
     .product-grid { grid-template-columns: repeat(3, 1fr); }
@@ -220,7 +223,6 @@
 <body>
 <div class="app-shell">
 
-<!-- HEADER — index.htmlと統一 -->
 <header class="site-header">
   <div class="site-header-inner">
     <a href="index.html"><img class="site-logo-mark" src="images/rakugo.webp" alt="Rakugo!"></a>
@@ -231,17 +233,14 @@
   </div>
 </header>
 
-<!-- SEARCH + CATEGORY TABS -->
 <div class="toolbar-sticky">
   <input type="text" id="product-search" class="search-input" placeholder="🔍 ค้นหาสินค้า... / Search product" oninput="handleSearch(this.value)">
   <div class="cat-tabs" id="cat-tabs"></div>
   <div class="cook-filter-tabs" id="cook-filter-tabs"></div>
 </div>
 
-<!-- PRODUCTS -->
 <div id="product-sections"></div>
 
-<!-- CART BAR -->
 <div class="cart-bar" id="cart-bar">
   <div class="cart-bar-info"><b id="cart-count">0</b> รายการ &nbsp;·&nbsp; ฿<b id="cart-total">0</b></div>
   <button class="cart-bar-btn" onclick="openCheckout()">ดำเนินการสั่งซื้อ →</button>
@@ -255,8 +254,6 @@
       <button class="modal-close" onclick="closeCheckout()">✕</button>
     </div>
     <div class="modal-body" id="checkout-body">
-
-      <!-- STEP 1: customer info -->
       <div class="step-card">
         <h4><span class="step-num">1</span>ข้อมูลผู้สั่ง / Your info</h4>
         <div class="form-group">
@@ -281,8 +278,6 @@
           <textarea id="c-address" placeholder="เช่น คอนโด ABC ห้อง 12/3 ซอยสุขุมวิท 36"></textarea>
         </div>
       </div>
-
-      <!-- STEP 2: delivery area -->
       <div class="step-card">
         <h4><span class="step-num">2</span>พื้นที่จัดส่ง / Delivery area</h4>
         <div class="form-group">
@@ -319,8 +314,6 @@
           </select>
         </div>
       </div>
-
-      <!-- STEP 3: payment -->
       <div class="step-card">
         <h4><span class="step-num">3</span>วิธีชำระเงิน / Payment</h4>
         <div class="pay-options">
@@ -354,8 +347,6 @@
           <div class="upload-status" id="slip-upload-status"></div>
         </div>
       </div>
-
-      <!-- STEP 4: note + summary -->
       <div class="step-card">
         <h4><span class="step-num">4</span>สรุปคำสั่งซื้อ / Order summary</h4>
         <div class="form-group">
@@ -375,7 +366,6 @@
         <div class="order-summary-row" id="summary-discount-row" style="display:none; color:var(--green);"><span>ส่วนลด / Discount</span><span id="summary-discount">-฿0</span></div>
         <div class="order-summary-row total"><span>รวมทั้งสิ้น / Total</span><span id="summary-total">฿0</span></div>
       </div>
-
       <button class="submit-btn" id="submit-btn" onclick="submitOrder()">ยืนยันสั่งซื้อ / Place order</button>
     </div>
   </div>
@@ -385,7 +375,15 @@
 <div class="pmodal-overlay" id="pmodal-overlay" onclick="if(event.target===this) closePModal()">
   <div class="pmodal">
     <button class="pmodal-close" onclick="closePModal()">✕</button>
-    <div class="pmodal-img-wrap" id="pmodal-img-wrap"></div>
+
+    <!-- ★ 画像ギャラリー（最大3枚・スワイプ対応） -->
+    <div class="pmodal-gallery" id="pmodal-gallery">
+      <div class="pmodal-gallery-track" id="pmodal-gallery-track"></div>
+      <button class="pmodal-gallery-arrow prev hidden" id="pmodal-arrow-prev" onclick="galleryMove(-1)">‹</button>
+      <button class="pmodal-gallery-arrow next hidden" id="pmodal-arrow-next" onclick="galleryMove(1)">›</button>
+      <div class="pmodal-gallery-dots" id="pmodal-gallery-dots"></div>
+    </div>
+
     <div class="pmodal-body">
       <div class="pmodal-name-th" id="pmodal-name-th"></div>
       <div class="pmodal-name-en" id="pmodal-name-en"></div>
@@ -411,23 +409,19 @@
   </div>
 </div>
 
-<!-- SCROLL FLOATING BUTTONS -->
 <div class="scroll-fab-group">
-  <button class="scroll-fab down" id="scroll-down-btn" onclick="scrollByViewport(1)" title="เลื่อนลง">↓</button>
-  <button class="scroll-fab top hidden" id="scroll-top-btn" onclick="scrollToTop()" title="กลับด้านบน">↑</button>
+  <button class="scroll-fab down" id="scroll-down-btn" onclick="scrollByViewport(1)">↓</button>
+  <button class="scroll-fab top hidden" id="scroll-top-btn" onclick="scrollToTop()">↑</button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════
-// 設定
-// ═══════════════════════════════════════════════
 const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxQ3oFskWtZpCTLmkbYxHtrjWirHQKY8JmYHD6z-5zMqh5YTC3aqxksjB5DxdpiJUx2/exec';
 const MAPS_API_KEY = 'AIzaSyDV7AZEe0yDZVnsjviK3GTmCc5OyS3jLaQ';
-const BASE_LOCATION = { lat: 13.721462, lng: 100.5765166 }; // สคุมวิท 36 (拠点)
+const BASE_LOCATION = { lat: 13.721462, lng: 100.5765166 };
 const PROMPTPAY_BILLER_ID = '010554007919109';
 const PROMPTPAY_REF1 = 'REF001';
 const PROMPTPAY_REF2 = 'REF002';
@@ -446,10 +440,10 @@ let allProducts = [];
 let allDistricts = [];
 let allCondiments = [];
 let allProductCondiments = [];
-let allHolidays = []; // ['2026-07-13', ...] 休業日として登録された日付
-let appliedCoupon = null; // { code, discount_amount, ... } or null
+let allHolidays = [];
+let appliedCoupon = null;
 let coOccurrenceMap = {};
-let cart = {}; // { product_id: { product, qty } }
+let cart = {};
 let currentSearchQuery = '';
 let currentCookingFilter = null;
 let currentCondimentFilter = null;
@@ -460,16 +454,15 @@ let selectedPayment = null;
 let slipImageUrl = null;
 let pinConfirmed = false;
 let map, marker;
-
-// スタンプカード(リピート促進)関連の状態
-let customerStampInfo = null; // { phone, stamp_count, has_free_shipping, total_orders } or null
+let customerStampInfo = null;
 let customerLookupTimer = null;
-let lastReceiptItems = null; // 「もう一度注文」用に注文控えの明細を保持
+let lastReceiptItems = null;
 
-// ═══════════════════════════════════════════════
-// カートの永続化(localStorage) — トップページの
-// フローティングカートボタンと数量を共有するため
-// ═══════════════════════════════════════════════
+// ── ギャラリー状態 ──
+let galleryImages = [];
+let galleryIndex = 0;
+
+// ── カートの永続化 ──
 function saveCartToStorage() {
   try {
     const map = {};
@@ -478,7 +471,7 @@ function saveCartToStorage() {
     const count = Object.values(cart).reduce((s, i) => s + i.qty, 0);
     const total = Object.values(cart).reduce((s, i) => s + i.qty * i.product.price, 0);
     localStorage.setItem('rakugo_cart_summary', JSON.stringify({ count, total }));
-  } catch (e) { /* localStorage無効環境は無視 */ }
+  } catch (e) {}
 }
 
 function loadCartFromStorage() {
@@ -492,10 +485,9 @@ function loadCartFromStorage() {
       const safeQty = Math.max(0, Math.min(product.stock, qty));
       if (safeQty > 0) cart[product.id] = { product, qty: safeQty };
     });
-  } catch (e) { /* 壊れたデータは無視 */ }
+  } catch (e) {}
 }
 
-// トップページの「เลือกซื้อตามเครื่องปรุงที่ใช้」から ?condiment=調味料ID で来た場合、自動的に絞り込む
 function handleQuickCondimentFilterFromQuery() {
   const params = new URLSearchParams(location.search);
   const condimentId = params.get('condiment');
@@ -507,7 +499,6 @@ function handleQuickCondimentFilterFromQuery() {
   history.replaceState(null, '', location.pathname);
 }
 
-// トップページの「เลือกซื้อตามวิธีปรุง」から ?cook=調理法キー で来た場合、その調理法で自動的に絞り込む
 function handleQuickCookFilterFromQuery() {
   const params = new URLSearchParams(location.search);
   const cook = params.get('cook');
@@ -517,22 +508,16 @@ function handleQuickCookFilterFromQuery() {
   history.replaceState(null, '', location.pathname);
 }
 
-// トップページのセール品/ベスト3から ?view=商品ID で来た場合、その商品の詳細モーダルを自動で開く
-// (勝手にカートへ入れず、内容を確認してから追加してもらう)
 function handleQuickViewFromQuery() {
   const params = new URLSearchParams(location.search);
   const viewId = params.get('view');
   if (!viewId) return;
   const product = allProducts.find(p => p.id === parseInt(viewId));
-  if (product) {
-    openPModal(product.id);
-  }
+  if (product) openPModal(product.id);
   history.replaceState(null, '', location.pathname);
 }
 
-// ═══════════════════════════════════════════════
-// SUPABASE ヘルパー
-// ═══════════════════════════════════════════════
+// ── SUPABASE ──
 async function supabase(method, path, body) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method,
@@ -549,15 +534,11 @@ async function supabase(method, path, body) {
   return text ? JSON.parse(text) : [];
 }
 
-// ═══════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════
+// ── INIT ──
 async function init() {
   const urlParams = new URLSearchParams(location.search);
   const receiptOrderNumber = urlParams.get('receipt');
-  if (receiptOrderNumber) {
-    return showReceiptView(receiptOrderNumber);
-  }
+  if (receiptOrderNumber) return showReceiptView(receiptOrderNumber);
 
   try {
     [allCategories, allProducts, allDistricts, allCondiments, allProductCondiments] = await Promise.all([
@@ -576,9 +557,7 @@ async function init() {
     handleQuickViewFromQuery();
     handleQuickCookFilterFromQuery();
     handleQuickCondimentFilterFromQuery();
-    // 一緒に買われている商品の集計は失敗しても本体機能に影響しないよう分離
     supabase('GET', 'order_items?select=order_id,product_id').then(buildCoOccurrenceMap).catch(() => {});
-    // 休業日の取得も失敗しても本体機能に影響しないよう分離(取れない間は「日曜定休+土曜午前のみ」だけで判定)
     supabase('GET', 'holidays?select=holiday_date').then(rows => {
       allHolidays = rows.map(r => r.holiday_date);
     }).catch(() => {});
@@ -587,38 +566,24 @@ async function init() {
   }
 }
 
-// ═══════════════════════════════════════════════
-// 注文控えページ(?receipt=注文番号 でアクセス)
-// ═══════════════════════════════════════════════
+// ── 注文控えページ ──
 async function showReceiptView(orderNumber) {
-  const tagline = document.querySelector('.header-tagline');
-  if (tagline) tagline.textContent = 'ใบเสร็จคำสั่งซื้อ / Order receipt';
   document.getElementById('cat-tabs').style.display = 'none';
   const wrap = document.getElementById('product-sections');
   wrap.innerHTML = `<div class="loading">กำลังโหลด...</div>`;
-
   try {
     const orders = await supabase('GET', `orders?order_number=eq.${orderNumber}&select=*`);
-    if (!orders.length) {
-      wrap.innerHTML = `<div class="loading">ไม่พบคำสั่งซื้อนี้ / Order not found</div>`;
-      return;
-    }
+    if (!orders.length) { wrap.innerHTML = `<div class="loading">ไม่พบคำสั่งซื้อนี้ / Order not found</div>`; return; }
     const order = orders[0];
     const items = await supabase('GET', `order_items?order_id=eq.${order.id}&select=*`);
     lastReceiptItems = items;
-
-    // このお客様の現在のスタンプ状況も表示する(失敗しても控え表示自体は続行)
     let receiptStampInfo = null;
     try {
       const custRows = await supabase('GET', `customers?phone=eq.${encodeURIComponent(order.customer_phone)}&select=*`);
       receiptStampInfo = custRows[0] || null;
-    } catch (e) { /* スタンプ情報が取れなくても控え表示は続ける */ }
-
+    } catch (e) {}
     const statusLabels = { pending: 'รอยืนยัน / Pending', confirmed: 'ยืนยันแล้ว / Confirmed', delivering: 'กำลังส่ง / Delivering', delivered: 'ส่งแล้ว / Delivered', cancelled: 'ยกเลิก / Cancelled' };
-    const paymentLabel = order.payment_method === 'cod' ? 'เก็บเงินปลายทาง / Cash on delivery'
-                        : order.payment_method === 'qr' ? 'QR พร้อมเพย์ / PromptPay QR'
-                        : 'โอนเงิน / Bank transfer';
-
+    const paymentLabel = order.payment_method === 'cod' ? 'เก็บเงินปลายทาง / Cash on delivery' : order.payment_method === 'qr' ? 'QR พร้อมเพย์ / PromptPay QR' : 'โอนเงิน / Bank transfer';
     wrap.innerHTML = `
       <div class="step-card" style="margin:16px;">
         <h4>🧾 #${order.order_number}</h4>
@@ -644,11 +609,9 @@ async function showReceiptView(orderNumber) {
   }
 }
 
-// 注文控えページから「もう一度注文」→ 同じ商品をカートに入れて通常の注文画面へ戻す
 async function reorderFromReceipt() {
   const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = 'กำลังโหลด...';
+  btn.disabled = true; btn.textContent = 'กำลังโหลด...';
   try {
     if (!allProducts.length) {
       [allCategories, allProducts, allDistricts, allCondiments, allProductCondiments] = await Promise.all([
@@ -659,7 +622,6 @@ async function reorderFromReceipt() {
         supabase('GET', 'product_condiments?select=product_id,condiment_id'),
       ]);
     }
-    // 「同じ内容で注文」なので、既存カートは使わずゼロから作り直す(合算しない)
     cart = {};
     let addedCount = 0;
     (lastReceiptItems || []).forEach(i => {
@@ -670,23 +632,15 @@ async function reorderFromReceipt() {
       addedCount++;
     });
     saveCartToStorage();
-    if (!addedCount) {
-      showToast('สินค้าในคำสั่งซื้อนี้หมดสต็อกแล้ว', 'error');
-      btn.disabled = false;
-      btn.textContent = '🔁 สั่งซ้ำอีกครั้ง / Order again';
-      return;
-    }
+    if (!addedCount) { showToast('สินค้าในคำสั่งซื้อนี้หมดสต็อกแล้ว', 'error'); btn.disabled = false; btn.textContent = '🔁 สั่งซ้ำอีกครั้ง / Order again'; return; }
     location.href = location.pathname;
   } catch (e) {
     showToast('เกิดข้อผิดพลาด กรุณาลองใหม่', 'error');
-    btn.disabled = false;
-    btn.textContent = '🔁 สั่งซ้ำอีกครั้ง / Order again';
+    btn.disabled = false; btn.textContent = '🔁 สั่งซ้ำอีกครั้ง / Order again';
   }
 }
 
-// ═══════════════════════════════════════════════
-// 一緒に買われている商品(共起集計)・タレ情報
-// ═══════════════════════════════════════════════
+// ── 共起集計 ──
 function buildCoOccurrenceMap(items) {
   const orderProducts = {};
   items.forEach(i => {
@@ -697,13 +651,7 @@ function buildCoOccurrenceMap(items) {
   const map = {};
   Object.values(orderProducts).forEach(set => {
     const ids = [...set];
-    ids.forEach(a => {
-      ids.forEach(b => {
-        if (a === b) return;
-        if (!map[a]) map[a] = {};
-        map[a][b] = (map[a][b] || 0) + 1;
-      });
-    });
+    ids.forEach(a => { ids.forEach(b => { if (a === b) return; if (!map[a]) map[a] = {}; map[a][b] = (map[a][b] || 0) + 1; }); });
   });
   coOccurrenceMap = map;
 }
@@ -711,11 +659,7 @@ function buildCoOccurrenceMap(items) {
 function getSuggestions(productId) {
   const co = coOccurrenceMap[productId];
   if (!co) return [];
-  return Object.entries(co)
-    .map(([pid, count]) => ({ product: allProducts.find(p => p.id === parseInt(pid)), count }))
-    .filter(x => x.product)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 3);
+  return Object.entries(co).map(([pid, count]) => ({ product: allProducts.find(p => p.id === parseInt(pid)), count })).filter(x => x.product).sort((a, b) => b.count - a.count).slice(0, 3);
 }
 
 function getProductCondiments(productId) {
@@ -723,19 +667,11 @@ function getProductCondiments(productId) {
   return allCondiments.filter(c => ids.includes(c.id));
 }
 
-// ═══════════════════════════════════════════════
-// スタンプカード(リピート促進) — TAOBIN方式
-// 電話番号ごとに購入回数を記録し、5回で次回送料無料
-// ═══════════════════════════════════════════════
+// ── スタンプカード ──
 document.getElementById('c-phone').addEventListener('input', (e) => {
   clearTimeout(customerLookupTimer);
   const phone = e.target.value.trim();
-  if (phone.length < 9) {
-    customerStampInfo = null;
-    renderStampCard();
-    updateSummary();
-    return;
-  }
+  if (phone.length < 9) { customerStampInfo = null; renderStampCard(); updateSummary(); return; }
   customerLookupTimer = setTimeout(() => lookupCustomerStamps(phone), 500);
 });
 
@@ -743,36 +679,21 @@ async function lookupCustomerStamps(phone) {
   try {
     const rows = await supabase('GET', `customers?phone=eq.${encodeURIComponent(phone)}&select=*`);
     customerStampInfo = rows[0] || { phone, stamp_count: 0, has_free_shipping: false, total_orders: 0 };
-  } catch (e) {
-    customerStampInfo = null;
-  }
+  } catch (e) { customerStampInfo = null; }
   renderStampCard();
   updateSummary();
 }
 
-// スタンプカードの中身(背景色・文字色・HTML)を組み立てる共通ロジック
-// チェックアウト画面・注文完了画面・注文控えページの3箇所で使い回す
 function buildStampCardParts(info) {
   if (!info) return null;
   if (info.has_free_shipping) {
-    return {
-      background: '#E6FFFA',
-      borderColor: 'var(--green)',
-      color: 'var(--green)',
-      html: `🎉 คุณได้รับสิทธิ์ <b>ส่งฟรี</b> ในคำสั่งซื้อครั้งถัดไป! (สะสมครบ ${STAMPS_REQUIRED} ครั้ง)<br><span style="font-weight:400;">You've earned free shipping on your next order!</span>`
-    };
+    return { background: '#E6FFFA', borderColor: 'var(--green)', color: 'var(--green)', html: `🎉 คุณได้รับสิทธิ์ <b>ส่งฟรี</b> ในคำสั่งซื้อครั้งถัดไป! (สะสมครบ ${STAMPS_REQUIRED} ครั้ง)<br><span style="font-weight:400;">You've earned free shipping on your next order!</span>` };
   }
   const n = info.stamp_count || 0;
   const stampIcons = Array.from({ length: STAMPS_REQUIRED }, (_, i) => stampBadgeHtml(i < n, i)).join('');
-  return {
-    background: '#FFF8F3',
-    borderColor: 'var(--line)',
-    color: '#7A3A1A',
-    html: `🎟️ สะสมแสตมป์ / Stamp card<br><span style="display:inline-flex;gap:5px;align-items:center;margin-top:6px;">${stampIcons}</span> (${n}/${STAMPS_REQUIRED}) — ครบ ${STAMPS_REQUIRED} ครั้งรับสิทธิ์ส่งฟรี! / Free shipping at ${STAMPS_REQUIRED}!`
-  };
+  return { background: '#FFF8F3', borderColor: 'var(--line)', color: '#7A3A1A', html: `🎟️ สะสมแสตมป์ / Stamp card<br><span style="display:inline-flex;gap:5px;align-items:center;margin-top:6px;">${stampIcons}</span> (${n}/${STAMPS_REQUIRED}) — ครบ ${STAMPS_REQUIRED} ครั้งรับสิทธิ์ส่งฟรี! / Free shipping at ${STAMPS_REQUIRED}!` };
 }
 
-// スタンプカードを単体の<div>として書き出す(成功画面・注文控えページ用)
 function stampCardBlockHtml(info, extraStyle) {
   const parts = buildStampCardParts(info);
   if (!parts) return '';
@@ -791,66 +712,36 @@ function renderStampCard() {
   el.innerHTML = parts.html;
 }
 
-// オレンジ丸に「楽」の一文字を入れたスタンプバッジ(画像ファイルに依存せずCSSのみで再現)
-// 押される毎に角度・位置が微妙にズレる「手押しスタンプ感」を出すため、
-// index に応じた固定パターンの回転・縦ズレを与える(毎回ランダムだと再描画のたびガタつくので固定値にしている)
 const STAMP_ROTATIONS = [-11, 7, -5, 9, -8, 4, -13, 6, -6, 10];
 const STAMP_OFFSETS = [2, -3, 1, -2, 3, -1, 2, -3, 0, 1];
 
 function stampBadgeHtml(filled, index) {
   const r = STAMP_ROTATIONS[index % STAMP_ROTATIONS.length];
   const ty = STAMP_OFFSETS[index % STAMP_OFFSETS.length];
-  if (filled) {
-    const delay = (index * 90);
-    return `<span class="stamp-badge filled" style="--r:${r}deg; --ty:${ty}px; animation-delay:${delay}ms;">楽</span>`;
-  }
+  if (filled) return `<span class="stamp-badge filled" style="--r:${r}deg; --ty:${ty}px; animation-delay:${index * 90}ms;">楽</span>`;
   return `<span class="stamp-badge empty" style="--r:${Math.round(r * 0.4)}deg; --ty:${ty}px;">楽</span>`;
 }
 
-// 今回の注文の結果、次のスタンプ状態がどうなるかを先に計算する(成功画面にすぐ反映するため)
 function computeNextStampState(prevInfo, rewardUsedThisOrder) {
   let stampCount = prevInfo?.stamp_count || 0;
   let hasReward = false;
   const totalOrders = (prevInfo?.total_orders || 0) + 1;
-
-  if (rewardUsedThisOrder) {
-    stampCount = 0;
-    hasReward = false;
-  } else {
-    stampCount += 1;
-    if (stampCount >= STAMPS_REQUIRED) {
-      stampCount = 0;
-      hasReward = true;
-    }
-  }
+  if (rewardUsedThisOrder) { stampCount = 0; hasReward = false; }
+  else { stampCount += 1; if (stampCount >= STAMPS_REQUIRED) { stampCount = 0; hasReward = true; } }
   return { stamp_count: stampCount, has_free_shipping: hasReward, total_orders: totalOrders };
 }
 
-// 注文成功後にスタンプ数をサーバーへ反映(失敗しても注文自体には影響させない)
 async function updateCustomerStamps(phone, nextState) {
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/customers?on_conflict=phone`, {
       method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
-      },
-      body: JSON.stringify([{
-        phone,
-        stamp_count: nextState.stamp_count,
-        has_free_shipping: nextState.has_free_shipping,
-        total_orders: nextState.total_orders,
-        updated_at: new Date().toISOString()
-      }])
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ phone, stamp_count: nextState.stamp_count, has_free_shipping: nextState.has_free_shipping, total_orders: nextState.total_orders, updated_at: new Date().toISOString() }])
     });
-  } catch (e) { /* スタンプ更新の失敗は注文完了に影響させない */ }
+  } catch (e) {}
 }
 
-// ═══════════════════════════════════════════════
-// カテゴリタブ・商品一覧
-// ═══════════════════════════════════════════════
+// ── カテゴリタブ・商品一覧 ──
 function renderCatTabs() {
   const wrap = document.getElementById('cat-tabs');
   wrap.innerHTML = `<button class="cat-tab active" onclick="scrollToCat('all', this)">ทั้งหมด / All</button>` +
@@ -860,9 +751,7 @@ function renderCatTabs() {
 function renderCookFilterTabs() {
   const wrap = document.getElementById('cook-filter-tabs');
   wrap.innerHTML = `<button class="cook-tab active" id="cook-tab-all" onclick="handleCookingFilter(null, this)">ทั้งหมด / All</button>` +
-    Object.entries(COOKING_LABELS).map(([key, label]) =>
-      `<button class="cook-tab" id="cook-tab-${key}" onclick="handleCookingFilter('${key}', this)">${label}</button>`
-    ).join('');
+    Object.entries(COOKING_LABELS).map(([key, label]) => `<button class="cook-tab" id="cook-tab-${key}" onclick="handleCookingFilter('${key}', this)">${label}</button>`).join('');
 }
 
 function handleCookingFilter(method, btn) {
@@ -875,9 +764,7 @@ function handleCookingFilter(method, btn) {
 function scrollToCat(catId, btn) {
   if (currentSearchQuery || currentCookingFilter || currentCondimentFilter) {
     document.getElementById('product-search').value = '';
-    currentSearchQuery = '';
-    currentCookingFilter = null;
-    currentCondimentFilter = null;
+    currentSearchQuery = ''; currentCookingFilter = null; currentCondimentFilter = null;
     document.querySelectorAll('.cook-tab').forEach(t => t.classList.remove('active'));
     const allCookTab = document.getElementById('cook-tab-all');
     if (allCookTab) allCookTab.classList.add('active');
@@ -891,61 +778,30 @@ function scrollToCat(catId, btn) {
 
 function renderProducts() {
   const wrap = document.getElementById('product-sections');
-  if (!allProducts.length) {
-    wrap.innerHTML = `<div class="loading">ยังไม่มีสินค้า / No products yet</div>`;
-    return;
-  }
+  if (!allProducts.length) { wrap.innerHTML = `<div class="loading">ยังไม่มีสินค้า / No products yet</div>`; return; }
   const groups = [{ id: 'all', name_th: 'สินค้าทั้งหมด' }, ...allCategories];
   wrap.innerHTML = groups.map(g => {
     const items = g.id === 'all' ? allProducts : allProducts.filter(p => p.category_id == g.id);
     if (!items.length) return '';
-    return `
-      <div id="cat-section-${g.id}" ${g.id !== 'all' ? '' : 'style="display:none"'}>
-        <div class="section-title">${g.name_th}</div>
-        <div class="product-grid">${items.map(productCardHtml).join('')}</div>
-      </div>
-    `;
+    return `<div id="cat-section-${g.id}" ${g.id !== 'all' ? '' : 'style="display:none"'}><div class="section-title">${g.name_th}</div><div class="product-grid">${items.map(productCardHtml).join('')}</div></div>`;
   }).join('');
 }
 
 function productCardHtml(p) {
-  const img = p.image_drive_id
-    ? `<img src="https://lh3.googleusercontent.com/d/${p.image_drive_id}" onerror="this.parentElement.innerHTML='🍱'">`
-    : '🍱';
+  const img = p.image_drive_id ? `<img src="https://lh3.googleusercontent.com/d/${p.image_drive_id}" onerror="this.parentElement.innerHTML='🍱'">` : '🍱';
   const cooking = COOKING_LABELS[p.cooking_method] || '';
   const inCart = cart[p.id]?.qty || 0;
   const stepper = p.stock > 0
     ? (inCart > 0
-        ? `<div class="qty-stepper">
-             <button class="qty-btn" onclick="event.stopPropagation(); changeQty(${p.id}, -1)">−</button>
-             <span class="qty-num">${inCart}</span>
-             <button class="qty-btn add" onclick="event.stopPropagation(); changeQty(${p.id}, 1)">+</button>
-           </div>`
+        ? `<div class="qty-stepper"><button class="qty-btn" onclick="event.stopPropagation(); changeQty(${p.id}, -1)">−</button><span class="qty-num">${inCart}</span><button class="qty-btn add" onclick="event.stopPropagation(); changeQty(${p.id}, 1)">+</button></div>`
         : `<button class="qty-btn add" onclick="event.stopPropagation(); changeQty(${p.id}, 1)" style="width:auto;border-radius:16px;padding:0 12px;height:28px;">+ เพิ่ม</button>`)
     : `<span class="out-of-stock">สินค้าหมด</span>`;
-
-  return `
-    <div class="product-card" onclick="openPModal(${p.id})">
-      <div class="product-img-wrap">${img}</div>
-      <div class="product-body">
-        <div class="product-name-th">${p.name_th}</div>
-        <div class="product-name-en">${p.name_en}</div>
-        ${cooking ? `<div class="product-cooking">${cooking}</div>` : ''}
-        <div class="product-bottom">
-          <div class="product-price">฿${p.price}<span></span></div>
-          ${stepper}
-        </div>
-      </div>
-    </div>
-  `;
+  return `<div class="product-card" onclick="openPModal(${p.id})"><div class="product-img-wrap">${img}</div><div class="product-body"><div class="product-name-th">${p.name_th}</div><div class="product-name-en">${p.name_en}</div>${cooking ? `<div class="product-cooking">${cooking}</div>` : ''}<div class="product-bottom"><div class="product-price">฿${p.price}<span></span></div>${stepper}</div></div></div>`;
 }
 
 function refreshProductView() {
-  if (currentSearchQuery || currentCookingFilter || currentCondimentFilter) {
-    renderFilteredView();
-  } else {
-    renderProducts();
-  }
+  if (currentSearchQuery || currentCookingFilter || currentCondimentFilter) renderFilteredView();
+  else renderProducts();
 }
 
 function handleSearch(q) {
@@ -956,37 +812,17 @@ function handleSearch(q) {
 function renderFilteredView() {
   const wrap = document.getElementById('product-sections');
   let matches = allProducts;
-  if (currentCookingFilter) {
-    matches = matches.filter(p => p.cooking_method === currentCookingFilter);
-  }
+  if (currentCookingFilter) matches = matches.filter(p => p.cooking_method === currentCookingFilter);
   if (currentCondimentFilter) {
-    const productIdsWithCondiment = new Set(
-      allProductCondiments.filter(pc => pc.condiment_id === currentCondimentFilter).map(pc => pc.product_id)
-    );
-    matches = matches.filter(p => productIdsWithCondiment.has(p.id));
+    const ids = new Set(allProductCondiments.filter(pc => pc.condiment_id === currentCondimentFilter).map(pc => pc.product_id));
+    matches = matches.filter(p => ids.has(p.id));
   }
   if (currentSearchQuery) {
-    const query = currentSearchQuery.toLowerCase();
-    matches = matches.filter(p =>
-      p.name_th.toLowerCase().includes(query) || (p.name_en || '').toLowerCase().includes(query)
-    );
+    const q = currentSearchQuery.toLowerCase();
+    matches = matches.filter(p => p.name_th.toLowerCase().includes(q) || (p.name_en || '').toLowerCase().includes(q));
   }
-  if (!matches.length) {
-    wrap.innerHTML = `<div class="loading">ไม่พบสินค้า / No products found</div>`;
-    return;
-  }
-  const titleParts = [];
-  if (currentCookingFilter) titleParts.push(COOKING_LABELS[currentCookingFilter] || currentCookingFilter);
-  if (currentCondimentFilter) {
-    const cond = allCondiments.find(c => c.id === currentCondimentFilter);
-    if (cond) titleParts.push(`${cond.icon_emoji || ''} ${cond.name_th}${cond.name_en ? ' / ' + cond.name_en : ''}`);
-  }
-  if (currentSearchQuery) titleParts.push(`"${currentSearchQuery}"`);
-  const title = titleParts.length ? `ผลการค้นหา: ${titleParts.join(' · ')} (${matches.length})` : `ผลการค้นหา (${matches.length})`;
-  wrap.innerHTML = `
-    <div class="section-title">${title}</div>
-    <div class="product-grid">${matches.map(productCardHtml).join('')}</div>
-  `;
+  if (!matches.length) { wrap.innerHTML = `<div class="loading">ไม่พบสินค้า / No products found</div>`; return; }
+  wrap.innerHTML = `<div class="section-title">ผลการค้นหา (${matches.length})</div><div class="product-grid">${matches.map(productCardHtml).join('')}</div>`;
 }
 
 function changeQty(productId, delta) {
@@ -994,8 +830,8 @@ function changeQty(productId, delta) {
   if (!product) return;
   const current = cart[productId]?.qty || 0;
   const next = Math.max(0, Math.min(product.stock, current + delta));
-  if (next === 0) { delete cart[productId]; }
-  else { cart[productId] = { product, qty: next }; }
+  if (next === 0) delete cart[productId];
+  else cart[productId] = { product, qty: next };
   refreshProductView();
   updateCartBar();
   saveCartToStorage();
@@ -1004,9 +840,7 @@ function changeQty(productId, delta) {
 
 function removeFromCart(productId) {
   delete cart[productId];
-  refreshProductView();
-  updateCartBar();
-  saveCartToStorage();
+  refreshProductView(); updateCartBar(); saveCartToStorage();
   if (document.getElementById('checkout-modal').classList.contains('open')) updateSummary();
   if (!Object.keys(cart).length) closeCheckout();
 }
@@ -1023,8 +857,80 @@ function updateCartBar() {
 }
 
 // ═══════════════════════════════════════════════
-// 商品詳細モーダル
+// ★ 商品詳細モーダル（ギャラリー対応版）
 // ═══════════════════════════════════════════════
+function buildGalleryImages(p) {
+  const ids = [p.image_drive_id, p.image_drive_id_2, p.image_drive_id_3].filter(Boolean);
+  return ids.length > 0 ? ids.map(id => `https://lh3.googleusercontent.com/d/${id}=w1080-rj`) : [];
+}
+
+function renderGallery(images) {
+  galleryImages = images;
+  galleryIndex = 0;
+  const track = document.getElementById('pmodal-gallery-track');
+  const dots = document.getElementById('pmodal-gallery-dots');
+  const prevBtn = document.getElementById('pmodal-arrow-prev');
+  const nextBtn = document.getElementById('pmodal-arrow-next');
+
+  if (images.length === 0) {
+    track.innerHTML = `<div class="pmodal-gallery-slide">🍱</div>`;
+    dots.innerHTML = '';
+    prevBtn.classList.add('hidden');
+    nextBtn.classList.add('hidden');
+    return;
+  }
+
+  track.innerHTML = images.map(url =>
+    `<div class="pmodal-gallery-slide"><img src="${url}" onerror="this.parentElement.innerHTML='🍱'" loading="lazy"></div>`
+  ).join('');
+
+  // ドット
+  dots.innerHTML = images.length > 1
+    ? images.map((_, i) => `<button class="pmodal-gallery-dot ${i === 0 ? 'active' : ''}" onclick="galleryGoTo(${i})"></button>`).join('')
+    : '';
+
+  // 矢印（1枚の場合は非表示）
+  prevBtn.classList.toggle('hidden', images.length <= 1);
+  nextBtn.classList.toggle('hidden', images.length <= 1);
+  updateGalleryPosition();
+
+  // スワイプ対応
+  attachGallerySwipe();
+}
+
+function galleryMove(delta) {
+  galleryGoTo(galleryIndex + delta);
+}
+
+function galleryGoTo(index) {
+  galleryIndex = Math.max(0, Math.min(galleryImages.length - 1, index));
+  updateGalleryPosition();
+}
+
+function updateGalleryPosition() {
+  const track = document.getElementById('pmodal-gallery-track');
+  track.style.transform = `translateX(-${galleryIndex * 100}%)`;
+
+  // ドット更新
+  document.querySelectorAll('.pmodal-gallery-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === galleryIndex);
+  });
+
+  // 矢印の表示制御
+  document.getElementById('pmodal-arrow-prev').classList.toggle('hidden', galleryIndex === 0);
+  document.getElementById('pmodal-arrow-next').classList.toggle('hidden', galleryIndex === galleryImages.length - 1);
+}
+
+function attachGallerySwipe() {
+  const gallery = document.getElementById('pmodal-gallery');
+  let startX = 0;
+  gallery.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  gallery.addEventListener('touchend', e => {
+    const diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) galleryMove(diff > 0 ? 1 : -1);
+  }, { passive: true });
+}
+
 function openPModal(productId) {
   const p = allProducts.find(x => x.id === productId);
   if (!p) return;
@@ -1032,10 +938,8 @@ function openPModal(productId) {
   pmodalQty = 1;
   document.getElementById('pmodal-qty-num').textContent = '1';
 
-  const imgWrap = document.getElementById('pmodal-img-wrap');
-  imgWrap.innerHTML = p.image_drive_id
-    ? `<img src="https://lh3.googleusercontent.com/d/${p.image_drive_id}" onerror="this.parentElement.textContent='🍱'">`
-    : '🍱';
+  // ギャラリー描画
+  renderGallery(buildGalleryImages(p));
 
   document.getElementById('pmodal-name-th').textContent = p.name_th;
   document.getElementById('pmodal-name-en').textContent = p.name_en || '';
@@ -1070,9 +974,7 @@ function openPModal(productId) {
     document.getElementById('pmodal-suggest-label').style.display = 'block';
     suggestWrap.innerHTML = suggestions.map(s => `
       <div class="pmodal-suggest-item" onclick="openPModal(${s.product.id})">
-        ${s.product.image_drive_id
-          ? `<img src="https://lh3.googleusercontent.com/d/${s.product.image_drive_id}" onerror="this.outerHTML='<div class=&quot;ph&quot;>🍱</div>'">`
-          : `<div class="ph">🍱</div>`}
+        ${s.product.image_drive_id ? `<img src="https://lh3.googleusercontent.com/d/${s.product.image_drive_id}" onerror="this.outerHTML='<div class=&quot;ph&quot;>🍱</div>'">` : `<div class="ph">🍱</div>`}
         <div class="pmodal-suggest-name">${s.product.name_th}</div>
         <div class="pmodal-suggest-price">฿${s.product.price}</div>
       </div>
@@ -1115,12 +1017,9 @@ function pmodalAddToCart() {
   showToast('เพิ่มลงตะกร้าแล้ว ✓');
 }
 
-// ═══════════════════════════════════════════════
-// 配送エリア(プルダウン + 地図ピン)
-// ═══════════════════════════════════════════════
+// ── 配送エリア ──
 function renderDistrictSelect() {
   const sel = document.getElementById('c-district');
-  // ゾーンごとにグループ化
   const zoneGroups = {};
   allDistricts.forEach(d => {
     if (!zoneGroups[d.zone_label]) zoneGroups[d.zone_label] = [];
@@ -1138,27 +1037,16 @@ function renderDistrictSelect() {
 document.getElementById('c-district').addEventListener('change', (e) => {
   const val = e.target.value;
   const feeResult = document.getElementById('fee-result');
-
   if (!val) { feeResult.classList.remove('show'); selectedDistrict = null; updateSummary(); return; }
-
   if (val === 'other') {
     selectedDistrict = { id: 'other', name_th: 'นอกพื้นที่จัดส่ง', name_en: 'Outside delivery area', zone_label: 'ต้องยืนยัน', fee: 0, lat: BASE_LOCATION.lat, lng: BASE_LOCATION.lng, isOutOfArea: true };
     document.getElementById('fee-zone-name').textContent = 'นอกพื้นที่จัดส่งปกติ / Outside our usual area';
     document.getElementById('fee-amount').innerHTML = `<span style="font-size:13px;">แจ้งค่าส่งภายหลัง<br>Fee confirmed later</span>`;
     feeResult.classList.add('show');
     pinConfirmed = false;
-    if (marker && map) {
-      marker.setPosition(BASE_LOCATION);
-      map.panTo(BASE_LOCATION);
-      map.setZoom(11);
-      document.getElementById('coords-text').textContent = `${BASE_LOCATION.lat.toFixed(6)}, ${BASE_LOCATION.lng.toFixed(6)}`;
-      document.getElementById('pin-status').textContent = 'กรุณาลากหมุดไปยังตำแหน่งของท่าน';
-      document.getElementById('pin-status').classList.add('pending');
-    }
-    updateSummary();
-    return;
+    if (marker && map) { marker.setPosition(BASE_LOCATION); map.panTo(BASE_LOCATION); map.setZoom(11); document.getElementById('coords-text').textContent = `${BASE_LOCATION.lat.toFixed(6)}, ${BASE_LOCATION.lng.toFixed(6)}`; document.getElementById('pin-status').textContent = 'กรุณาลากหมุดไปยังตำแหน่งของท่าน'; document.getElementById('pin-status').classList.add('pending'); }
+    updateSummary(); return;
   }
-
   const id = parseInt(val);
   const district = allDistricts.find(d => d.id === id);
   if (!district) { feeResult.classList.remove('show'); selectedDistrict = null; updateSummary(); return; }
@@ -1167,12 +1055,9 @@ document.getElementById('c-district').addEventListener('change', (e) => {
   document.getElementById('fee-amount').innerHTML = `${district.fee}<span>THB</span>`;
   feeResult.classList.add('show');
   pinConfirmed = false;
-
   if (marker && map) {
     const pos = { lat: parseFloat(district.lat), lng: parseFloat(district.lng) };
-    marker.setPosition(pos);
-    map.panTo(pos);
-    map.setZoom(15);
+    marker.setPosition(pos); map.panTo(pos); map.setZoom(15);
     document.getElementById('coords-text').textContent = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
     document.getElementById('pin-status').textContent = 'ตำแหน่งโดยประมาณ (กรุณาปรับ)';
     document.getElementById('pin-status').classList.add('pending');
@@ -1180,10 +1065,7 @@ document.getElementById('c-district').addEventListener('change', (e) => {
   updateSummary();
 });
 
-// ═══════════════════════════════════════════════
-// 配送日・配送時間帯のルール
-// (日曜定休・土曜午前のみ・過ぎた時間帯は選択不可・登録済み休業日は選択不可)
-// ═══════════════════════════════════════════════
+// ── 配送日・時間帯 ──
 const TIME_SLOT_DEFS = [
   { value: 'morning', label: 'ช่วงเช้า / Morning', endHour: 12, endMinute: 0, saturdayOk: true },
   { value: '14:00-16:00', label: '14:00 - 16:00', endHour: 16, endMinute: 0, saturdayOk: false },
@@ -1195,30 +1077,19 @@ const TIME_SLOT_DEFS = [
 ];
 
 function formatDateLocal(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// 指定日が注文可能かどうか(過去日・日曜・休業日を除外)
 function validateDeliveryDate(dateStr) {
   if (!dateStr) return { valid: false, message: 'กรุณาเลือกวันที่จัดส่ง' };
   const todayStr = formatDateLocal(new Date());
-  if (dateStr < todayStr) {
-    return { valid: false, message: 'ไม่สามารถเลือกวันที่ผ่านมาแล้วได้ / Cannot select a past date' };
-  }
-  const day = new Date(dateStr + 'T00:00:00').getDay(); // 0=日曜, 6=土曜
-  if (day === 0) {
-    return { valid: false, message: 'ขออภัย ปิดทำการทุกวันอาทิตย์ / Closed on Sundays' };
-  }
-  if (allHolidays.includes(dateStr)) {
-    return { valid: false, message: 'วันที่เลือกเป็นวันหยุด กรุณาเลือกวันอื่น / This date is a holiday' };
-  }
+  if (dateStr < todayStr) return { valid: false, message: 'ไม่สามารถเลือกวันที่ผ่านมาแล้วได้ / Cannot select a past date' };
+  const day = new Date(dateStr + 'T00:00:00').getDay();
+  if (day === 0) return { valid: false, message: 'ขออภัย ปิดทำการทุกวันอาทิตย์ / Closed on Sundays' };
+  if (allHolidays.includes(dateStr)) return { valid: false, message: 'วันที่เลือกเป็นวันหยุด กรุณาเลือกวันอื่น / This date is a holiday' };
   return { valid: true };
 }
 
-// 今日から数えて最初に選択可能な日を返す(初期値・エラー時のフォールバック用)
 function getNextValidDeliveryDate(fromDateStr) {
   let d = new Date(fromDateStr + 'T00:00:00');
   for (let i = 0; i < 30; i++) {
@@ -1229,41 +1100,21 @@ function getNextValidDeliveryDate(fromDateStr) {
   return fromDateStr;
 }
 
-// 選択された日付に応じて時間帯の選択肢を組み立て直す
-// (土曜は午前のみ・当日は既に過ぎた時間帯を除外)
 function renderTimeSlotOptions(dateStr) {
   const sel = document.getElementById('c-timeslot');
   const previousValue = sel.value;
-  if (!dateStr) {
-    sel.innerHTML = '<option value="">-- เลือกช่วงเวลา / Select time slot --</option>';
-    return;
-  }
+  if (!dateStr) { sel.innerHTML = '<option value="">-- เลือกช่วงเวลา / Select time slot --</option>'; return; }
   const d = new Date(dateStr + 'T00:00:00');
   const day = d.getDay();
   const isSaturday = day === 6;
   const todayStr = formatDateLocal(new Date());
   const isToday = dateStr === todayStr;
   const now = new Date();
-
   let slots = TIME_SLOT_DEFS;
   if (isSaturday) slots = slots.filter(s => s.saturdayOk);
-  if (isToday) {
-    slots = slots.filter(s => {
-      const slotEnd = new Date();
-      slotEnd.setHours(s.endHour, s.endMinute, 0, 0);
-      return slotEnd > now;
-    });
-  }
-
-  if (!slots.length) {
-    sel.innerHTML = '<option value="">ไม่มีช่วงเวลาว่างสำหรับวันนี้แล้ว / No slots left today</option>';
-    return;
-  }
-
-  sel.innerHTML = '<option value="">-- เลือกช่วงเวลา / Select time slot --</option>' +
-    slots.map(s => `<option value="${s.value}">${s.label}</option>`).join('');
-
-  // 以前選んでいた時間帯がまだ選択肢に残っていれば復元する
+  if (isToday) slots = slots.filter(s => { const slotEnd = new Date(); slotEnd.setHours(s.endHour, s.endMinute, 0, 0); return slotEnd > now; });
+  if (!slots.length) { sel.innerHTML = '<option value="">ไม่มีช่วงเวลาว่างสำหรับวันนี้แล้ว / No slots left today</option>'; return; }
+  sel.innerHTML = '<option value="">-- เลือกช่วงเวลา / Select time slot --</option>' + slots.map(s => `<option value="${s.value}">${s.label}</option>`).join('');
   if (slots.some(s => s.value === previousValue)) sel.value = previousValue;
 }
 
@@ -1281,18 +1132,8 @@ document.getElementById('c-date').addEventListener('change', (e) => {
 });
 
 function initMap() {
-  map = new google.maps.Map(document.getElementById('order-map'), {
-    center: BASE_LOCATION,
-    zoom: 12,
-    disableDefaultUI: false,
-    streetViewControl: false,
-    fullscreenControl: false,
-  });
-  marker = new google.maps.Marker({
-    position: BASE_LOCATION,
-    map: map,
-    draggable: true,
-  });
+  map = new google.maps.Map(document.getElementById('order-map'), { center: BASE_LOCATION, zoom: 12, streetViewControl: false, fullscreenControl: false });
+  marker = new google.maps.Marker({ position: BASE_LOCATION, map: map, draggable: true });
   marker.addListener('dragend', () => {
     const pos = marker.getPosition();
     document.getElementById('coords-text').textContent = `${pos.lat().toFixed(6)}, ${pos.lng().toFixed(6)}`;
@@ -1303,37 +1144,19 @@ function initMap() {
 }
 window.initMap = initMap;
 
-// ═══════════════════════════════════════════════
-// PromptPay QR生成(EMVCo Merchant Presented QR仕様)
-// ═══════════════════════════════════════════════
+// ── PromptPay QR ──
 function tlv(tag, value) { return `${tag}${String(value.length).padStart(2,'0')}${value}`; }
-
 function crc16(str) {
   let crc = 0xFFFF;
-  for (let i = 0; i < str.length; i++) {
-    crc ^= (str.charCodeAt(i) << 8);
-    for (let j = 0; j < 8; j++) {
-      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
-    }
-  }
+  for (let i = 0; i < str.length; i++) { crc ^= (str.charCodeAt(i) << 8); for (let j = 0; j < 8; j++) crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF; }
   return crc.toString(16).toUpperCase().padStart(4, '0');
 }
-
 function buildPromptPayPayload(amount) {
   const merchantInfo = tlv('00', 'A000000677010112') + tlv('01', PROMPTPAY_BILLER_ID) + tlv('02', PROMPTPAY_REF1) + tlv('03', PROMPTPAY_REF2);
-  const amountStr = amount.toFixed(2);
-  const payload =
-    tlv('00', '01') +
-    tlv('01', '12') +                 // 12 = dynamic (amount入り)
-    tlv('30', merchantInfo) +
-    tlv('53', '764') +                // THB
-    tlv('54', amountStr) +
-    tlv('58', 'TH') +
-    tlv('62', tlv('07', 'IFB0639311943'));
+  const payload = tlv('00','01') + tlv('01','12') + tlv('30', merchantInfo) + tlv('53','764') + tlv('54', amount.toFixed(2)) + tlv('58','TH') + tlv('62', tlv('07','IFB0639311943'));
   const withCrcTag = payload + '6304';
   return withCrcTag + crc16(withCrcTag);
 }
-
 function renderPromptPayQR(amount) {
   const box = document.getElementById('qr-canvas');
   box.innerHTML = '';
@@ -1342,9 +1165,7 @@ function renderPromptPayQR(amount) {
   document.getElementById('qr-amount-label').textContent = `฿${amount.toFixed(2)}`;
 }
 
-// ═══════════════════════════════════════════════
-// 決済方法
-// ═══════════════════════════════════════════════
+// ── 決済方法 ──
 function selectPayment(method) {
   selectedPayment = method;
   document.getElementById('pay-transfer').classList.toggle('selected', method === 'transfer');
@@ -1353,9 +1174,7 @@ function selectPayment(method) {
   document.getElementById('bank-box').classList.toggle('show', method === 'transfer');
   document.getElementById('qr-box').classList.toggle('show', method === 'qr');
   document.getElementById('slip-upload-area').classList.toggle('show', method === 'transfer' || method === 'qr');
-  if (method === 'qr') {
-    updateSummary();
-  }
+  if (method === 'qr') updateSummary();
 }
 
 async function handleSlipSelect(input) {
@@ -1363,16 +1182,11 @@ async function handleSlipSelect(input) {
   if (!file) return;
   document.getElementById('slip-upload-status').textContent = 'กำลังอัปโหลด...';
   document.getElementById('slip-placeholder').textContent = '⏳ กำลังอัปโหลด...';
-  const tempKey = 'slip_' + Date.now();
   const reader = new FileReader();
   reader.onload = async (e) => {
     const base64 = e.target.result.split(',')[1];
     try {
-      fetch(GAS_URL, {
-        method: 'POST', mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name, mimeType: file.type, tempKey })
-      }).catch(() => {});
+      fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name, mimeType: file.type, tempKey: 'slip_' + Date.now() }) }).catch(() => {});
       await new Promise(r => setTimeout(r, 3000));
       const res = await fetch(`${GAS_URL}?action=getLatestImage`);
       const data = await res.json();
@@ -1386,26 +1200,19 @@ async function handleSlipSelect(input) {
         document.getElementById('slip-upload-status').textContent = 'อัปโหลดไม่สำเร็จ กรุณาลองใหม่';
         document.getElementById('slip-placeholder').textContent = '📎 แตะเพื่อแนบสลิปการโอนเงิน';
       }
-    } catch (err) {
-      document.getElementById('slip-upload-status').textContent = 'เกิดข้อผิดพลาด';
-    }
+    } catch (err) { document.getElementById('slip-upload-status').textContent = 'เกิดข้อผิดพลาด'; }
   };
   reader.readAsDataURL(file);
 }
 
-// ═══════════════════════════════════════════════
-// チェックアウト画面の開閉・サマリー
-// ═══════════════════════════════════════════════
+// ── チェックアウト ──
 function openCheckout() {
   document.getElementById('checkout-modal').classList.add('open');
   updateSummary();
   const dateInput = document.getElementById('c-date');
-  const today = new Date();
-  const todayStr = formatDateLocal(today);
+  const todayStr = formatDateLocal(new Date());
   if (!dateInput.min) dateInput.min = todayStr;
-  if (!dateInput.value) {
-    dateInput.value = getNextValidDeliveryDate(todayStr);
-  }
+  if (!dateInput.value) dateInput.value = getNextValidDeliveryDate(todayStr);
   renderTimeSlotOptions(dateInput.value);
   if (!map) {
     const script = document.createElement('script');
@@ -1415,24 +1222,14 @@ function openCheckout() {
   }
 }
 
-function closeCheckout() {
-  document.getElementById('checkout-modal').classList.remove('open');
-}
+function closeCheckout() { document.getElementById('checkout-modal').classList.remove('open'); }
 
-// 送料無料特典が今回の注文に適用されるかどうか
 function isFreeShippingRewardActive() {
   return !!(customerStampInfo && customerStampInfo.has_free_shipping && !(selectedDistrict && selectedDistrict.isOutOfArea));
 }
 
-// ═══════════════════════════════════════════════
-// クーポンコード(スタンプとは別軸の割引施策)
-// ═══════════════════════════════════════════════
 document.getElementById('c-coupon').addEventListener('input', () => {
-  if (appliedCoupon) {
-    appliedCoupon = null;
-    document.getElementById('coupon-status').style.display = 'none';
-    updateSummary();
-  }
+  if (appliedCoupon) { appliedCoupon = null; document.getElementById('coupon-status').style.display = 'none'; updateSummary(); }
 });
 
 async function applyCoupon() {
@@ -1440,40 +1237,20 @@ async function applyCoupon() {
   const code = codeInput.value.trim().toUpperCase();
   const statusEl = document.getElementById('coupon-status');
   statusEl.style.display = 'block';
-
-  if (!code) {
-    statusEl.style.color = '#9B2C2C';
-    statusEl.textContent = 'กรุณากรอกโค้ดส่วนลด / Please enter a coupon code';
-    return;
-  }
-
-  statusEl.style.color = '#999';
-  statusEl.textContent = 'กำลังตรวจสอบ... / Checking...';
-
+  if (!code) { statusEl.style.color = '#9B2C2C'; statusEl.textContent = 'กรุณากรอกโค้ดส่วนลด / Please enter a coupon code'; return; }
+  statusEl.style.color = '#999'; statusEl.textContent = 'กำลังตรวจสอบ... / Checking...';
   try {
     const rows = await supabase('GET', `coupons?code=eq.${encodeURIComponent(code)}&select=*`);
     const coupon = rows[0];
-
-    if (!coupon || !coupon.is_active) {
-      throw new Error('ไม่พบโค้ดนี้ หรือโค้ดถูกปิดใช้งานแล้ว / Invalid or inactive coupon code');
-    }
-    if (coupon.expires_at && coupon.expires_at < formatDateLocal(new Date())) {
-      throw new Error('โค้ดนี้หมดอายุแล้ว / This coupon has expired');
-    }
-    if (coupon.max_uses !== null && coupon.used_count >= coupon.max_uses) {
-      throw new Error('โค้ดนี้ถูกใช้ครบจำนวนแล้ว / This coupon has reached its usage limit');
-    }
+    if (!coupon || !coupon.is_active) throw new Error('ไม่พบโค้ดนี้ หรือโค้ดถูกปิดใช้งานแล้ว / Invalid or inactive coupon code');
+    if (coupon.expires_at && coupon.expires_at < formatDateLocal(new Date())) throw new Error('โค้ดนี้หมดอายุแล้ว / This coupon has expired');
+    if (coupon.max_uses !== null && coupon.used_count >= coupon.max_uses) throw new Error('โค้ดนี้ถูกใช้ครบจำนวนแล้ว / This coupon has reached its usage limit');
     if (coupon.per_customer_limit) {
       const phone = document.getElementById('c-phone').value.trim();
-      if (!phone) {
-        throw new Error('กรุณากรอกเบอร์โทรก่อนใช้โค้ดนี้ / Please enter your phone number first');
-      }
+      if (!phone) throw new Error('กรุณากรอกเบอร์โทรก่อนใช้โค้ดนี้ / Please enter your phone number first');
       const priorOrders = await supabase('GET', `orders?coupon_code=eq.${encodeURIComponent(coupon.code)}&customer_phone=eq.${encodeURIComponent(phone)}&select=id`);
-      if (priorOrders.length >= coupon.per_customer_limit) {
-        throw new Error('คุณใช้โค้ดนี้ครบจำนวนสิทธิ์แล้ว / You have already used this coupon');
-      }
+      if (priorOrders.length >= coupon.per_customer_limit) throw new Error('คุณใช้โค้ดนี้ครบจำนวนสิทธิ์แล้ว / You have already used this coupon');
     }
-
     appliedCoupon = coupon;
     statusEl.style.color = 'var(--green)';
     statusEl.textContent = `✓ ใช้โค้ด "${coupon.code}" สำเร็จ ลด ฿${coupon.discount_amount} / Coupon applied: -฿${coupon.discount_amount}`;
@@ -1493,7 +1270,6 @@ function updateSummary() {
   const fee = selectedDistrict ? (rewardActive ? 0 : selectedDistrict.fee) : 0;
   const preDiscountTotal = subtotal + fee;
   const discount = appliedCoupon ? Math.min(appliedCoupon.discount_amount, preDiscountTotal) : 0;
-
   document.getElementById('summary-lines').innerHTML = items.map(i => `
     <div class="summary-item-row">
       <div class="summary-item-name">${i.product.name_th}</div>
@@ -1502,34 +1278,23 @@ function updateSummary() {
         <span class="summary-qty-num">${i.qty}</span>
         <button class="summary-qty-btn" onclick="changeQty(${i.product.id}, 1)">+</button>
         <span class="summary-item-price">฿${i.qty * i.product.price}</span>
-        <button class="summary-remove-btn" onclick="removeFromCart(${i.product.id})" title="ลบสินค้านี้ / Remove">✕</button>
+        <button class="summary-remove-btn" onclick="removeFromCart(${i.product.id})">✕</button>
       </div>
     </div>
   `).join('');
-  document.getElementById('summary-fee').textContent = selectedDistrict?.isOutOfArea
-    ? 'แจ้งภายหลัง'
-    : (rewardActive ? '🎉 ฟรี' : `฿${fee}`);
-
+  document.getElementById('summary-fee').textContent = selectedDistrict?.isOutOfArea ? 'แจ้งภายหลัง' : (rewardActive ? '🎉 ฟรี' : `฿${fee}`);
   const discountRow = document.getElementById('summary-discount-row');
-  if (discount > 0) {
-    discountRow.style.display = 'flex';
-    document.getElementById('summary-discount').textContent = `-฿${discount}`;
-  } else {
-    discountRow.style.display = 'none';
-  }
-
+  if (discount > 0) { discountRow.style.display = 'flex'; document.getElementById('summary-discount').textContent = `-฿${discount}`; }
+  else discountRow.style.display = 'none';
   document.getElementById('summary-total').textContent = selectedDistrict?.isOutOfArea ? `฿${subtotal - discount}+` : `฿${preDiscountTotal - discount}`;
   if (selectedPayment === 'qr') renderPromptPayQR(preDiscountTotal - discount);
 }
 
-// ═══════════════════════════════════════════════
-// 注文確定
-// ═══════════════════════════════════════════════
+// ── 注文確定 ──
 function genOrderNumber() {
   const d = new Date();
   const ymd = `${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  return `RG${ymd}${rand}`;
+  return `RG${ymd}${Math.floor(1000 + Math.random() * 9000)}`;
 }
 
 async function submitOrder() {
@@ -1542,7 +1307,6 @@ async function submitOrder() {
   const timeSlot = document.getElementById('c-timeslot').value;
   const note = document.getElementById('c-note').value.trim();
   const items = Object.values(cart);
-
   if (!items.length) { showToast('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ', 'error'); return; }
   if (!name || !phone) { showToast('กรุณากรอกชื่อและเบอร์โทร', 'error'); return; }
   if (!address) { showToast('กรุณากรอกที่อยู่จัดส่ง', 'error'); return; }
@@ -1554,87 +1318,43 @@ async function submitOrder() {
   if (!timeSlot) { showToast('กรุณาเลือกช่วงเวลาจัดส่ง', 'error'); return; }
   if (!selectedPayment) { showToast('กรุณาเลือกวิธีชำระเงิน', 'error'); return; }
   if ((selectedPayment === 'transfer' || selectedPayment === 'qr') && !slipImageUrl) { showToast('กรุณาแนบสลิปการโอนเงิน', 'error'); return; }
-
   const markerPos = marker ? marker.getPosition() : null;
   const subtotal = items.reduce((s, i) => s + i.qty * i.product.price, 0);
   const rewardActive = isFreeShippingRewardActive();
   const effectiveFee = rewardActive ? 0 : selectedDistrict.fee;
   const couponDiscount = appliedCoupon ? Math.min(appliedCoupon.discount_amount, subtotal + effectiveFee) : 0;
   const total = subtotal + effectiveFee - couponDiscount;
-
   const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = 'กำลังส่งคำสั่งซื้อ...';
-
+  btn.disabled = true; btn.textContent = 'กำลังส่งคำสั่งซื้อ...';
   try {
     const orderPayload = {
-      order_number: genOrderNumber(),
-      customer_name: name,
-      customer_phone: phone,
-      customer_line_id: lineId || null,
-      customer_email: email || null,
-      customer_address: address,
+      order_number: genOrderNumber(), customer_name: name, customer_phone: phone,
+      customer_line_id: lineId || null, customer_email: email || null, customer_address: address,
       note: note || null,
       delivery_district: selectedDistrict.isOutOfArea ? `${selectedDistrict.name_th} (นอกพื้นที่)` : `${selectedDistrict.name_th} / ${selectedDistrict.name_en}`,
-      delivery_fee: effectiveFee,
-      area_confirmed: !selectedDistrict.isOutOfArea,
+      delivery_fee: effectiveFee, area_confirmed: !selectedDistrict.isOutOfArea,
       delivery_lat: markerPos ? markerPos.lat() : selectedDistrict.lat,
       delivery_lng: markerPos ? markerPos.lng() : selectedDistrict.lng,
-      delivery_time_slot: timeSlot,
-      delivery_date: deliveryDate,
-      payment_method: selectedPayment,
-      slip_image_url: slipImageUrl,
-      total_amount: total,
-      coupon_code: appliedCoupon ? appliedCoupon.code : null,
-      discount_amount: couponDiscount,
-      status: 'pending',
+      delivery_time_slot: timeSlot, delivery_date: deliveryDate,
+      payment_method: selectedPayment, slip_image_url: slipImageUrl,
+      total_amount: total, coupon_code: appliedCoupon ? appliedCoupon.code : null,
+      discount_amount: couponDiscount, status: 'pending',
     };
     const orderResult = await supabase('POST', 'orders', orderPayload);
     const orderId = orderResult[0].id;
-
-    // クーポンの使用回数を反映(失敗しても注文完了は止めない)
-    if (appliedCoupon) {
-      supabase('PATCH', `coupons?id=eq.${appliedCoupon.id}`, { used_count: appliedCoupon.used_count + 1 }).catch(() => {});
-    }
-
-    const orderItems = items.map(i => ({
-      order_id: orderId,
-      product_id: i.product.id,
-      product_name_th: i.product.name_th,
-      product_name_en: i.product.name_en || i.product.name_th,
-      quantity: i.qty,
-      unit_price: i.product.price,
-      subtotal: i.qty * i.product.price,
-    }));
+    if (appliedCoupon) supabase('PATCH', `coupons?id=eq.${appliedCoupon.id}`, { used_count: appliedCoupon.used_count + 1 }).catch(() => {});
+    const orderItems = items.map(i => ({ order_id: orderId, product_id: i.product.id, product_name_th: i.product.name_th, product_name_en: i.product.name_en || i.product.name_th, quantity: i.qty, unit_price: i.product.price, subtotal: i.qty * i.product.price }));
     await supabase('POST', 'order_items', orderItems);
-
-    // スタンプカードの更新(失敗しても注文完了を止めない)
     const nextStampState = computeNextStampState(customerStampInfo, rewardActive);
     updateCustomerStamps(phone, nextStampState);
     customerStampInfo = { phone, ...nextStampState };
-
-    const orderWithReceipt = { ...orderPayload, receipt_url: `${location.origin}${location.pathname}?receipt=${orderPayload.order_number}` };
-
-    // メール通知(GAS経由でinfo@rakugo.storeへ送信 → orders@saitofoods.comに転送される)
-    fetch(GAS_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'notifyOrder',
-        order: orderWithReceipt,
-        items: orderItems,
-      })
-    }).catch(() => {});
-
+    const receiptUrl = `${location.origin}${location.pathname}?receipt=${orderPayload.order_number}`;
+    fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'notifyOrder', order: { ...orderPayload, receipt_url: receiptUrl }, items: orderItems }) }).catch(() => {});
     showSuccessScreen(orderPayload.order_number, rewardActive, nextStampState);
-    cart = {};
-    appliedCoupon = null;
-    updateCartBar();
-    saveCartToStorage();
+    cart = {}; appliedCoupon = null; updateCartBar(); saveCartToStorage();
   } catch (e) {
     showToast('ส่งคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่', 'error');
-    btn.disabled = false;
-    btn.textContent = 'ยืนยันสั่งซื้อ / Place order';
+    btn.disabled = false; btn.textContent = 'ยืนยันสั่งซื้อ / Place order';
   }
 }
 
@@ -1650,9 +1370,7 @@ function showSuccessScreen(orderNumber, rewardUsed, nextStampState) {
       ${rewardUsed ? `<div style="margin-top:14px; padding:10px 14px; background:#E6FFFA; border-radius:10px; color:var(--green); font-weight:700; font-size:13px;">🎉 ใช้สิทธิ์ส่งฟรีในคำสั่งซื้อนี้แล้ว!</div>` : ''}
       ${stampCardBlockHtml(nextStampState)}
       <div style="margin-top:20px; padding:16px; background:#FFF0E8; border-radius:10px; text-align:left;">
-        <div style="font-size:13px; font-weight:700; color:var(--brand-dark); margin-bottom:8px;">
-          📋 บันทึกลิงก์นี้ไว้เพื่อดูรายละเอียดคำสั่งซื้อภายหลัง
-        </div>
+        <div style="font-size:13px; font-weight:700; color:var(--brand-dark); margin-bottom:8px;">📋 บันทึกลิงก์นี้ไว้เพื่อดูรายละเอียดคำสั่งซื้อภายหลัง</div>
         <div style="font-size:12px; color:#7A3A1A; margin-bottom:10px;">Save this link to view your order anytime</div>
         <a href="${receiptUrl}" style="word-break:break-all; font-size:12px; color:var(--brand-dark); text-decoration:underline;">${receiptUrl}</a>
         <button onclick="navigator.clipboard.writeText('${receiptUrl}'); showToast('คัดลอกลิงก์แล้ว ✓', 'success')" style="display:block; margin-top:10px; width:100%; padding:9px; border-radius:8px; border:1.5px solid var(--brand); background:#fff; color:var(--brand-dark); font-weight:700; font-size:13px; cursor:pointer;">📎 คัดลอกลิงก์ / Copy link</button>
@@ -1662,9 +1380,7 @@ function showSuccessScreen(orderNumber, rewardUsed, nextStampState) {
   `;
 }
 
-// ═══════════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════════
+// ── TOAST ──
 function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1674,20 +1390,13 @@ function showToast(msg, type) {
 
 init();
 
-// ── SCROLL FLOATING BUTTONS ──────────
-function scrollByViewport(direction) {
-  window.scrollBy({ top: direction * window.innerHeight * 0.85, behavior: 'smooth' });
-}
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+function scrollByViewport(direction) { window.scrollBy({ top: direction * window.innerHeight * 0.85, behavior: 'smooth' }); }
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 window.addEventListener('scroll', () => {
-  const scrollTopBtn = document.getElementById('scroll-top-btn');
-  const scrollDownBtn = document.getElementById('scroll-down-btn');
   const atTop = window.scrollY < 200;
   const atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 40;
-  scrollTopBtn.classList.toggle('hidden', atTop);
-  scrollDownBtn.classList.toggle('hidden', atBottom);
+  document.getElementById('scroll-top-btn').classList.toggle('hidden', atTop);
+  document.getElementById('scroll-down-btn').classList.toggle('hidden', atBottom);
 });
 </script>
 </div>
