@@ -398,8 +398,13 @@ async function loadCondimentBrowse() {
     }
     wrap.innerHTML = data.map(c => {
       // image_drive_idがURLそのものかDrive IDかを判定して表示
+      // Googleの画像CDNの場合、表示サイズに合わせた軽量版(=w300)を要求して読み込みを軽くする
+      const rawSrc = c.image_drive_id || '';
+      const optimizedSrc = rawSrc.includes('googleusercontent.com') && !rawSrc.includes('=w')
+        ? `${rawSrc}=w300`
+        : rawSrc;
       const imgHtml = c.image_drive_id
-        ? `<img class="cond-img" src="${c.image_drive_id}" alt="${c.name_th}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"><span class="cond-emoji" style="display:none;">${c.icon_emoji || '🧂'}</span>`
+        ? `<img class="cond-img" src="${optimizedSrc}" data-src="${optimizedSrc}" alt="${c.name_th}" onerror="handleCondImgError(this)"><span class="cond-emoji" style="display:none;">${c.icon_emoji || '🧂'}</span>`
         : `<span class="cond-emoji">${c.icon_emoji || '🧂'}</span>`;
       return `
         <a class="cond-card" href="order.html?condiment=${c.id}" title="${c.name_th}">
@@ -409,6 +414,22 @@ async function loadCondimentBrowse() {
     }).join('');
   } catch(e) {
     console.error('Condiments browse load failed', e);
+  }
+}
+
+// 画像読み込み失敗時、すぐ絵文字に切り替えず、少し待って最大2回リトライする
+// (Google Drive側の一時的な応答遅延・読み込み失敗を吸収するため)
+function handleCondImgError(imgEl) {
+  const retries = parseInt(imgEl.dataset.retries || '0', 10);
+  if (retries < 2) {
+    imgEl.dataset.retries = String(retries + 1);
+    const src = imgEl.dataset.src;
+    setTimeout(() => {
+      imgEl.src = src + (src.includes('?') ? '&' : '?') + '_r=' + Date.now();
+    }, 700);
+  } else {
+    imgEl.style.display = 'none';
+    if (imgEl.nextElementSibling) imgEl.nextElementSibling.style.display = 'block';
   }
 }
 
