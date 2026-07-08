@@ -960,40 +960,66 @@ function removeSlotImage(ev, i) {
 }
 
 // IMAGE UPLOAD (既存のGASアップロードフローをスロット対応に拡張)
+// アップロード前に画像をリサイズ+圧縮する(大きい画像による通信エラーを防ぐ)
+function compressImageFile(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1200;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.75).split(',')[1]);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function handleImageSelect(input) {
   const file = input.files[0];
   if (!file || uploadingSlotIndex === null) return;
   const slot = uploadingSlotIndex;
   document.getElementById('upload-status').textContent = `⏳ กำลังอัปโหลดรูปที่ ${slot + 1}...`;
   const tempKey = 'img_' + Date.now();
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const base64 = e.target.result.split(',')[1];
-    try {
-      // Step1: no-cors で送信(CORSを回避)
-      fetch(GAS_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name, mimeType: file.type, tempKey })
-      }).catch(() => {});
+  try {
+    const base64 = await compressImageFile(file);
+    // Step1: no-cors で送信(CORSを回避)
+    fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name.replace(/\.[^.]+$/, '.jpg'), mimeType: 'image/jpeg', tempKey })
+    }).catch(() => {});
 
-      // Step2: 3秒待ってからGETで最新ファイルを取得
-      await new Promise(r => setTimeout(r, 3000));
+    // Step2: 固定で3秒待つのではなく、1.5秒おきに最大10回(約15秒)ポーリングする
+    // (GASのコールドスタートで処理が遅い時でも、見つかった時点ですぐ確定させる)
+    let data = null;
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 1500));
       const res = await fetch(`${GAS_URL}?action=getLatestImage&tempKey=${encodeURIComponent(tempKey)}`);
-      const data = await res.json();
-      if (data.success) {
-        uploadedImageIds[slot] = data.fileId;
-        document.getElementById('upload-status').textContent = `อัปโหลดรูปที่ ${slot + 1} สำเร็จ ✓`;
-        renderImageSlots();
-      } else {
-        document.getElementById('upload-status').textContent = 'อัปโหลดไม่สำเร็จ';
-      }
-    } catch(err) {
-      document.getElementById('upload-status').textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+      const json = await res.json();
+      if (json.success) { data = json; break; }
     }
-  };
-  reader.readAsDataURL(file);
+
+    if (data && data.success) {
+      uploadedImageIds[slot] = data.fileId;
+      document.getElementById('upload-status').textContent = `อัปโหลดรูปที่ ${slot + 1} สำเร็จ ✓`;
+      renderImageSlots();
+    } else {
+      document.getElementById('upload-status').textContent = 'อัปโหลดไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+    }
+  } catch(err) {
+    document.getElementById('upload-status').textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+  }
 }
 
 async function openProductModal(id) {
