@@ -40,14 +40,13 @@
   .search-box:focus { outline: none; border-color: #FF6B35; }
 
   /* PRODUCT TABLE */
-  .table-wrap { background: white; border-radius: 12px; border: 1px solid #FFD4B8; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
-  table { width: 100%; min-width: 640px; border-collapse: collapse; }
-  th { background: #FFF0E8; padding: 10px 14px; text-align: left; font-size: 13px; color: #7A3A1A; font-weight: 600; white-space: nowrap; }
+  .table-wrap { background: white; border-radius: 12px; border: 1px solid #FFD4B8; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #FFF0E8; padding: 10px 14px; text-align: left; font-size: 13px; color: #7A3A1A; font-weight: 600; }
   td { padding: 10px 14px; border-top: 1px solid #FFE8D6; font-size: 14px; vertical-align: middle; }
   tr:hover td { background: #FFF8F3; }
   .product-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #FFE8D6; }
   .product-img-placeholder { width: 48px; height: 48px; border-radius: 8px; background: #FFE8D6; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-  .img-count-badge { display: inline-block; background: #FFF0E8; color: #7A3A1A; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px; margin-top: 3px; }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
   .badge-active { background: #C6F6D5; color: #276749; }
   .badge-inactive { background: #FED7D7; color: #9B2C2C; }
@@ -86,14 +85,11 @@
   .condiment-item input { cursor: pointer; }
   .condiment-item.checked { background: #FFF0E8; border-color: #FF6B35; }
 
-  /* IMAGE UPLOAD (最大3枚・スロット式) */
-  .img-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .img-slot { position: relative; border: 2px dashed #FFD4B8; border-radius: 10px; min-height: 118px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; padding: 8px; transition: border-color 0.2s; font-size: 20px; color: #C9A88E; }
-  .img-slot:hover { border-color: #FF6B35; }
-  .img-slot img { width: 100%; max-height: 90px; object-fit: contain; border-radius: 6px; }
-  .img-slot .slot-label { font-size: 10.5px; color: #BBB; margin-top: 4px; }
-  .img-slot-remove { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; border: none; background: #FED7D7; color: #9B2C2C; font-size: 11px; font-weight: 700; cursor: pointer; line-height: 1; z-index: 2; }
-  .img-slot .main-badge { position: absolute; top: 4px; left: 4px; background: #FF6B35; color: white; font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 8px; }
+  /* IMAGE UPLOAD */
+  .img-upload-area { border: 2px dashed #FFD4B8; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+  .img-upload-area:hover { border-color: #FF6B35; }
+  .img-upload-area input { display: none; }
+  .img-preview { width: 100%; max-height: 160px; object-fit: contain; border-radius: 8px; margin-top: 10px; }
   .upload-status { font-size: 12px; color: #FF6B35; margin-top: 6px; }
 
   /* ORDERS */
@@ -550,12 +546,16 @@
     </div>
     <div class="modal-body">
 
-      <!-- IMAGES (最大3枚) -->
+      <!-- IMAGE -->
       <div class="form-group">
-        <label>รูปสินค้า (สูงสุด 3 รูป — รูปที่ 1 คือรูปหลัก)</label>
-        <div class="img-slots" id="img-slots"></div>
-        <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="handleImageSelect(this)">
-        <div class="upload-status" id="upload-status"></div>
+        <label>รูปสินค้า</label>
+        <div class="img-upload-area" onclick="document.getElementById('img-input').click()">
+          <input type="file" id="img-input" accept="image/*" onchange="handleImageSelect(this)">
+          <div id="img-placeholder">📷 คลิกเพื่ออัปโหลดรูป</div>
+          <img id="img-preview" class="img-preview" style="display:none;">
+          <div class="upload-status" id="upload-status"></div>
+        </div>
+        <button type="button" id="img-remove-btn" onclick="removeProductImage()" style="display:none; margin-top:8px; background:#FED7D7; color:#9B2C2C; border:none; border-radius:8px; padding:7px 14px; font-size:12.5px; font-weight:600; cursor:pointer;">🗑️ ลบรูป / Remove image</button>
       </div>
 
       <!-- NAME -->
@@ -829,8 +829,8 @@ let editingNoticeId = null;
 let editingZoneId = null;
 let editingProductId = null;
 let editingCategoryId = null;
-let uploadedImageIds = [null, null, null]; // 最大3枚(1枚目がメイン)
-let uploadingSlotIndex = null;
+let uploadedImageId = null;
+let uploadedImageUrl = null;
 
 // ── SUPABASE ──────────────────────────
 async function supabase(method, path, body) {
@@ -878,24 +878,17 @@ async function loadProducts() {
   } catch(e) { showToast('โหลดสินค้าไม่สำเร็จ', 'error'); }
 }
 
-function countProductImages(p) {
-  return [p.image_drive_id, p.image_drive_id_2, p.image_drive_id_3].filter(Boolean).length;
-}
-
 function renderProducts(products) {
   const tbody = document.getElementById('products-tbody');
   if (!products.length) {
     tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🍱</div>ยังไม่มีสินค้า</div></td></tr>`;
     return;
   }
-  tbody.innerHTML = products.map(p => {
-    const imgCount = countProductImages(p);
-    return `
+  tbody.innerHTML = products.map(p => `
     <tr>
       <td>${p.image_drive_id
         ? `<img class="product-img" src="https://lh3.googleusercontent.com/d/${p.image_drive_id}" onerror="this.style.display='none'">`
-        : `<div class="product-img-placeholder">🍱</div>`}
-        ${imgCount > 1 ? `<div class="img-count-badge">📷 ${imgCount}</div>` : ''}</td>
+        : `<div class="product-img-placeholder">🍱</div>`}</td>
       <td>
         <div style="font-weight:600;">${p.name_th}</div>
         <div style="font-size:12px;color:#888;">${p.name_en}</div>
@@ -915,8 +908,7 @@ function renderProducts(products) {
         </div>
       </td>
     </tr>
-  `;
-  }).join('');
+  `).join('');
 }
 
 function filterProducts(q) {
@@ -926,83 +918,15 @@ function filterProducts(q) {
   renderProducts(filtered);
 }
 
-// ── PRODUCT IMAGE SLOTS (最大3枚) ─────
-function renderImageSlots() {
-  const wrap = document.getElementById('img-slots');
-  wrap.innerHTML = uploadedImageIds.map((id, i) => {
-    if (id) {
-      return `<div class="img-slot" onclick="clickImageSlot(${i})">
-        ${i === 0 ? '<span class="main-badge">หลัก</span>' : ''}
-        <button type="button" class="img-slot-remove" onclick="removeSlotImage(event, ${i})">✕</button>
-        <img src="https://lh3.googleusercontent.com/d/${id}" onerror="this.style.display='none'">
-        <div class="slot-label">แตะเพื่อเปลี่ยนรูป</div>
-      </div>`;
-    }
-    return `<div class="img-slot" onclick="clickImageSlot(${i})">📷<div class="slot-label">รูปที่ ${i + 1}</div></div>`;
-  }).join('');
-}
-
-function clickImageSlot(i) {
-  uploadingSlotIndex = i;
-  const input = document.getElementById('img-input');
-  input.value = '';
-  input.click();
-}
-
-function removeSlotImage(ev, i) {
-  ev.stopPropagation();
-  uploadedImageIds[i] = null;
-  // 空きを詰めて、1枚目が常にメイン画像になるようにする
-  uploadedImageIds = uploadedImageIds.filter(Boolean);
-  while (uploadedImageIds.length < 3) uploadedImageIds.push(null);
-  document.getElementById('upload-status').textContent = '';
-  renderImageSlots();
-}
-
-// IMAGE UPLOAD (既存のGASアップロードフローをスロット対応に拡張)
-async function handleImageSelect(input) {
-  const file = input.files[0];
-  if (!file || uploadingSlotIndex === null) return;
-  const slot = uploadingSlotIndex;
-  document.getElementById('upload-status').textContent = `⏳ กำลังอัปโหลดรูปที่ ${slot + 1}...`;
-  const tempKey = 'img_' + Date.now();
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const base64 = e.target.result.split(',')[1];
-    try {
-      // Step1: no-cors で送信(CORSを回避)
-      fetch(GAS_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name, mimeType: file.type, tempKey })
-      }).catch(() => {});
-
-      // Step2: 3秒待ってからGETで最新ファイルを取得
-      await new Promise(r => setTimeout(r, 3000));
-      const res = await fetch(`${GAS_URL}?action=getLatestImage`);
-      const data = await res.json();
-      if (data.success) {
-        uploadedImageIds[slot] = data.fileId;
-        document.getElementById('upload-status').textContent = `อัปโหลดรูปที่ ${slot + 1} สำเร็จ ✓`;
-        renderImageSlots();
-      } else {
-        document.getElementById('upload-status').textContent = 'อัปโหลดไม่สำเร็จ';
-      }
-    } catch(err) {
-      document.getElementById('upload-status').textContent = 'เกิดข้อผิดพลาด: ' + err.message;
-    }
-  };
-  reader.readAsDataURL(file);
-}
-
 async function openProductModal(id) {
   editingProductId = null;
-  uploadedImageIds = [null, null, null];
-  uploadingSlotIndex = null;
+  uploadedImageId = null;
+  uploadedImageUrl = null;
   document.getElementById('modal-title').textContent = 'เพิ่มสินค้าใหม่';
+  document.getElementById('img-placeholder').style.display = 'block';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('img-remove-btn').style.display = 'none';
   document.getElementById('upload-status').textContent = '';
-  renderImageSlots();
   ['f-name-th','f-name-en','f-desc-th','f-desc-en','f-youtube'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-price').value = '';
   document.getElementById('f-stock').value = '';
@@ -1028,10 +952,8 @@ async function editProduct(id) {
   const p = allProducts.find(x => x.id === id);
   if (!p) return;
   editingProductId = id;
-  uploadedImageIds = [p.image_drive_id || null, p.image_drive_id_2 || null, p.image_drive_id_3 || null];
-  uploadingSlotIndex = null;
-  document.getElementById('upload-status').textContent = '';
-  renderImageSlots();
+  uploadedImageId = p.image_drive_id || null;
+  uploadedImageUrl = p.image_drive_id ? `https://lh3.googleusercontent.com/d/${p.image_drive_id}` : null;
   document.getElementById('modal-title').textContent = 'แก้ไขสินค้า';
   document.getElementById('f-name-th').value = p.name_th || '';
   document.getElementById('f-name-en').value = p.name_en || '';
@@ -1044,6 +966,12 @@ async function editProduct(id) {
   document.getElementById('f-cooking-temp').value = p.cooking_temp || '';
   document.getElementById('f-youtube').value = p.youtube_url || '';
   document.getElementById('f-active').value = String(p.is_active);
+  if (uploadedImageUrl) {
+    document.getElementById('img-preview').src = uploadedImageUrl;
+    document.getElementById('img-preview').style.display = 'block';
+    document.getElementById('img-placeholder').style.display = 'none';
+    document.getElementById('img-remove-btn').style.display = 'inline-block';
+  }
   document.getElementById('f-monthly-sale').checked = !!p.is_monthly_sale;
   document.getElementById('f-sale-price').value = p.sale_price || '';
   toggleSalePriceField();
@@ -1087,6 +1015,62 @@ function updateCookingFields() {
   document.getElementById('cooking-minutes-group').style.display = method === 'ready' ? 'none' : 'block';
 }
 
+// IMAGE REMOVE
+function removeProductImage() {
+  uploadedImageId = null;
+  uploadedImageUrl = null;
+  document.getElementById('img-input').value = '';
+  document.getElementById('img-preview').src = '';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('img-placeholder').style.display = 'block';
+  document.getElementById('img-placeholder').textContent = '📷 คลิกเพื่ออัปโหลดรูป';
+  document.getElementById('upload-status').textContent = '';
+  document.getElementById('img-remove-btn').style.display = 'none';
+}
+
+// IMAGE UPLOAD
+async function handleImageSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('upload-status').textContent = 'กำลังอัปโหลด...';
+  document.getElementById('img-placeholder').textContent = '⏳ กำลังอัปโหลด...';
+  const tempKey = 'img_' + Date.now();
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    try {
+      // Step1: no-cors で送信(CORSを回避)
+      fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'uploadImage', base64, fileName: file.name, mimeType: file.type, tempKey })
+      }).catch(() => {});
+
+      // Step2: 3秒待ってからGETで最新ファイルを取得
+      await new Promise(r => setTimeout(r, 3000));
+      const res = await fetch(`${GAS_URL}?action=getLatestImage&tempKey=${encodeURIComponent(tempKey)}`);
+      const data = await res.json();
+      if (data.success) {
+        uploadedImageId = data.fileId;
+        uploadedImageUrl = data.url;
+        document.getElementById('img-preview').src = uploadedImageUrl;
+        document.getElementById('img-preview').style.display = 'block';
+        document.getElementById('img-placeholder').style.display = 'none';
+        document.getElementById('img-remove-btn').style.display = 'inline-block';
+        document.getElementById('upload-status').textContent = 'อัปโหลดสำเร็จ ✓';
+      } else {
+        document.getElementById('upload-status').textContent = 'อัปโหลดไม่สำเร็จ';
+        document.getElementById('img-placeholder').textContent = '📷 คลิกเพื่ออัปโหลดรูป';
+      }
+    } catch(err) {
+      document.getElementById('upload-status').textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+      document.getElementById('img-placeholder').textContent = '📷 คลิกเพื่ออัปโหลดรูป';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
 async function saveProduct() {
   const nameTh = document.getElementById('f-name-th').value.trim();
   const nameEn = document.getElementById('f-name-en').value.trim();
@@ -1110,18 +1094,13 @@ async function saveProduct() {
   const isActive = document.getElementById('f-active').value === 'true';
   const youtube = document.getElementById('f-youtube').value.trim() || null;
 
-  // 空きスロットを詰めて、1枚目が常にメイン画像になるようにする
-  const imgIds = uploadedImageIds.filter(Boolean);
-
   const productData = {
     name_th: nameTh, name_en: nameEn,
     description_th: document.getElementById('f-desc-th').value.trim() || null,
     description_en: document.getElementById('f-desc-en').value.trim() || null,
     price, stock,
     category_id: catId,
-    image_drive_id: imgIds[0] || null,
-    image_drive_id_2: imgIds[1] || null,
-    image_drive_id_3: imgIds[2] || null,
+    image_drive_id: uploadedImageId || null,
     cooking_method: method,
     cooking_minutes: minutes,
     cooking_temp: temp,
