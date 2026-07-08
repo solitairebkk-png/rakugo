@@ -152,50 +152,60 @@
   .scroll-fab.top { background: var(--brand); color: #fff; border-color: var(--brand); }
 
   /* ── 商品詳細モーダル ── */
-  /* ── 商品詳細モーダル：画像大きく上・データ下 ── */
-  .pmodal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 120; align-items: flex-end; justify-content: center; }
+  /* ── 商品詳細モーダル ── */
+  .pmodal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 120; align-items: center; justify-content: center; padding: 20px; }
   .pmodal-overlay.open { display: flex; }
-  .pmodal { background: #fff; width: 100%; max-width: 520px; border-radius: 24px 24px 0 0; max-height: 92vh; overflow-y: auto; position: relative; }
-  @media (min-width: 560px) {
-    .pmodal-overlay { align-items: center; padding: 20px; }
-    .pmodal { border-radius: 24px; }
-  }
-  .pmodal-inner { display: block; }
-  .pmodal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.45); color: #fff; border: none; font-size: 16px; cursor: pointer; z-index: 10; line-height: 1; display: flex; align-items: center; justify-content: center; }
+  .pmodal { background: #fff; width: 100%; max-width: 840px; border-radius: 20px; overflow: hidden; position: relative; }
+  .pmodal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.5); color: #fff; border: none; font-size: 16px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
 
-  /* 画像：正方形・全幅 */
-  .pmodal-gallery { position: relative; width: 100%; aspect-ratio: 1/1; background: var(--line-soft); overflow: hidden; border-radius: 24px 24px 0 0; }
-  @media (min-width: 560px) { .pmodal-gallery { border-radius: 24px 24px 0 0; } }
+  /* 2カラムグリッド：左=画像、右=情報 */
+  .pmodal-inner { display: grid; grid-template-columns: 420px 1fr; height: 560px; }
+
+  /* 左：画像ギャラリー（高さ固定） */
+  .pmodal-gallery { position: relative; width: 100%; height: 100%; background: var(--line-soft); overflow: hidden; border-radius: 20px 0 0 20px; }
   .pmodal-gallery-track { display: flex; height: 100%; transition: transform 0.3s ease; }
   .pmodal-gallery-slide { flex: 0 0 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 80px; overflow: hidden; }
   .pmodal-gallery-slide img { width: 100%; height: 100%; object-fit: cover; }
-  .pmodal-gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; background: rgba(0,0,0,0.35); color: #fff; border: none; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 3; display: flex; align-items: center; justify-content: center; }
+  .pmodal-gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: rgba(0,0,0,0.4); color: #fff; border: none; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 3; display: flex; align-items: center; justify-content: center; }
   .pmodal-gallery-arrow.prev { left: 10px; }
   .pmodal-gallery-arrow.next { right: 10px; }
   .pmodal-gallery-arrow.hidden { display: none; }
   .pmodal-gallery-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
-  .pmodal-gallery-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.6); border: none; cursor: pointer; padding: 0; transition: background 0.2s, transform 0.2s; }
+  .pmodal-gallery-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.6); border: none; cursor: pointer; padding: 0; transition: background 0.2s; }
   .pmodal-gallery-dot.active { background: #fff; transform: scale(1.3); }
 
-  /* テキストエリア */
-  .pmodal-body { padding: 18px 20px 28px; }
-  .pmodal-name-th { font-size: 20px; font-weight: 800; line-height: 1.3; }
-  .pmodal-name-en { font-size: 13px; color: #999; margin-top: 3px; }
-  .pmodal-price { font-size: 26px; font-weight: 800; color: var(--brand-dark); margin-top: 10px; }
-  .pmodal-desc { font-size: 13.5px; color: #666; margin-top: 8px; line-height: 1.6; }
-  .pmodal-label { font-size: 12.5px; font-weight: 700; color: var(--brand-dark); margin-top: 14px; margin-bottom: 6px; }
-  .pmodal-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .pmodal-chip-item { display: inline-block; background: var(--line-soft); border-radius: 16px; padding: 5px 12px; font-size: 12.5px; font-weight: 600; color: #7A3A1A; }
-  .pmodal-qty-row { display: flex; align-items: center; gap: 16px; margin-top: 16px; }
-  .pmodal-qty-btn { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--brand); background: #fff; color: var(--brand); font-size: 18px; font-weight: 700; cursor: pointer; }
-  .pmodal-qty-num { font-size: 16px; font-weight: 700; min-width: 20px; text-align: center; }
-  .pmodal-addcart-btn { width: 100%; margin-top: 14px; padding: 14px; border-radius: 14px; border: none; background: var(--brand); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+  /* 右：テキスト（スクロールなし・全部見える） */
+  .pmodal-body { padding: 20px 20px 16px; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+  .pmodal-name-th { font-size: 18px; font-weight: 800; line-height: 1.3; }
+  .pmodal-name-en { font-size: 12px; color: #999; margin-top: 2px; }
+  .pmodal-desc { font-size: 12px; color: #666; margin-top: 6px; line-height: 1.5; }
+  .pmodal-price { font-size: 24px; font-weight: 800; color: var(--brand-dark); margin-top: 8px; }
+  .pmodal-label { font-size: 11px; font-weight: 700; color: var(--brand-dark); margin-top: 10px; margin-bottom: 4px; }
+  .pmodal-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pmodal-chip-item { display: inline-block; background: var(--line-soft); border-radius: 10px; padding: 3px 9px; font-size: 11.5px; font-weight: 600; color: #7A3A1A; }
+  .pmodal-qty-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+  .pmodal-qty-btn { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--brand); background: #fff; color: var(--brand); font-size: 16px; font-weight: 700; cursor: pointer; }
+  .pmodal-qty-num { font-size: 15px; font-weight: 700; min-width: 18px; text-align: center; }
+  .pmodal-addcart-btn { width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; border: none; background: var(--brand); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
   .pmodal-addcart-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .pmodal-suggest-strip { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
-  .pmodal-suggest-item { flex: 0 0 auto; width: 90px; text-align: center; cursor: pointer; }
-  .pmodal-suggest-item img, .pmodal-suggest-item .ph { width: 72px; height: 72px; object-fit: cover; border-radius: 12px; background: var(--line-soft); margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
-  .pmodal-suggest-name { font-size: 11.5px; font-weight: 600; line-height: 1.3; }
-  .pmodal-suggest-price { font-size: 12px; color: var(--brand-dark); font-weight: 700; margin-top: 2px; }
+
+  /* サジェスト：3枚横並びグリッド・右カラム下部に固定 */
+  .pmodal-suggest-label-wrap { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line-soft); flex-shrink: 0; }
+  .pmodal-suggest-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .pmodal-suggest-item { text-align: center; cursor: pointer; }
+  .pmodal-suggest-item img, .pmodal-suggest-item .ph { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 10px; background: var(--line-soft); display: block; font-size: 24px; }
+  .pmodal-suggest-name { font-size: 10.5px; font-weight: 600; line-height: 1.3; margin-top: 4px; }
+  .pmodal-suggest-price { font-size: 11px; color: var(--brand-dark); font-weight: 700; margin-top: 2px; }
+
+  /* スマホは縦積み */
+  @media (max-width: 640px) {
+    .pmodal-overlay { padding: 0; align-items: flex-end; }
+    .pmodal { border-radius: 20px 20px 0 0; max-height: 90vh; overflow-y: auto; }
+    .pmodal-inner { grid-template-columns: 1fr; height: auto; }
+    .pmodal-gallery { height: auto; aspect-ratio: 1/1; border-radius: 20px 20px 0 0; }
+    .pmodal-body { height: auto; overflow: visible; padding: 16px 18px 24px; }
+    .pmodal-suggest-label-wrap { margin-top: 12px; }
+  }
 
   /* STAMP CARD */
   @keyframes stampDown {
@@ -407,8 +417,10 @@
       </div>
       <button class="pmodal-addcart-btn" id="pmodal-addcart-btn" onclick="pmodalAddToCart()">หยิบใส่ตะกร้า / Add to cart</button>
 
-      <div class="pmodal-label" id="pmodal-suggest-label" style="display:none; margin-top:22px;">🛒 ลูกค้าท่านอื่นซื้อคู่กับ / Frequently bought together</div>
-      <div class="pmodal-suggest-strip" id="pmodal-suggest-strip"></div>
+      <div class="pmodal-suggest-label-wrap">
+        <div class="pmodal-label" id="pmodal-suggest-label" style="display:none;">🛒 ลูกค้าท่านอื่นซื้อคู่กับ / Frequently bought together</div>
+        <div class="pmodal-suggest-strip" id="pmodal-suggest-strip"></div>
+      </div>
     </div>
     </div>
   </div>
@@ -975,6 +987,7 @@ function openPModal(productId) {
 
   const suggestions = getSuggestions(productId);
   const suggestWrap = document.getElementById('pmodal-suggest-strip');
+  const suggestLabelWrap = suggestWrap.closest('.pmodal-suggest-label-wrap');
   if (suggestions.length) {
     document.getElementById('pmodal-suggest-label').style.display = 'block';
     suggestWrap.innerHTML = suggestions.map(s => `
@@ -984,9 +997,11 @@ function openPModal(productId) {
         <div class="pmodal-suggest-price">฿${s.product.price}</div>
       </div>
     `).join('');
+    suggestLabelWrap.style.display = 'block';
   } else {
     document.getElementById('pmodal-suggest-label').style.display = 'none';
     suggestWrap.innerHTML = '';
+    suggestLabelWrap.style.display = 'none';
   }
 
   const addBtn = document.getElementById('pmodal-addcart-btn');
