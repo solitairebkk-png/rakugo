@@ -120,7 +120,7 @@
   .cat-card .cat-th{font-weight:600; font-size:14px;}
   .cat-card .cat-jp{font-size:12px; color:#9a8973;}
 
-  /* CONDIMENT BROWSE ★画像対応版 */
+  /* CONDIMENT BROWSE ★画像対応版（ハードコード） */
   .cond-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:16px;}
   .cond-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
   .cond-card{ display:block; text-decoration:none; cursor:pointer; transition:transform .15s, opacity .15s; }
@@ -324,7 +324,7 @@
       <div><h2>เลือกซื้อตามเครื่องปรุงที่ใช้ / Browse by Condiment</h2></div>
     </div>
     <div class="cond-grid" id="cond-grid">
-      <div class="loading">กำลังโหลด...</div>
+      <!-- ★ ハードコードされた調味料アイコンをJSで直接描画（Supabase fetchなし） -->
     </div>
   </div>
 </section>
@@ -384,53 +384,36 @@
 const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
 
-// ★ 調味料一覧（画像対応版）
-async function loadCondimentBrowse() {
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/condiments?select=*&order=sort_order`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    });
-    const data = await res.json();
-    const wrap = document.getElementById('cond-grid');
-    if (!data.length) {
-      wrap.closest('section').style.display = 'none';
-      return;
-    }
-    wrap.innerHTML = data.map(c => {
-      // image_drive_idがURLそのものかDrive IDかを判定して表示
-      // Googleの画像CDNの場合、表示サイズに合わせた軽量版(=w300)を要求して読み込みを軽くする
-      const rawSrc = c.image_drive_id || '';
-      const optimizedSrc = rawSrc.includes('googleusercontent.com') && !rawSrc.includes('=w')
-        ? `${rawSrc}=w300`
-        : rawSrc;
-      const imgHtml = c.image_drive_id
-        ? `<img class="cond-img" src="${optimizedSrc}" data-src="${optimizedSrc}" alt="${c.name_th}" onerror="handleCondImgError(this)"><span class="cond-emoji" style="display:none;">${c.icon_emoji || '🧂'}</span>`
-        : `<span class="cond-emoji">${c.icon_emoji || '🧂'}</span>`;
-      return `
-        <a class="cond-card" href="order.html?condiment=${c.id}" title="${c.name_th}">
-          ${imgHtml}
-        </a>
-      `;
-    }).join('');
-  } catch(e) {
-    console.error('Condiments browse load failed', e);
-  }
+// ★ 調味料一覧（ハードコード。Supabaseへのfetchを廃止し、GitHubへの通信回数を削減）
+// condimentsテーブルを変更したら、ここも合わせて手動更新してください。
+const CONDIMENTS = [
+  { id: 1,  name_th: 'ซีอิ๊วญี่ปุ่น',   name_en: 'Soy Sauce',            icon_emoji: '🫙', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/shoyu.webp' },
+  { id: 2,  name_th: 'ซอสวูสเตอร์',    name_en: 'Worcestershire Sauce',  icon_emoji: '🍶', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/worcestersauce.webp' },
+  { id: 3,  name_th: 'มายองเนส',       name_en: 'Mayonnaise',           icon_emoji: '🥛', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/mayonaise.webp' },
+  { id: 4,  name_th: 'เกลือ',          name_en: 'Salt',                 icon_emoji: '🧂', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/salt.webp' },
+  { id: 6,  name_th: 'น้ำตาล',         name_en: 'Sugar',                icon_emoji: '🍬', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/sugar.webp' },
+  { id: 7,  name_th: 'วาซาบิ',         name_en: 'Wasabi',               icon_emoji: '💚', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/wasabi.webp' },
+  { id: 13, name_th: 'น้ำซุปโซบะ',      name_en: 'Mentsuyu',             icon_emoji: '🍜', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/mentsuyu.webp' },
+  { id: 14, name_th: 'ซอสมะเขือเทศ',   name_en: 'Ketchup',              icon_emoji: '🍅', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/ketchup.webp' },
+  { id: 9,  name_th: 'น้ำส้มสายชู',     name_en: 'Vinegar',              icon_emoji: '🍋', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/vinegar.webp' },
+  { id: 10, name_th: 'พอนสึ',          name_en: 'Ponzu',                icon_emoji: '🍊', image: 'https://raw.githubusercontent.com/solitairebkk-png/rakugo/main/ponzu.webp' }
+];
+
+function loadCondimentBrowse() {
+  const wrap = document.getElementById('cond-grid');
+  wrap.innerHTML = CONDIMENTS.map(c => `
+    <a class="cond-card" href="order.html?condiment=${c.id}" title="${c.name_th}">
+      <img class="cond-img" src="${c.image}" alt="${c.name_th}" onerror="handleCondImgError(this, '${c.icon_emoji}')">
+    </a>
+  `).join('');
 }
 
-// 画像読み込み失敗時、すぐ絵文字に切り替えず、少し待って最大2回リトライする
-// (Google Drive側の一時的な応答遅延・読み込み失敗を吸収するため)
-function handleCondImgError(imgEl) {
-  const retries = parseInt(imgEl.dataset.retries || '0', 10);
-  if (retries < 2) {
-    imgEl.dataset.retries = String(retries + 1);
-    const src = imgEl.dataset.src;
-    setTimeout(() => {
-      imgEl.src = src + (src.includes('?') ? '&' : '?') + '_r=' + Date.now();
-    }, 700);
-  } else {
-    imgEl.style.display = 'none';
-    if (imgEl.nextElementSibling) imgEl.nextElementSibling.style.display = 'block';
-  }
+// 画像読み込み失敗時（GitHubの一時的なレート制限など）は絵文字にフォールバック
+function handleCondImgError(imgEl, emoji) {
+  const span = document.createElement('span');
+  span.className = 'cond-emoji';
+  span.textContent = emoji || '🧂';
+  imgEl.replaceWith(span);
 }
 
 async function loadDeliveryAreas() {
