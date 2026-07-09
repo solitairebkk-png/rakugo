@@ -152,16 +152,13 @@
   .scroll-fab.top { background: var(--brand); color: #fff; border-color: var(--brand); }
 
   /* ── 商品詳細モーダル ── */
-  /* ── 商品詳細モーダル ── */
   .pmodal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 120; align-items: center; justify-content: center; padding: 20px; }
   .pmodal-overlay.open { display: flex; }
   .pmodal { background: #fff; width: 100%; max-width: 840px; border-radius: 20px; overflow: hidden; position: relative; }
   .pmodal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.5); color: #fff; border: none; font-size: 16px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
 
-  /* 2カラムグリッド：左=画像、右=情報 */
   .pmodal-inner { display: grid; grid-template-columns: 420px 1fr; height: 560px; }
 
-  /* 左：画像ギャラリー（高さ固定） */
   .pmodal-gallery { position: relative; width: 100%; height: 100%; background: var(--line-soft); overflow: hidden; border-radius: 20px 0 0 20px; }
   .pmodal-gallery-track { display: flex; height: 100%; transition: transform 0.3s ease; }
   .pmodal-gallery-slide { flex: 0 0 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 80px; overflow: hidden; }
@@ -174,11 +171,13 @@
   .pmodal-gallery-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.6); border: none; cursor: pointer; padding: 0; transition: background 0.2s; }
   .pmodal-gallery-dot.active { background: #fff; transform: scale(1.3); }
 
-  /* 右：テキスト（スクロールなし・全部見える） */
   .pmodal-body { padding: 20px 20px 16px; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
   .pmodal-name-th { font-size: 18px; font-weight: 800; line-height: 1.3; }
   .pmodal-name-en { font-size: 12px; color: #999; margin-top: 2px; }
-  .pmodal-desc { font-size: 12px; color: #666; margin-top: 6px; line-height: 1.5; }
+  .pmodal-desc-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 6px; }
+  .pmodal-desc { font-size: 12px; color: #666; line-height: 1.5; flex: 1; }
+  .pmodal-lang-btn { flex-shrink: 0; border: 1.5px solid var(--line); background: #fff; color: var(--brand-dark); font-size: 10.5px; font-weight: 700; border-radius: 10px; padding: 3px 9px; cursor: pointer; margin-top: 1px; }
+  .pmodal-lang-btn:hover { border-color: var(--brand); }
   .pmodal-price { font-size: 24px; font-weight: 800; color: var(--brand-dark); margin-top: 8px; }
   .pmodal-label { font-size: 11px; font-weight: 700; color: var(--brand-dark); margin-top: 10px; margin-bottom: 4px; }
   .pmodal-chips { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -189,7 +188,6 @@
   .pmodal-addcart-btn { width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; border: none; background: var(--brand); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
   .pmodal-addcart-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* サジェスト：3枚横並びグリッド・右カラム下部に固定 */
   .pmodal-suggest-label-wrap { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line-soft); flex-shrink: 0; }
   .pmodal-suggest-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
   .pmodal-suggest-item { text-align: center; cursor: pointer; }
@@ -197,7 +195,6 @@
   .pmodal-suggest-name { font-size: 10.5px; font-weight: 600; line-height: 1.3; margin-top: 4px; }
   .pmodal-suggest-price { font-size: 11px; color: var(--brand-dark); font-weight: 700; margin-top: 2px; }
 
-  /* スマホは縦積み */
   @media (max-width: 640px) {
     .pmodal-overlay { padding: 0; align-items: flex-end; }
     .pmodal { border-radius: 20px 20px 0 0; max-height: 90vh; overflow-y: auto; }
@@ -207,7 +204,6 @@
     .pmodal-suggest-label-wrap { margin-top: 12px; }
   }
 
-  /* STAMP CARD */
   @keyframes stampDown {
     0%   { transform: scale(2.6) rotate(var(--r,0deg)); opacity: 0; }
     45%  { transform: scale(0.82) rotate(var(--r,0deg)); opacity: 1; }
@@ -389,7 +385,6 @@
     <button class="pmodal-close" onclick="closePModal()">✕</button>
     <div class="pmodal-inner">
 
-      <!-- 上：画像ギャラリー（最大3枚・スワイプ対応） -->
       <div class="pmodal-gallery" id="pmodal-gallery">
         <div class="pmodal-gallery-track" id="pmodal-gallery-track"></div>
         <button class="pmodal-gallery-arrow prev hidden" id="pmodal-arrow-prev" onclick="galleryMove(-1)">‹</button>
@@ -397,11 +392,13 @@
         <div class="pmodal-gallery-dots" id="pmodal-gallery-dots"></div>
       </div>
 
-      <!-- 下：商品情報 -->
       <div class="pmodal-body">
       <div class="pmodal-name-th" id="pmodal-name-th"></div>
       <div class="pmodal-name-en" id="pmodal-name-en"></div>
-      <div class="pmodal-desc" id="pmodal-desc"></div>
+      <div class="pmodal-desc-row">
+        <div class="pmodal-desc" id="pmodal-desc"></div>
+        <button class="pmodal-lang-btn" id="pmodal-lang-btn" onclick="togglePModalDescLang()" style="display:none;">EN</button>
+      </div>
       <div class="pmodal-price" id="pmodal-price"></div>
 
       <div class="pmodal-label" id="pmodal-cooking-label" style="display:none;">🔥 วิธีปรุง / Cooking method</div>
@@ -466,6 +463,7 @@ let currentCookingFilter = null;
 let currentCondimentFilter = null;
 let pmodalProductId = null;
 let pmodalQty = 1;
+let pmodalDescLang = 'th';
 let selectedDistrict = null;
 let selectedPayment = null;
 let slipImageUrl = null;
@@ -475,11 +473,9 @@ let customerStampInfo = null;
 let customerLookupTimer = null;
 let lastReceiptItems = null;
 
-// ── ギャラリー状態 ──
 let galleryImages = [];
 let galleryIndex = 0;
 
-// ── カートの永続化 ──
 function saveCartToStorage() {
   try {
     const map = {};
@@ -534,7 +530,6 @@ function handleQuickViewFromQuery() {
   history.replaceState(null, '', location.pathname);
 }
 
-// ── SUPABASE ──
 async function supabase(method, path, body) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method,
@@ -551,7 +546,6 @@ async function supabase(method, path, body) {
   return text ? JSON.parse(text) : [];
 }
 
-// ── INIT ──
 async function init() {
   const urlParams = new URLSearchParams(location.search);
   const receiptOrderNumber = urlParams.get('receipt');
@@ -583,7 +577,6 @@ async function init() {
   }
 }
 
-// ── 注文控えページ ──
 async function showReceiptView(orderNumber) {
   document.getElementById('cat-tabs').style.display = 'none';
   const wrap = document.getElementById('product-sections');
@@ -657,7 +650,6 @@ async function reorderFromReceipt() {
   }
 }
 
-// ── 共起集計 ──
 function buildCoOccurrenceMap(items) {
   const orderProducts = {};
   items.forEach(i => {
@@ -684,7 +676,6 @@ function getProductCondiments(productId) {
   return allCondiments.filter(c => ids.includes(c.id));
 }
 
-// ── スタンプカード ──
 document.getElementById('c-phone').addEventListener('input', (e) => {
   clearTimeout(customerLookupTimer);
   const phone = e.target.value.trim();
@@ -758,7 +749,6 @@ async function updateCustomerStamps(phone, nextState) {
   } catch (e) {}
 }
 
-// ── カテゴリタブ・商品一覧 ──
 function renderCatTabs() {
   const wrap = document.getElementById('cat-tabs');
   wrap.innerHTML = `<button class="cat-tab active" onclick="scrollToCat('all', this)">ทั้งหมด / All</button>` +
@@ -873,9 +863,6 @@ function updateCartBar() {
   if (headerCount) headerCount.textContent = count;
 }
 
-// ═══════════════════════════════════════════════
-// ★ 商品詳細モーダル（ギャラリー対応版）
-// ═══════════════════════════════════════════════
 function buildGalleryImages(p) {
   const ids = [p.image_drive_id, p.image_drive_id_2, p.image_drive_id_3].filter(Boolean);
   return ids.length > 0 ? ids.map(id => `https://lh3.googleusercontent.com/d/${id}=w1080-rj`) : [];
@@ -901,17 +888,14 @@ function renderGallery(images) {
     `<div class="pmodal-gallery-slide"><img src="${url}" onerror="this.parentElement.innerHTML='🍱'" loading="lazy"></div>`
   ).join('');
 
-  // ドット
   dots.innerHTML = images.length > 1
     ? images.map((_, i) => `<button class="pmodal-gallery-dot ${i === 0 ? 'active' : ''}" onclick="galleryGoTo(${i})"></button>`).join('')
     : '';
 
-  // 矢印（1枚の場合は非表示）
   prevBtn.classList.toggle('hidden', images.length <= 1);
   nextBtn.classList.toggle('hidden', images.length <= 1);
   updateGalleryPosition();
 
-  // スワイプ対応
   attachGallerySwipe();
 }
 
@@ -928,12 +912,10 @@ function updateGalleryPosition() {
   const track = document.getElementById('pmodal-gallery-track');
   track.style.transform = `translateX(-${galleryIndex * 100}%)`;
 
-  // ドット更新
   document.querySelectorAll('.pmodal-gallery-dot').forEach((dot, i) => {
     dot.classList.toggle('active', i === galleryIndex);
   });
 
-  // 矢印の表示制御
   document.getElementById('pmodal-arrow-prev').classList.toggle('hidden', galleryIndex === 0);
   document.getElementById('pmodal-arrow-next').classList.toggle('hidden', galleryIndex === galleryImages.length - 1);
 }
@@ -948,19 +930,40 @@ function attachGallerySwipe() {
   }, { passive: true });
 }
 
+function togglePModalDescLang() {
+  const p = allProducts.find(x => x.id === pmodalProductId);
+  if (!p) return;
+  pmodalDescLang = pmodalDescLang === 'th' ? 'en' : 'th';
+  applyPModalDescLang(p);
+}
+
+function applyPModalDescLang(p) {
+  const descEl = document.getElementById('pmodal-desc');
+  const btn = document.getElementById('pmodal-lang-btn');
+  const hasEn = !!(p.description_en && p.description_en.trim());
+  if (!hasEn) {
+    descEl.textContent = p.description_th || '';
+    btn.style.display = 'none';
+    return;
+  }
+  descEl.textContent = pmodalDescLang === 'th' ? (p.description_th || '') : p.description_en;
+  btn.textContent = pmodalDescLang === 'th' ? 'EN' : 'ไทย';
+  btn.style.display = 'inline-block';
+}
+
 function openPModal(productId) {
   const p = allProducts.find(x => x.id === productId);
   if (!p) return;
   pmodalProductId = productId;
   pmodalQty = 1;
+  pmodalDescLang = 'th';
   document.getElementById('pmodal-qty-num').textContent = '1';
 
-  // ギャラリー描画
   renderGallery(buildGalleryImages(p));
 
   document.getElementById('pmodal-name-th').textContent = p.name_th;
   document.getElementById('pmodal-name-en').textContent = p.name_en || '';
-  document.getElementById('pmodal-desc').textContent = p.description_th || '';
+  applyPModalDescLang(p);
   document.getElementById('pmodal-price').textContent = `฿${p.price}`;
 
   const cookingLabel = COOKING_LABELS[p.cooking_method];
@@ -1037,7 +1040,6 @@ function pmodalAddToCart() {
   showToast('เพิ่มลงตะกร้าแล้ว ✓');
 }
 
-// ── 配送エリア ──
 function renderDistrictSelect() {
   const sel = document.getElementById('c-district');
   const zoneGroups = {};
@@ -1085,7 +1087,6 @@ document.getElementById('c-district').addEventListener('change', (e) => {
   updateSummary();
 });
 
-// ── 配送日・時間帯 ──
 const TIME_SLOT_DEFS = [
   { value: 'morning', label: 'ช่วงเช้า / Morning', endHour: 12, endMinute: 0, saturdayOk: true },
   { value: '14:00-16:00', label: '14:00 - 16:00', endHour: 16, endMinute: 0, saturdayOk: false },
@@ -1164,7 +1165,6 @@ function initMap() {
 }
 window.initMap = initMap;
 
-// ── PromptPay QR ──
 function tlv(tag, value) { return `${tag}${String(value.length).padStart(2,'0')}${value}`; }
 function crc16(str) {
   let crc = 0xFFFF;
@@ -1185,7 +1185,6 @@ function renderPromptPayQR(amount) {
   document.getElementById('qr-amount-label').textContent = `฿${amount.toFixed(2)}`;
 }
 
-// ── 決済方法 ──
 function selectPayment(method) {
   selectedPayment = method;
   document.getElementById('pay-transfer').classList.toggle('selected', method === 'transfer');
@@ -1225,7 +1224,6 @@ async function handleSlipSelect(input) {
   reader.readAsDataURL(file);
 }
 
-// ── チェックアウト ──
 function openCheckout() {
   document.getElementById('checkout-modal').classList.add('open');
   updateSummary();
@@ -1310,7 +1308,6 @@ function updateSummary() {
   if (selectedPayment === 'qr') renderPromptPayQR(preDiscountTotal - discount);
 }
 
-// ── 注文確定 ──
 function genOrderNumber() {
   const d = new Date();
   const ymd = `${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
@@ -1400,7 +1397,6 @@ function showSuccessScreen(orderNumber, rewardUsed, nextStampState) {
   `;
 }
 
-// ── TOAST ──
 function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
