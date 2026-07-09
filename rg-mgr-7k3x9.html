@@ -1267,6 +1267,7 @@ async function updateOrderStatus(id, status) {
     const o = allOrders.find(x => x.id === id);
     if (o) o.status = status;
     showToast('อัปเดตสถานะสำเร็จ', 'success');
+    checkPendingOrders();
   } catch(e) { showToast('อัปเดตไม่สำเร็จ', 'error'); }
 }
 
@@ -1282,6 +1283,7 @@ async function markDelivered(id) {
     if (document.getElementById('order-modal').classList.contains('open') && currentOrderModalId === id) {
       viewOrder(id);
     }
+    checkPendingOrders();
   } catch(e) { showToast('อัปเดตไม่สำเร็จ', 'error'); }
 }
 
@@ -1923,8 +1925,20 @@ function showToast(msg, type) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ── ORDER NOTIFICATION (タブタイトルに新着件数を表示) ──
+const BASE_TITLE = document.title;
+async function checkPendingOrders() {
+  try {
+    const pending = await supabase('GET', 'orders?status=eq.pending&select=id');
+    const count = pending.length;
+    document.title = count > 0 ? `(${count}) ${BASE_TITLE}` : BASE_TITLE;
+  } catch(e) { /* ポーリング失敗は無視して次回に任せる */ }
+}
+
 // ── INIT ─────────────────────────────
 loadProducts();
+checkPendingOrders();
+setInterval(checkPendingOrders, 60000);
 
 // ── SCROLL FLOATING BUTTONS ──────────
 function scrollByViewport(direction) {
