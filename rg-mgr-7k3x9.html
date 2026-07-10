@@ -34,6 +34,7 @@
   .btn-secondary { background: white; color: #FF6B35; border: 1.5px solid #FF6B35; }
   .btn-danger { background: #E53E3E; color: white; }
   .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* SEARCH */
   .search-box { padding: 8px 12px; border: 1.5px solid #FFD4B8; border-radius: 8px; font-size: 14px; width: 220px; background: white; }
@@ -76,6 +77,16 @@
     outline: none; border-color: #FF6B35;
   }
   .form-group textarea { resize: vertical; min-height: 70px; }
+
+  /* JA→TH translate helper */
+  .ja-translate-box { background: #FFF8F3; border: 1.5px dashed #FFD4B8; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .ja-translate-box label { font-size: 12px; color: #7A3A1A; font-weight: 600; }
+  .ja-translate-row { display: flex; gap: 8px; }
+  .ja-translate-row textarea { flex: 1; min-height: 44px; }
+  .ja-translate-btn { flex-shrink: 0; background: #7A3A1A; color: white; border: none; border-radius: 8px; padding: 0 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .ja-translate-btn:hover { opacity: 0.85; }
+  .ja-translate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ja-translate-status { font-size: 11.5px; color: #FF6B35; min-height: 14px; }
 
   /* COOKING */
   .cooking-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -199,7 +210,7 @@
     .print-slip-container, .print-slip-container *{ visibility:visible; }
     .print-slip-container{ display:block !important; position:absolute; left:0; top:0; width:100%; }
   }
-  /* ADMIN LOCK SCREEN (簡易パスワード・応急処置) */
+  /* ADMIN LOCK SCREEN (GAS側でパスワード照合。ソースにパスワードは含まれない) */
   .lock-overlay { position: fixed; inset: 0; background: #FFF8F3; z-index: 9999; display: flex; align-items: center; justify-content: center; }
   .lock-overlay.hidden { display: none; }
   .lock-box { background: white; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 340px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); text-align: center; }
@@ -208,6 +219,7 @@
   .lock-box input { width: 100%; padding: 12px 14px; border: 1.5px solid #FFD4B8; border-radius: 8px; font-size: 15px; text-align: center; margin-bottom: 12px; }
   .lock-box input:focus { outline: none; border-color: #FF6B35; }
   .lock-box button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #FF6B35; color: white; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .lock-box button:disabled { opacity: 0.6; cursor: not-allowed; }
   .lock-box .lock-error { color: #E53E3E; font-size: 12.5px; margin-top: 10px; display: none; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
@@ -221,23 +233,56 @@
     <div class="icon">🔒</div>
     <h3>กรุณาใส่รหัสผ่าน / Enter password</h3>
     <input type="password" id="lockPasswordInput" placeholder="Password" onkeydown="if(event.key==='Enter') checkAdminPassword()">
-    <button onclick="checkAdminPassword()">เข้าสู่ระบบ / Unlock</button>
+    <button id="lockSubmitBtn" onclick="checkAdminPassword()">เข้าสู่ระบบ / Unlock</button>
     <div class="lock-error" id="lockError">รหัสผ่านไม่ถูกต้อง / Incorrect password</div>
   </div>
 </div>
 <script>
   (function() {
-    const ADMIN_PASSWORD = 'd5m6gej8';
+    // パスワードそのものはここには存在しない。GASのスクリプトプロパティ側で照合する。
+    const LOCK_GAS_URL = 'https://script.google.com/macros/s/AKfycbxQ3oFskWtZpCTLmkbYxHtrjWirHQKY8JmYHD6z-5zMqh5YTC3aqxksjB5DxdpiJUx2/exec';
+
     if (localStorage.getItem('rakugo_admin_unlocked') === 'true') {
       document.getElementById('lockOverlay') && document.getElementById('lockOverlay').classList.add('hidden');
     }
-    window.checkAdminPassword = function() {
+
+    window.checkAdminPassword = async function() {
       const input = document.getElementById('lockPasswordInput').value;
-      if (input === ADMIN_PASSWORD) {
-        localStorage.setItem('rakugo_admin_unlocked', 'true');
-        document.getElementById('lockOverlay').classList.add('hidden');
-      } else {
-        document.getElementById('lockError').style.display = 'block';
+      const btn = document.getElementById('lockSubmitBtn');
+      const errorEl = document.getElementById('lockError');
+      errorEl.style.display = 'none';
+      if (!input) return;
+      btn.disabled = true;
+      btn.textContent = 'กำลังตรวจสอบ... / Checking...';
+
+      const tempKey = 'auth_' + Date.now();
+      try {
+        fetch(LOCK_GAS_URL, {
+          method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'checkAdminPassword', password: input, tempKey })
+        }).catch(() => {});
+
+        let result = null;
+        for (let i = 0; i < 10; i++) {
+          await new Promise(r => setTimeout(r, 1000));
+          const res = await fetch(`${LOCK_GAS_URL}?action=getAuthResult&tempKey=${encodeURIComponent(tempKey)}`);
+          const json = await res.json();
+          if (json.success) { result = json.data; break; }
+        }
+
+        if (result && result.success && result.correct) {
+          localStorage.setItem('rakugo_admin_unlocked', 'true');
+          document.getElementById('lockOverlay').classList.add('hidden');
+        } else {
+          errorEl.textContent = 'รหัสผ่านไม่ถูกต้อง / Incorrect password';
+          errorEl.style.display = 'block';
+        }
+      } catch (e) {
+        errorEl.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่ / Something went wrong, please try again';
+        errorEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'เข้าสู่ระบบ / Unlock';
       }
     };
   })();
@@ -670,8 +715,16 @@
       <button class="modal-close" onclick="closeNoticeModal()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="ja-translate-box">
+        <label>🇯🇵 日本語で入力 → タイ語に自動翻訳(任意)</label>
+        <div class="ja-translate-row">
+          <textarea id="notice-text-ja" placeholder="例: 500バーツ以上のご注文で送料無料!"></textarea>
+          <button type="button" class="ja-translate-btn" id="notice-translate-btn" onclick="translateNoticeToThai()">→ タイ語に翻訳</button>
+        </div>
+        <div class="ja-translate-status" id="notice-translate-status"></div>
+      </div>
       <div class="form-group">
-        <label>ข้อความ *</label>
+        <label>ข้อความ (ไทย) *</label>
         <textarea id="notice-text" placeholder="เช่น ส่งฟรี! เมื่อสั่งครบ 500 บาทขึ้นไป"></textarea>
       </div>
       <div class="form-group">
@@ -850,6 +903,55 @@ async function supabase(method, path, body) {
   }
   const text = await res.text();
   return text ? JSON.parse(text) : [];
+}
+
+// ── GAS経由のAI生成呼び出し(商品登録アシスタント/お知らせ翻訳で共用) ──
+async function callGasGenerate(prompt) {
+  const tempKey = 'gen_' + Date.now();
+  fetch(GAS_URL, {
+    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'generateProductInfo', prompt, tempKey })
+  }).catch(() => {});
+
+  for (let i = 0; i < 10; i++) {
+    await new Promise(r => setTimeout(r, 1500));
+    const res = await fetch(`${GAS_URL}?action=getGeneratedInfo&tempKey=${encodeURIComponent(tempKey)}`);
+    const json = await res.json();
+    if (json.success) {
+      if (!json.data.success) throw new Error(json.data.error || 'AI生成に失敗しました');
+      return json.data.text;
+    }
+  }
+  throw new Error('生成がタイムアウトしました。もう一度お試しください。');
+}
+
+// ── お知らせ: 日本語→タイ語 自動翻訳 ──
+async function translateNoticeToThai() {
+  const jaText = document.getElementById('notice-text-ja').value.trim();
+  const statusEl = document.getElementById('notice-translate-status');
+  const btn = document.getElementById('notice-translate-btn');
+  if (!jaText) { statusEl.textContent = '日本語のテキストを入力してください。'; return; }
+
+  btn.disabled = true;
+  statusEl.textContent = '翻訳中...';
+
+  const prompt = `あなたはタイ・バンコクの日本食ECサイト「rakugo.store」の運営アシスタントです。
+次の日本語のお知らせ文を、ECサイトのトップページに表示する自然なタイ語に翻訳してください。
+出力はタイ語の翻訳文のみとし、前置き・説明・引用符・コードブロック記号は一切含めないでください。
+
+日本語のお知らせ文:
+${jaText}`;
+
+  try {
+    const thaiText = await callGasGenerate(prompt);
+    document.getElementById('notice-text').value = thaiText.trim();
+    statusEl.textContent = '翻訳しました。内容を確認してから保存してください。';
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = '翻訳に失敗しました。もう一度お試しください。';
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ── NAV ──────────────────────────────
@@ -1547,6 +1649,8 @@ async function loadNotices() {
 
 function openNoticeModal() {
   editingNoticeId = null;
+  document.getElementById('notice-text-ja').value = '';
+  document.getElementById('notice-translate-status').textContent = '';
   document.getElementById('notice-text').value = '';
   document.getElementById('notice-sort').value = 0;
   document.getElementById('notice-active').checked = true;
@@ -1557,6 +1661,8 @@ function editNotice(id) {
   const n = allNotices.find(x => x.id === id);
   if (!n) return;
   editingNoticeId = id;
+  document.getElementById('notice-text-ja').value = '';
+  document.getElementById('notice-translate-status').textContent = '';
   document.getElementById('notice-text').value = n.text_th;
   document.getElementById('notice-sort').value = n.sort_order;
   document.getElementById('notice-active').checked = n.is_active;
