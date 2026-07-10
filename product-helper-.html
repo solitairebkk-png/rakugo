@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>楽GO! 商品登録アシスタント</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+Thai:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo-deep:#1B3A4B;
+    --indigo-mid:#2C5F6F;
+    --gold:#C9A227;
+    --paper:#F7F1E3;
+    --charcoal:#24282B;
+    --stamp:#B23A2E;
+    --line:#D8CDB0;
+    --green:#2E7D5B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--indigo-deep);color:var(--charcoal);
+    font-family:'Inter','Noto Sans JP',sans-serif;padding:28px 16px 60px;
+  }
+  .wrap{max-width:1040px;margin:0 auto;}
+  .masthead{
+    display:flex;align-items:baseline;justify-content:space-between;color:var(--paper);
+    border-bottom:2px solid rgba(247,241,227,0.25);padding-bottom:14px;margin-bottom:24px;flex-wrap:wrap;gap:8px;
+  }
+  .masthead h1{font-family:'Shippori Mincho',serif;font-size:24px;font-weight:700;margin:0;}
+  .masthead .sub{font-size:11px;color:var(--gold);letter-spacing:.08em;}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:24px;}
+  @media(min-width:900px){ .grid{grid-template-columns: 360px 1fr;} }
+
+  .slip{
+    background:var(--paper);border-radius:4px;padding:22px 22px 24px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.25);position:relative;
+  }
+  .slip::before{
+    content:"";position:absolute;top:0;left:22px;right:22px;height:6px;
+    background:repeating-linear-gradient(90deg, var(--stamp) 0 10px, transparent 10px 20px);opacity:.6;
+  }
+  .slip h2{font-family:'Shippori Mincho',serif;font-size:16px;margin:10px 0 14px;color:var(--indigo-deep);}
+  label{display:block;font-size:11px;letter-spacing:.05em;color:var(--indigo-mid);margin-bottom:5px;font-weight:600;}
+  input[type=text], input[type=number], textarea, select{
+    width:100%;border:1px solid var(--line);background:#fff;border-radius:3px;padding:9px 10px;
+    font-size:14px;color:var(--charcoal);font-family:'Noto Sans JP',sans-serif;margin-bottom:13px;
+  }
+  textarea{min-height:80px;resize:vertical;}
+  input:focus, textarea:focus, select:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  button{cursor:pointer;border:none;border-radius:3px;font-weight:600;font-family:'Inter',sans-serif;}
+  .btn-primary{width:100%;background:var(--indigo-deep);color:var(--paper);padding:12px;font-size:14px;}
+  .btn-primary:hover{background:var(--indigo-mid);}
+  .btn-primary:disabled{opacity:.5;cursor:default;}
+  .hint{font-size:11px;color:#7a7263;margin:-6px 0 14px;line-height:1.5;}
+
+  /* image slots */
+  .img-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px;}
+  .img-slot{
+    position:relative;border:2px dashed var(--line);border-radius:6px;min-height:78px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    cursor:pointer;font-size:18px;color:#B4A98A;background:#fff;
+  }
+  .img-slot:hover{border-color:var(--gold);}
+  .img-slot img{width:100%;height:60px;object-fit:cover;border-radius:4px;}
+  .img-slot .slot-label{font-size:9.5px;color:#AAA;margin-top:3px;}
+  .img-slot-remove{
+    position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;border:none;
+    background:var(--stamp);color:#fff;font-size:10px;font-weight:700;cursor:pointer;z-index:2;
+  }
+  .upload-status{font-size:11px;color:var(--indigo-mid);margin-bottom:10px;min-height:14px;}
+
+  .empty-note{
+    color:rgba(247,241,227,0.55);font-size:13px;padding:50px 10px;text-align:center;
+    border:1px dashed rgba(247,241,227,0.25);border-radius:6px;
+  }
+
+  .tag{background:var(--paper);border-radius:4px;padding:20px 22px;box-shadow:0 10px 30px rgba(0,0,0,0.25);}
+  .tag h3{font-family:'Shippori Mincho',serif;font-size:18px;margin:0 0 2px;color:var(--indigo-deep);}
+  .tag .jp{font-size:12px;color:#8a8271;margin-bottom:14px;}
+
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px;}
+  @media(max-width:560px){ .field-row{grid-template-columns:1fr;} }
+  .field{background:#fff;border:1px solid var(--line);border-radius:3px;padding:8px 10px;}
+  .field .flabel{font-size:10px;color:var(--indigo-mid);font-weight:700;letter-spacing:.04em;margin-bottom:3px;}
+  .field .fval{font-size:14px;line-height:1.5;outline:none;}
+  .field .fval[lang=th]{font-family:'Noto Sans Thai','Noto Sans JP',sans-serif;}
+  .field .fval:focus{background:#FFFBEF;}
+
+  .subgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+  @media(max-width:560px){ .subgrid{grid-template-columns:1fr 1fr;} }
+  .subgrid .field select, .subgrid .field input{margin:0;border:none;padding:0;font-size:14px;background:transparent;}
+
+  .cat-select{margin-bottom:14px;}
+  .cat-select select{margin-bottom:0;}
+
+  .condiments-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px;}
+  @media(max-width:560px){ .condiments-grid{grid-template-columns:repeat(2,1fr);} }
+  .cond-item{
+    display:flex;align-items:center;gap:5px;padding:6px 8px;border:1.5px solid var(--line);
+    border-radius:20px;cursor:pointer;font-size:12px;background:#fff;user-select:none;
+  }
+  .cond-item.checked{background:var(--indigo-deep);color:var(--paper);border-color:var(--indigo-deep);}
+  .cond-item input{display:none;}
+
+  .save-btn{background:var(--green);color:#fff;padding:12px;font-size:14px;width:100%;}
+  .save-btn:hover{background:#256a4c;}
+  .save-btn:disabled{opacity:.5;cursor:default;}
+
+  .status{font-size:12px;color:var(--paper);margin-top:10px;min-height:16px;}
+  .status.dark{color:var(--indigo-deep);}
+  .status a{color:var(--gold);}
+
+  .spinner{
+    display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.4);
+    border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px;
+  }
+  .spinner.dark{border:2px solid rgba(27,58,75,.3);border-top-color:var(--indigo-deep);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .chip{background:var(--indigo-deep);color:var(--paper);font-size:10.5px;padding:3px 9px;border-radius:20px;display:inline-block;margin:2px 4px 0 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <h1>楽GO! 商品登録アシスタント</h1>
+    <div class="sub">SAITO FOODS · direct to Supabase</div>
+  </div>
+
+  <div class="grid">
+    <div class="slip">
+      <h2>新規商品を入力</h2>
+
+      <label>写真(最大3枚・1枚目がメイン)</label>
+      <div class="img-slots" id="imgSlots"></div>
+      <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImageSelect(this)">
+      <div class="upload-status" id="uploadStatus"></div>
+
+      <label for="pname">商品名(日本語)</label>
+      <input type="text" id="pname" placeholder="例: 明太子おにぎり">
+
+      <label for="pdesc">特徴・説明(日本語)</label>
+      <textarea id="pdesc" placeholder="例: 博多辛子明太子を使用した冷凍おにぎり。電子レンジで2分温めるだけ。"></textarea>
+
+      <div class="row2">
+        <div>
+          <label for="pprice">価格(THB)</label>
+          <input type="number" id="pprice" placeholder="89" min="0">
+        </div>
+        <div>
+          <label for="pstock">在庫数</label>
+          <input type="number" id="pstock" placeholder="20" min="0">
+        </div>
+      </div>
+
+      <div class="hint">タイ語・英語訳、調理方法、合う調味料、カテゴリはAIが説明文から推定します。生成後は右側で全項目を修正できます。※このファイルはダウンロードまたはGitHub Pages配置後に使ってください(Claude.aiのプレビュー内では動きません)。</div>
+      <button class="btn-primary" id="genBtn" onclick="generate()">AIで生成する</button>
+      <div class="status dark" id="genStatus"></div>
+    </div>
+
+    <div>
+      <div id="resultArea">
+        <div class="empty-note">左のフォームに入力して「AIで生成する」を押すと、ここに商品タグが表示されます。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://odjvlrndwbgmdlhkrpni.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QYyNdJ77tsIqjtB__k3BVA_clhw-dGc';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxQ3oFskWtZpCTLmkbYxHtrjWirHQKY8JmYHD6z-5zMqh5YTC3aqxksjB5DxdpiJUx2/exec';
+
+const COOKING_LABELS = {
+  microwave: '🔥 電子レンジ', fry: '🍳 揚げ物', boil: '💧 茹でる', pan: '🥘 フライパン', ready: '✅ そのまま'
+};
+
+let categories = [];
+let condiments = [];
+let uploadedImageIds = [null, null, null];
+let uploadingSlotIndex = null;
+let current = null; // 生成済みデータ(保存前の編集対象)
+
+async function supabase(method, path, body){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method,
+    headers:{
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type':'application/json',
+      'Prefer':'return=representation'
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if(!res.ok){ const err = await res.text(); throw new Error(err); }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+async function loadMasterData(){
+  try{
+    categories = await supabase('GET','categories?order=sort_order');
+    condiments = await supabase('GET','condiments?order=sort_order');
+  }catch(e){ console.error(e); }
+}
+loadMasterData();
+
+// ── 画像アップロード(admin.htmlと同じ仕組み) ──
+function renderImageSlots(){
+  const wrap = document.getElementById('imgSlots');
+  wrap.innerHTML = uploadedImageIds.map((id,i) => {
+    if(id){
+      return `<div class="img-slot" onclick="clickImageSlot(${i})">
+        <button type="button" class="img-slot-remove" onclick="removeSlotImage(event, ${i})">✕</button>
+        <img src="https://lh3.googleusercontent.com/d/${id}" onerror="this.style.display='none'">
+      </div>`;
+    }
+    return `<div class="img-slot" onclick="clickImageSlot(${i})">📷<div class="slot-label">写真${i+1}</div></div>`;
+  }).join('');
+}
+renderImageSlots();
+
+function clickImageSlot(i){
+  uploadingSlotIndex = i;
+  const input = document.getElementById('imgInput');
+  input.value = '';
+  input.click();
+}
+
+function removeSlotImage(ev, i){
+  ev.stopPropagation();
+  uploadedImageIds[i] = null;
+  uploadedImageIds = uploadedImageIds.filter(Boolean);
+  while(uploadedImageIds.length < 3) uploadedImageIds.push(null);
+  renderImageSlots();
+}
+
+function compressImageFile(file){
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1200;
+        let w = img.width, h = img.height;
+        if(w > MAX || h > MAX){
+          if(w > h){ h = Math.round(h*MAX/w); w = MAX; } else { w = Math.round(w*MAX/h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',0.75).split(',')[1]);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleImageSelect(input){
+  const file = input.files[0];
+  if(!file || uploadingSlotIndex === null) return;
+  const slot = uploadingSlotIndex;
+  const statusEl = document.getElementById('uploadStatus');
+  statusEl.textContent = `写真${slot+1}をアップロード中...`;
+  const tempKey = 'img_' + Date.now();
+  try{
+    const base64 = await compressImageFile(file);
+    fetch(GAS_URL, {
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'uploadImage', base64, fileName: file.name.replace(/\.[^.]+$/, '.jpg'), mimeType:'image/jpeg', tempKey })
+    }).catch(()=>{});
+
+    let data = null;
+    for(let i=0;i<10;i++){
+      await new Promise(r => setTimeout(r,1500));
+      const res = await fetch(`${GAS_URL}?action=getLatestImage&tempKey=${encodeURIComponent(tempKey)}`);
+      const json = await res.json();
+      if(json.success){ data = json; break; }
+    }
+    if(data && data.success){
+      uploadedImageIds[slot] = data.fileId;
+      statusEl.textContent = `写真${slot+1}アップロード完了 ✓`;
+      renderImageSlots();
+    }else{
+      statusEl.textContent = 'アップロード失敗。もう一度お試しください。';
+    }
+  }catch(err){
+    statusEl.textContent = 'エラー: ' + err.message;
+  }
+}
+
+// ── AI生成(GAS経由。GAS内でANTHROPIC_API_KEYを使ってClaudeを呼び、結果をポーリングで受け取る) ──
+async function callClaudeViaGAS(prompt){
+  const tempKey = 'gen_' + Date.now();
+  fetch(GAS_URL, {
+    method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'generateProductInfo', prompt, tempKey })
+  }).catch(()=>{});
+
+  for(let i=0;i<10;i++){
+    await new Promise(r => setTimeout(r,1500));
+    const res = await fetch(`${GAS_URL}?action=getGeneratedInfo&tempKey=${encodeURIComponent(tempKey)}`);
+    const json = await res.json();
+    if(json.success){
+      if(!json.data.success) throw new Error(json.data.error || 'AI生成に失敗しました');
+      return json.data.text;
+    }
+  }
+  throw new Error('生成がタイムアウトしました。もう一度お試しください。');
+}
+
+async function generate(){
+  const name = document.getElementById('pname').value.trim();
+  const desc = document.getElementById('pdesc').value.trim();
+  const price = document.getElementById('pprice').value;
+  const stock = document.getElementById('pstock').value;
+  const statusEl = document.getElementById('genStatus');
+  const btn = document.getElementById('genBtn');
+
+  if(!name || !desc){ statusEl.textContent = "商品名と説明の両方を入力してください。"; return; }
+  if(price === '' || stock === ''){ statusEl.textContent = "価格と在庫数も入力してください。"; return; }
+
+  btn.disabled = true;
+  statusEl.innerHTML = '<span class="spinner dark"></span>生成中...';
+
+  const catList = categories.map(c => `id:${c.id} ${c.name_th}/${c.name_en}`).join(', ') || 'なし';
+  const condList = condiments.map(c => `id:${c.id} ${c.name_th}/${c.name_en}`).join(', ') || 'なし';
+
+  const prompt = `あなたはタイ・バンコクの日本食ECサイト「rakugo.store」の商品登録アシスタントです。
+入力された日本語の商品名・特徴文から、次のJSONオブジェクトのみを出力してください。前置き、説明、コードブロック記号は一切禁止、JSONのみを返してください。
+
+{
+ "name_th": "商品名のタイ語訳(自然な表現)",
+ "name_en": "商品名の英語訳",
+ "description_th": "特徴文のタイ語訳(2〜3文)",
+ "description_en": "特徴文の英語訳(2〜3文)",
+ "cooking_method": "microwave/fry/boil/pan/readyのいずれか1つを説明文から推定",
+ "cooking_minutes": 数値(調理・温め時間の分数。readyの場合は0),
+ "cooking_temp": 数値またはnull(fryの場合のみ揚げ油の目安温度。それ以外はnull),
+ "category_id": 次のカテゴリ一覧から最も合うものを1つ選びid番号のみ、無ければnull。一覧: ${catList},
+ "condiment_ids": 次の調味料一覧から合うものを配列でid番号のみ選択(0〜3個程度)。一覧: ${condList}
+}
+
+商品名: ${name}
+特徴・説明: ${desc}`;
+
+  try{
+    const rawText = await callClaudeViaGAS(prompt);
+    let raw = rawText.trim();
+    raw = raw.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    const parsed = JSON.parse(raw);
+
+    current = {
+      name_th: parsed.name_th || '',
+      name_en: parsed.name_en || '',
+      description_th: parsed.description_th || '',
+      description_en: parsed.description_en || '',
+      price: parseFloat(price),
+      stock: parseInt(stock),
+      cooking_method: ['microwave','fry','boil','pan','ready'].includes(parsed.cooking_method) ? parsed.cooking_method : 'microwave',
+      cooking_minutes: Number(parsed.cooking_minutes) || 0,
+      cooking_temp: parsed.cooking_temp ? Number(parsed.cooking_temp) : null,
+      category_id: parsed.category_id || null,
+      condiment_ids: Array.isArray(parsed.condiment_ids) ? parsed.condiment_ids : [],
+      name_ja: name
+    };
+    renderResult();
+    statusEl.textContent = "生成しました。右側の内容を確認・修正してから保存してください。";
+  }catch(e){
+    console.error(e);
+    statusEl.textContent = "生成に失敗しました。もう一度お試しください。";
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function updateCurrent(key, val){
+  if(!current) return;
+  current[key] = val;
+}
+
+function renderResult(){
+  const area = document.getElementById('resultArea');
+  if(!current){
+    area.innerHTML = '<div class="empty-note">左のフォームに入力して「AIで生成する」を押すと、ここに商品タグが表示されます。</div>';
+    return;
+  }
+  const catOptions = categories.map(c => `<option value="${c.id}" ${c.id===current.category_id?'selected':''}>${c.name_th}</option>`).join('');
+  const condChecks = condiments.map(c => `
+    <label class="cond-item ${current.condiment_ids.includes(c.id)?'checked':''}" onclick="toggleCondiment(this, ${c.id})">
+      <input type="checkbox" ${current.condiment_ids.includes(c.id)?'checked':''}> ${c.icon_emoji||''} ${c.name_th}
+    </label>`).join('');
+
+  area.innerHTML = `
+    <div class="tag">
+      <h3>${escapeHtml(current.name_ja)}</h3>
+      <div class="jp">฿${current.price} ・ 在庫 ${current.stock}</div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="flabel">商品名(タイ語)</div>
+          <div class="fval" lang="th" contenteditable="true" onblur="updateCurrent('name_th', this.innerText.trim())">${escapeHtml(current.name_th)}</div>
+        </div>
+        <div class="field">
+          <div class="flabel">Product Name (English)</div>
+          <div class="fval" contenteditable="true" onblur="updateCurrent('name_en', this.innerText.trim())">${escapeHtml(current.name_en)}</div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="flabel">説明(タイ語)</div>
+          <div class="fval" lang="th" contenteditable="true" onblur="updateCurrent('description_th', this.innerText.trim())">${escapeHtml(current.description_th)}</div>
+        </div>
+        <div class="field">
+          <div class="flabel">Description (English)</div>
+          <div class="fval" contenteditable="true" onblur="updateCurrent('description_en', this.innerText.trim())">${escapeHtml(current.description_en)}</div>
+        </div>
+      </div>
+
+      <div class="cat-select field">
+        <div class="flabel">カテゴリ</div>
+        <select onchange="updateCurrent('category_id', this.value ? parseInt(this.value) : null)">
+          <option value="">-- 未選択 --</option>
+          ${catOptions}
+        </select>
+      </div>
+
+      <div class="subgrid">
+        <div class="field">
+          <div class="flabel">調理方法</div>
+          <select onchange="updateCurrent('cooking_method', this.value); renderResult();">
+            ${Object.entries(COOKING_LABELS).map(([v,l]) => `<option value="${v}" ${current.cooking_method===v?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <div class="flabel">時間(分)</div>
+          <input type="number" value="${current.cooking_minutes}" min="0" step="0.5" oninput="updateCurrent('cooking_minutes', parseFloat(this.value)||0)" ${current.cooking_method==='ready'?'disabled':''}>
+        </div>
+        <div class="field">
+          <div class="flabel">温度(℃・揚げ物のみ)</div>
+          <input type="number" value="${current.cooking_temp||''}" min="0" oninput="updateCurrent('cooking_temp', this.value?parseInt(this.value):null)" ${current.cooking_method!=='fry'?'disabled':''}>
+        </div>
+      </div>
+
+      <label style="margin-bottom:6px;">合う調味料</label>
+      <div class="condiments-grid">${condChecks}</div>
+
+      <button class="save-btn" id="saveBtn" onclick="saveToSupabase()">Supabaseに保存する</button>
+      <div class="status dark" id="saveStatus"></div>
+    </div>
+  `;
+}
+
+function toggleCondiment(label, id){
+  label.classList.toggle('checked');
+  const checked = label.classList.contains('checked');
+  label.querySelector('input').checked = checked;
+  if(checked){
+    if(!current.condiment_ids.includes(id)) current.condiment_ids.push(id);
+  }else{
+    current.condiment_ids = current.condiment_ids.filter(x => x !== id);
+  }
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function saveToSupabase(){
+  if(!current) return;
+  const saveBtn = document.getElementById('saveBtn');
+  const statusEl = document.getElementById('saveStatus');
+  saveBtn.disabled = true;
+  statusEl.innerHTML = '<span class="spinner dark"></span>保存中...';
+
+  const imgIds = uploadedImageIds.filter(Boolean);
+
+  const productData = {
+    name_th: current.name_th,
+    name_en: current.name_en,
+    description_th: current.description_th || null,
+    description_en: current.description_en || null,
+    price: current.price,
+    stock: current.stock,
+    category_id: current.category_id,
+    image_drive_id: imgIds[0] || null,
+    image_drive_id_2: imgIds[1] || null,
+    image_drive_id_3: imgIds[2] || null,
+    cooking_method: current.cooking_method,
+    cooking_minutes: current.cooking_minutes,
+    cooking_temp: current.cooking_temp,
+    youtube_url: null,
+    is_active: true,
+    is_monthly_sale: false,
+    sale_price: null
+  };
+
+  try{
+    const result = await supabase('POST','products', productData);
+    const productId = result[0].id;
+    if(current.condiment_ids.length){
+      await supabase('POST','product_condiments', current.condiment_ids.map(cid => ({product_id: productId, condiment_id: cid})));
+    }
+    statusEl.innerHTML = `保存しました ✓ (商品ID: ${productId})`;
+    // フォームをリセット
+    current = null;
+    uploadedImageIds = [null,null,null];
+    renderImageSlots();
+    document.getElementById('pname').value = '';
+    document.getElementById('pdesc').value = '';
+    document.getElementById('pprice').value = '';
+    document.getElementById('pstock').value = '';
+    document.getElementById('uploadStatus').textContent = '';
+    setTimeout(renderResult, 1200);
+  }catch(e){
+    console.error(e);
+    statusEl.textContent = "保存に失敗しました: " + e.message;
+    saveBtn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
