@@ -105,6 +105,10 @@
   .img-slot .slot-label { font-size: 10.5px; color: #BBB; margin-top: 4px; }
   .img-slot-remove { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; border: none; background: #FED7D7; color: #9B2C2C; font-size: 11px; font-weight: 700; cursor: pointer; line-height: 1; z-index: 2; }
   .img-slot .main-badge { position: absolute; top: 4px; left: 4px; background: #FF6B35; color: white; font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 8px; }
+  .img-slot-move-btns { position: absolute; bottom: 4px; left: 4px; right: 4px; display: flex; justify-content: space-between; z-index: 2; }
+  .img-slot-move-btn { width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.55); color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .img-slot-move-btn:hover { background: rgba(0,0,0,0.75); }
+  .img-slot-move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
   .upload-status { font-size: 12px; color: #FF6B35; margin-top: 6px; }
 
   /* ORDERS */
@@ -1039,10 +1043,25 @@ function renderImageSlots() {
         <button type="button" class="img-slot-remove" onclick="removeSlotImage(event, ${i})">✕</button>
         <img src="https://lh3.googleusercontent.com/d/${id}" onerror="this.style.display='none'">
         <div class="slot-label">แตะเพื่อเปลี่ยนรูป</div>
+        <div class="img-slot-move-btns">
+          <button type="button" class="img-slot-move-btn" onclick="moveImageSlot(event, ${i}, -1)" ${i === 0 ? 'disabled' : ''}>◀</button>
+          <button type="button" class="img-slot-move-btn" onclick="moveImageSlot(event, ${i}, 1)" ${i === uploadedImageIds.length - 1 ? 'disabled' : ''}>▶</button>
+        </div>
       </div>`;
     }
     return `<div class="img-slot" onclick="clickImageSlot(${i})">📷<div class="slot-label">รูปที่ ${i + 1}</div></div>`;
   }).join('');
+}
+
+// 写真の並び順を隣同士で入れ替える(削除して詰めるのではなく、位置そのものを交換する)
+function moveImageSlot(ev, i, delta) {
+  ev.stopPropagation();
+  const j = i + delta;
+  if (j < 0 || j >= uploadedImageIds.length) return;
+  const tmp = uploadedImageIds[i];
+  uploadedImageIds[i] = uploadedImageIds[j];
+  uploadedImageIds[j] = tmp;
+  renderImageSlots();
 }
 
 function clickImageSlot(i) {
