@@ -1013,6 +1013,7 @@ function renderProducts(products) {
       <td>
         <div class="action-btns">
           <button class="btn btn-secondary btn-sm" onclick="editProduct(${p.id})">แก้ไข</button>
+          <button class="btn btn-secondary btn-sm" onclick="duplicateProduct(${p.id})">คัดลอก</button>
           <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">ลบ</button>
         </div>
       </td>
@@ -1179,6 +1180,41 @@ async function editProduct(id) {
   await loadCategorySelect(p.category_id);
 
   // load condiments
+  const pc = await supabase('GET', `product_condiments?product_id=eq.${id}`);
+  const selectedIds = pc.map(x => x.condiment_id);
+  await loadCondimentsGrid(selectedIds);
+  document.getElementById('product-modal').classList.add('open');
+}
+
+// 既存商品をベースに新規商品モーダルを開く(味違い・サイズ違いの商品登録を楽にするため)
+// セール設定だけは複製しない(セール枠は最大2件までのルールと衝突しないように)
+async function duplicateProduct(id) {
+  const p = allProducts.find(x => x.id === id);
+  if (!p) return;
+  editingProductId = null;
+  uploadedImageIds = [p.image_drive_id || null, p.image_drive_id_2 || null, p.image_drive_id_3 || null];
+  uploadingSlotIndex = null;
+  document.getElementById('upload-status').textContent = '';
+  renderImageSlots();
+  document.getElementById('modal-title').textContent = 'คัดลอกสินค้า (จะบันทึกเป็นสินค้าใหม่)';
+  document.getElementById('f-name-th').value = p.name_th || '';
+  document.getElementById('f-name-en').value = p.name_en || '';
+  document.getElementById('f-desc-th').value = p.description_th || '';
+  document.getElementById('f-desc-en').value = p.description_en || '';
+  document.getElementById('f-price').value = p.price ?? '';
+  document.getElementById('f-stock').value = p.stock ?? '';
+  document.getElementById('f-cooking-method').value = p.cooking_method || 'microwave';
+  document.getElementById('f-cooking-minutes').value = p.cooking_minutes ?? '';
+  document.getElementById('f-cooking-temp').value = p.cooking_temp ?? '';
+  document.getElementById('f-youtube').value = p.youtube_url || '';
+  document.getElementById('f-active').value = String(p.is_active);
+  document.getElementById('f-monthly-sale').checked = false;
+  document.getElementById('sale-price-group').style.display = 'none';
+  document.getElementById('f-sale-price').value = '';
+  toggleSalePriceField();
+  updateCookingFields();
+  await loadCategorySelect(p.category_id);
+
   const pc = await supabase('GET', `product_condiments?product_id=eq.${id}`);
   const selectedIds = pc.map(x => x.condiment_id);
   await loadCondimentsGrid(selectedIds);
