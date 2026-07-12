@@ -111,6 +111,14 @@
   .img-slot-move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
   .upload-status { font-size: 12px; color: #FF6B35; margin-top: 6px; }
 
+  /* IMAGE PICKER ACTION SHEET (スマホ限定: カメラ起動 / ギャラリー選択) */
+  .img-picker-menu { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 300; align-items: flex-end; justify-content: center; }
+  .img-picker-menu.open { display: flex; }
+  .img-picker-sheet { background: white; width: 100%; max-width: 420px; border-radius: 16px 16px 0 0; padding: 8px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .img-picker-btn { display: block; width: 100%; padding: 15px; background: none; border: none; border-top: 1px solid #FFE8D6; font-size: 15px; font-weight: 600; color: #2C2C2A; cursor: pointer; text-align: center; }
+  .img-picker-btn:first-child { border-top: none; }
+  .img-picker-cancel { color: #E53E3E; }
+
   /* ORDERS */
   .slip-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 1.5px solid #FFD4B8; }
   .slip-none { color: #CCC; font-size: 12px; }
@@ -604,6 +612,7 @@
         <label>รูปสินค้า (สูงสุด 3 รูป — รูปที่ 1 คือรูปหลัก)</label>
         <div class="img-slots" id="img-slots"></div>
         <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="handleImageSelect(this)">
+        <input type="file" id="img-input-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleImageSelect(this)">
         <div class="upload-status" id="upload-status"></div>
       </div>
 
@@ -840,6 +849,15 @@
 <div class="print-slip-container" id="print-slip-container"></div>
 </div>
 
+<!-- IMAGE PICKER ACTION SHEET (スマホでのみ表示) -->
+<div class="img-picker-menu" id="img-picker-menu" onclick="if(event.target===this) closeImgPicker()">
+  <div class="img-picker-sheet">
+    <button type="button" class="img-picker-btn" onclick="triggerImgInput('camera')">📷 ถ่ายรูป / Take photo</button>
+    <button type="button" class="img-picker-btn" onclick="triggerImgInput('gallery')">🖼️ เลือกจากคลังภาพ / Choose from gallery</button>
+    <button type="button" class="img-picker-btn img-picker-cancel" onclick="closeImgPicker()">ยกเลิก / Cancel</button>
+  </div>
+</div>
+
 <!-- SLIP LIGHTBOX -->
 <div class="slip-lightbox" id="slip-lightbox" onclick="this.classList.remove('open')">
   <img id="slip-lightbox-img" src="">
@@ -1064,9 +1082,32 @@ function moveImageSlot(ev, i, delta) {
   renderImageSlots();
 }
 
+// スマホかどうかの判定(既存のモバイル用レイアウト切替と同じ600px基準)
+function isMobileDevice() {
+  return window.matchMedia('(max-width: 600px)').matches;
+}
+
 function clickImageSlot(i) {
   uploadingSlotIndex = i;
-  const input = document.getElementById('img-input');
+  if (isMobileDevice()) {
+    // スマホ: 「撮影する」か「ギャラリーから選ぶ」かを選ばせる
+    document.getElementById('img-picker-menu').classList.add('open');
+  } else {
+    // PC: 従来通りファイル選択ダイアログを直接開く
+    const input = document.getElementById('img-input');
+    input.value = '';
+    input.click();
+  }
+}
+
+function closeImgPicker() {
+  document.getElementById('img-picker-menu').classList.remove('open');
+}
+
+function triggerImgInput(type) {
+  closeImgPicker();
+  const inputId = type === 'camera' ? 'img-input-camera' : 'img-input';
+  const input = document.getElementById(inputId);
   input.value = '';
   input.click();
 }
